@@ -13,8 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import com.google.common.io.Files;
 
@@ -66,8 +65,9 @@ public class IEJobs {
 	// private CoordinationResolver cr;
 	private CoordinateExpander ce;
 
-	private static Logger log = LoggerFactory.getLogger(IEJobs.class);
-
+	//private static Logger log = LoggerFactory.getLogger(IEJobs.class);
+	Logger log = Logger.getLogger(getClass());
+	
 	/**
 	 * @param competences
 	 * @param noCompetences
@@ -173,10 +173,9 @@ public class IEJobs {
 
 		String extension = Files.getFileExtension(entitiesFile.getAbsolutePath());
 		
-		log.info("Read Skills: " + entitiesFile.getAbsolutePath());
 		
 		if (extension.equals("txt")) {
-			log.info("Read Skills from txt-File");
+			log.info("Read Skills from txt-File: " + entitiesFile.getAbsolutePath());
 			BufferedReader in = new BufferedReader(new FileReader(entitiesFile));
 			String line = in.readLine();
 			while (line != null) {
@@ -212,10 +211,10 @@ public class IEJobs {
 			}
 			in.close();
 		} else if (extension.equals("ttl")) {
-			log.info("Read Skills from RDF Model");
+			log.info("Read Skills from RDF Model: " + entitiesFile.getAbsolutePath());
 			entities = Util.readRDF(entitiesFile, entities);
 		} else if (extension.equals("csv")) {
-			log.info("Read Skills from CSV");
+			log.info("Read Skills from CSV: " + entitiesFile.getAbsolutePath());
 			entities = Util.readCSV(entitiesFile, entities);
 		} else {
 			System.err.println("unbekanntes Dateiformat: " + entitiesFile.getAbsolutePath());
@@ -566,7 +565,6 @@ public class IEJobs {
 								continue;
 							} else { // Entität besteht aus genau einem Token
 								ie = new InformationEntity(completeEntity.get(0).getToken(), true, entityPointer);
-								log.info(ie.toString());
 							}
 							informationEntities.add(ie);
 
@@ -584,7 +582,7 @@ public class IEJobs {
 								e = null;
 								continue;
 							}
-							if (type == IEType.COMPETENCE) {
+							if (type != IEType.TOOL) {
 								removeModifier(e);
 							}
 							if (e.getLemmata().size() < 1) {
@@ -609,7 +607,7 @@ public class IEJobs {
 		}
 		ieTokens = null;
 		if (ce != null)
-			System.out.println(ce.getPossResolvations().size() + " new Compounds");
+			log.info(ce.getPossResolvations().size() + " new Compounds");
 
 		return toReturn;
 	}

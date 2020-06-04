@@ -6,71 +6,79 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
+import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.IEType;
 import quenfo.de.uni_koeln.spinfo.information_extraction.db_io.IE_DBConnector;
 import quenfo.de.uni_koeln.spinfo.information_extraction.workflow.Extractor;
 
 /**
- * @author geduldia
+ * @author jbinnewi
  * 
  *         Workflow to extract new competences
  * 
  *         Input: to class 3 (= applicants profile) classified paragraphs
  * 
- *         Output: extracted competences 
+ *         Output: extracted competences
+ *         
+ *         Uses configurations defined in config files
  *
  */
 public class ExtractNewCompetences {
-
-	// wird an den Namen der OutputDB angehängt
-	static String jahrgang = "2011";
+	
+	static IEType ieType;
 
 	// Pfad zur Input-DB mit den klassifizierten Paragraphen
-	//static String inputDB = "C:/sqlite/classification/CorrectableParagraphs_" + jahrgang + ".db";
-	static String inputDB = "C:/sqlite/classification/CorrectableParagraphs_textkernel.db";
+	static String paraInputDB;
 
 	// Output-Ordner
-	static String outputFolder = "C:/sqlite/information_extraction/competences/";
+	static String compIEoutputFolder;
 
 	// Name der Output-DB
-	static String outputDB = "CorrectableCompetences_textkernel.db";
+	static String compIEOutputDB;
 
 	// txt-File mit allen bereits bekannten (validierten) Kompetenzen (die
 	// bekannten Kompetenzn helfen beim Auffinden neuer Kompetenzen)
-	static File competences = new File("information_extraction/data/competences/competences.txt");
+	static File competences;
 
 	// txt-File mit bekannten (typischen) Extraktionsfehlern (würden ansonsten
 	// immer wieder vorgeschlagen werden)
-	static File noCompetences = new File("information_extraction/data/competences/noCompetences.txt");
+	static File noCompetences;
 
 	// txt-File mit den Extraktionspatterns
-	static File patternsFile = new File("information_extraction/data/competences/competenceContexts.txt");
-	
-	static File modifierFile = new File("information_extraction/data/competences/modifier.txt");
+	static File compPatterns;
+
+	// txt-File mit bekannten modifiern ("vorausgesetzt" etc.)
+	static File modifier;
 
 	// falls nicht alle Paragraphen aus der Input-DB verwendet werden sollen:
 	// hier Anzahl der zu lesenden Paragraphen festlegen
 	// -1 = alle
-	static int maxCount = -1;
+	static int queryLimit;
 
 	// falls nur eine bestimmte Anzahl gelesen werden soll, hier die startID
 	// angeben
-	static int startPos = 0;
+	static int startPos;
 	
-	// true, falls Koordinationen  in Informationseinheit aufgelöst werden sollen
-	static boolean resolveCoordinations = true;
+	static int fetchSize;
+
+	// true, falls Koordinationen in Informationseinheit aufgelöst werden sollen
+	static boolean expandCoordinates;
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
 
+		if (args.length > 0) {
+			String configPath = args[1];
+			loadProperties(configPath);
+		}
+
 		// Verbindung zur Input-DB
 		Connection inputConnection = null;
-		if (!new File(inputDB).exists()) {
-			System.out
-					.println("Input-DB '" + inputDB + "' does not exist\nPlease change configuration and start again.");
+		if (!new File(paraInputDB).exists()) {
+			System.out.println(
+					"Input-DB '" + paraInputDB + "' does not exist\nPlease change configuration and start again.");
 			System.exit(0);
 		} else {
-			inputConnection = IE_DBConnector.connect(inputDB);
+			inputConnection = IE_DBConnector.connect(paraInputDB);
 		}
 
 		// Prüfe ob maxCount und startPos gültige Werte haben
@@ -84,31 +92,32 @@ public class ExtractNewCompetences {
 			System.out.println("please select a new startPosition and try again");
 			System.exit(0);
 		}
-		if (maxCount > tableSize - startPos) {
-			maxCount = tableSize - startPos;
+		if (queryLimit > tableSize - startPos) {
+			queryLimit = tableSize - startPos;
 		}
 
 		// Verbindung zur Output-DB
-		if (!new File(outputFolder).exists()) {
-			new File(outputFolder).mkdirs();
+		if (!new File(compIEoutputFolder).exists()) {
+			new File(compIEoutputFolder).mkdirs();
 		}
 		Connection outputConnection = null;
-		File outputfile = new File(outputFolder + outputDB);
+		File outputfile = new File(compIEoutputFolder + compIEOutputDB);
 		if (!outputfile.exists()) {
 			outputfile.createNewFile();
 		}
-		outputConnection = IE_DBConnector.connect(outputFolder + outputDB);
+
+		outputConnection = IE_DBConnector.connect(compIEoutputFolder + compIEOutputDB);
 
 		// Start der Extraktion:
 		long before = System.currentTimeMillis();
 		// Index für die Spalte 'ClassTHREE' anlegen für schnelleren Zugriff
 		IE_DBConnector.createIndex(inputConnection, "ClassifiedParagraphs", "ClassTHREE");
-		Extractor extractor = new Extractor(outputConnection, competences, noCompetences, patternsFile, modifierFile,
-				IEType.COMPETENCE, resolveCoordinations);
-		if (maxCount == -1) {
-			maxCount = tableSize;
+		Extractor extractor = new Extractor(outputConnection, competences, noCompetences, compPatterns, modifier,
+				ieType, expandCoordinates);
+		if (queryLimit == -1) {
+			queryLimit = tableSize;
 		}
-		extractor.extract(startPos, maxCount, tableSize, inputConnection, outputConnection);
+		extractor.extract(startPos, queryLimit, fetchSize, tableSize, inputConnection, outputConnection);
 		long after = System.currentTimeMillis();
 		Double time = (((double) after - before) / 1000) / 60;
 		if (time > 60.0) {
@@ -118,4 +127,41 @@ public class ExtractNewCompetences {
 		}
 
 	}
+
+	private static void loadProperties(String folderPath) throws IOException {
+
+		File configFolder = new File(folderPath);
+
+		if (!configFolder.exists()) {
+			System.err.println("Config Folder " + folderPath + " does not exist."
+					+ "\nPlease change configuration and start again.");
+			System.exit(0);
+		}
+		
+		//initialize and load all properties files
+		String quenfoData = configFolder.getParent();
+		PropertiesHandler.initialize(configFolder);
+		
+		ieType = PropertiesHandler.getSearchType("ie");
+
+
+		paraInputDB = quenfoData + "/sqlite/classification/" + PropertiesHandler.getStringProperty("general", "classifiedParagraphs");
+		
+		queryLimit = PropertiesHandler.getIntProperty("ie", "queryLimit");
+		startPos = PropertiesHandler.getIntProperty("ie", "startPos");
+		fetchSize = PropertiesHandler.getIntProperty("ie", "fetchSize");
+		expandCoordinates = PropertiesHandler.getBoolProperty("ie", "expandCoordinates");
+		
+		
+		String competencesFolder = quenfoData + "/resources/information_extraction/competences/";
+		competences = new File(competencesFolder + PropertiesHandler.getStringProperty("ie", "competences"));
+		noCompetences = new File(competencesFolder + PropertiesHandler.getStringProperty("ie", "noCompetences"));
+		modifier = new File(competencesFolder + PropertiesHandler.getStringProperty("ie", "modifier"));
+		compPatterns = new File(competencesFolder + PropertiesHandler.getStringProperty("ie", "compPatterns"));
+		
+		compIEoutputFolder = quenfoData + "/sqlite/information_extraction/competences/";
+		compIEOutputDB = PropertiesHandler.getStringProperty("ie", "compIEOutputDB");
+		
+	}
+
 }

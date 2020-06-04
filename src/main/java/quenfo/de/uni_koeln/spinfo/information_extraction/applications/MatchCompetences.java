@@ -6,12 +6,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.IEType;
 import quenfo.de.uni_koeln.spinfo.information_extraction.db_io.IE_DBConnector;
 import quenfo.de.uni_koeln.spinfo.information_extraction.workflow.Extractor;
 
 /**
- * @author geduldia
+ * @author jbinnewi
  * 
  *         workflow to match the already validated competences (from competences.txt) against the as class 3 classified paragraphs
  *         
@@ -20,62 +21,61 @@ import quenfo.de.uni_koeln.spinfo.information_extraction.workflow.Extractor;
 
  */
 public class MatchCompetences {
-
-	// wird an den Namen der Output-DB angehängt
-	static String jahrgang = "2011";
+	
+	static IEType ieType;
 
 	// Pfad zur Input-DB mit den klassifizierten Paragraphen
-	//static String pararaphsDB = /* "D:/Daten/sqlite/CorrectableParagraphs.db"; */"C:/sqlite/classification/CorrectableParagraphs_"
-	//		+ jahrgang + ".db"; //
-	static String paragraphsDB = "C:/sqlite/classification/CorrectableParagraphs_textkernel.db";
+	static String paraInputDB;
 
 	// Ordner in dem die neue Output-DB angelegt werden soll
-	static String outputFolder = /* "D:/Daten/sqlite/"; */"C:/sqlite/matching/competences/";
+	static String outputFolder;
 
 	// Name der Output-DB
-	static String outputDB = "CompetenceMatches_textkernel.db";
+	static String outputDB;
 
 	// txt-File mit den validierten Kompetenzen
-	static File notCatComps = new File("information_extraction/data/competences/competences.txt");
-//	static File notCatComps = new File("information_extraction/data/competences/esco/esco_v1.0.3.ttl");//new File("information_extraction/data/competences/notCategorized.txt"); //TODO refactoring
-//	static File notCatComps = new File("information_extraction/data/competences/esco/ict_skills_collection.ttl");
+	static File notCatComps;
 	
 	// tei-File mit kategorisierten Kompetenzen
-	static File catComps = new File("information_extraction/data/competences/tei_index/compdict.tei");
-//	static File catComps = null;
+	static File catComps;
 	
 	// Ebene, auf der die Kompetenz zugeordnet werden soll(div1, div2, div3, entry, form, orth)
-	static String category = "div3";
+	static String category;
 
 	// txt-File mit allen 'Modifier'-Ausdrücken
-	static File modifier = new File("information_extraction/data/competences/modifier.txt");
-	
-	//static File tokensToRemove = new File("information_extraction/data/competences/fuellwoerter.txt");
+	static File modifier;
 
 	// txt-File zur Speicherung der Match-Statistiken
-	static File statisticsFile = new File("information_extraction/data/competences/matchingStats.txt");
+	static File statisticsFile;
 
 	// Anzahl der Paragraphen aus der Input-DB, gegen die gematcht werden soll
 	// (-1 = alle)
-	static int maxCount = 4000;
+	static int maxCount;
 
 	// Falls nicht alle Paragraphen gematcht werden sollen, hier die
 	// Startposition angeben
-	static int startPos = 0;
+	static int startPos;
+	
+	static int fetchSize;
 	
 	// true, falls Koordinationen  in Informationseinheit aufgelöst werden sollen
-	static boolean resolveCoordinations = true;
+	static boolean expandCoordinates;
 
 	public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException {
 		
+		if (args.length > 0) {
+			String configPath = args[1];
+			loadProperties(configPath);
+		}
+		
 		// Verbindung mit Input-DB
 		Connection inputConnection = null;
-		if (!new File(paragraphsDB).exists()) {
+		if (!new File(paraInputDB).exists()) {
 			System.out
-					.println("Database don't exists " + paragraphsDB + "\nPlease change configuration and start again.");
+					.println("Database don't exists " + paraInputDB + "\nPlease change configuration and start again.");
 			System.exit(0);
 		} else {
-			inputConnection = IE_DBConnector.connect(paragraphsDB);
+			inputConnection = IE_DBConnector.connect(paraInputDB);
 		}
 
 		// Verbindung mit Output-DB
@@ -83,7 +83,7 @@ public class MatchCompetences {
 			new File(outputFolder).mkdirs();
 		}
 		Connection outputConnection = IE_DBConnector.connect(outputFolder + outputDB);
-		IE_DBConnector.createExtractionOutputTable(outputConnection, IEType.COMPETENCE, false);
+		IE_DBConnector.createExtractionOutputTable(outputConnection, ieType, false);
 		
 		// Prüfe ob maxCount und startPos gültige Werte haben
 		String query = "SELECT COUNT(*) FROM ClassifiedParagraphs;";
@@ -104,8 +104,8 @@ public class MatchCompetences {
 		long before = System.currentTimeMillis();
 		//erzeugt einen Index auf die Spalte 'ClassTHREE' (falls noch nicht vorhanden)
 		IE_DBConnector.createIndex(inputConnection, "ClassifiedParagraphs", "ClassTHREE");
-		Extractor extractor = new Extractor(notCatComps, modifier, catComps, category, IEType.COMPETENCE, resolveCoordinations);
-		extractor.stringMatch(statisticsFile, inputConnection, outputConnection, maxCount, startPos);
+		Extractor extractor = new Extractor(notCatComps, modifier, catComps, category, ieType, expandCoordinates);
+		extractor.stringMatch(statisticsFile, inputConnection, outputConnection, maxCount, startPos, fetchSize);
 		long after = System.currentTimeMillis();
 		double time = (((double) after - before) / 1000) / 60;
 		if (time > 60.0) {
@@ -114,5 +114,50 @@ public class MatchCompetences {
 			System.out.println("\nfinished matching in " + time + " minutes");
 		}
 	}
+	
+	private static void loadProperties(String folderPath) throws IOException {
+
+		File configFolder = new File(folderPath);
+
+		if (!configFolder.exists()) {
+			System.err.println("Config Folder " + folderPath + " does not exist."
+					+ "\nPlease change configuration and start again.");
+			System.exit(0);
+		}
+		
+		//initialize and load all properties files
+		String quenfoData = configFolder.getParent();		
+		PropertiesHandler.initialize(configFolder);
+
+
+		// get values from properties files
+		
+		ieType = PropertiesHandler.getSearchType("matching");
+
+		paraInputDB = quenfoData + "/sqlite/classification/" + PropertiesHandler.getStringProperty("general", "classifiedParagraphs");// + jahrgang + ".db";
+		
+		maxCount = PropertiesHandler.getIntProperty("matching", "queryLimit");
+		startPos = PropertiesHandler.getIntProperty("matching", "startPos");
+		fetchSize = PropertiesHandler.getIntProperty("matching", "fetchSize");
+		expandCoordinates = PropertiesHandler.getBoolProperty("matching", "expandCoordinates");
+		
+		String competencesFolder = quenfoData + "/resources/information_extraction/competences/";
+		notCatComps = new File(competencesFolder + PropertiesHandler.getStringProperty("matching", "competences"));
+		modifier = new File(competencesFolder + PropertiesHandler.getStringProperty("matching", "modifier"));
+		
+		statisticsFile = new File(competencesFolder + PropertiesHandler.getStringProperty("matching", "compMatchingStats"));
+		
+		outputFolder = quenfoData + "/sqlite/matching/competences/";
+		outputDB = PropertiesHandler.getStringProperty("matching", "compMOutputDB");
+		
+		
+	
+		
+		
+		
+	}
+
+	
+	
 
 }

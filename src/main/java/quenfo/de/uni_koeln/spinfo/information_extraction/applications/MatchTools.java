@@ -6,72 +6,79 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import org.apache.log4j.Logger;
 
+import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.IEType;
 import quenfo.de.uni_koeln.spinfo.information_extraction.db_io.IE_DBConnector;
 import quenfo.de.uni_koeln.spinfo.information_extraction.workflow.Extractor;
 
 /**
- * @author geduldia
+ * @author jbinnewi
  * 
- *         workflow to match the already validated tools (from tools.txt) against all as class 3 and/or class 2 classified paragraphs
- *         
- *         input: as class 3 (= applicants profile) and/or class 2 (=job description) classified paragraphs
- *         output: all matching tools together with their containing sentence
+ *         workflow to match the already validated tools (from tools.txt)
+ *         against all as class 3 and/or class 2 classified paragraphs
+ * 
+ *         input: as class 3 (= applicants profile) and/or class 2 (=job
+ *         description) classified paragraphs output: all matching tools
+ *         together with their containing sentence
  *
  */
 public class MatchTools {
 
-	// wird an den Namen der Output-DB angehängt
-	static String jahrgang = "2011";
+	static Logger log = Logger.getLogger(MatchTools.class);
 
 	// Pfad zur Input-DB mit den klassifizierten Paragraphen
-//	static String inputDB = "C:/sqlite/classification/CorrectableParagraphs_"+jahrgang+".db";
-	static String inputDB = "C:/sqlite/classification/CorrectableParagraphs_textkernel.db";
+	static String paraInputDB = null;
 
 	// Ordner in dem die neue Output-DB angelegt werden soll
-	static String outputFolder = /* "D:/Daten/sqlite/"; */ "C:/sqlite/matching/tools/"; //
+	static String toolMOutputFolder = null;
 
 	// Name der Output-DB
-	static String outputDB = "ToolMatches_textkernel.db";
+	static String toolMOutputDB = null;
 
 	// txt-File mit allen bereits validierten Tools
-	static File tools = new File("information_extraction/data/tools/tools.txt");
+	static File tools = null;
 
 	// txt-File zur Speicherung der Match-Statistiken
-	static File statisticsFile = new File("information_extraction/data/tools/matchingStats.txt");
+	static File statisticsFile = null;
 
 	// Anzahl der Paragraphen aus der Input-DB, gegen die gematcht werden soll
 	// (-1 = alle)
-	static int maxCount = -1;
+	static int maxCount;
 
 	// Falls nicht alle Paragraphen gematcht werden sollen, hier die
 	// Startposition angeben
-	static int startPos = 0;
+	static int startPos;
 	
-	// true, falls Koordinationen  in Informationseinheit aufgelöst werden sollen
-	static boolean resolveCoordinations = true;
+	static int fetchSize;
 
+	// true, falls Koordinationen in Informationseinheit aufgelöst werden sollen
+	static boolean expandCoordinates;
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
-
+		
+		if (args.length > 0) {
+			String configPath = args[1];
+			loadProperties(configPath);
+		}
+		
 		// Verbindung mit Input-DB
 		Connection inputConnection = null;
-		if (!new File(inputDB).exists()) {
-			System.out.println("Database don't exists " + inputDB + "\nPlease change configuration and start again.");
+		if (!new File(paraInputDB).exists()) {
+			log.error("Database don't exists " + paraInputDB + "\nPlease change configuration and start again.");
 			System.exit(0);
 		} else {
-			inputConnection = IE_DBConnector.connect(inputDB);
+			inputConnection = IE_DBConnector.connect(paraInputDB);
 		}
 
-	
 		// Verbindung mit Output-DB
-		if(!new File(outputFolder).exists()){
-			new File(outputFolder).mkdirs();
+		if (!new File(toolMOutputFolder).exists()) {
+			new File(toolMOutputFolder).mkdirs();
 		}
-		Connection outputConnection = IE_DBConnector.connect(outputFolder + outputDB);
+		Connection outputConnection = IE_DBConnector.connect(toolMOutputFolder + toolMOutputDB);
 		IE_DBConnector.createExtractionOutputTable(outputConnection, IEType.TOOL, false);
-		
+
 		// Prüfe ob maxCount und startPos gültige Werte haben
 		String query = "SELECT COUNT(*) FROM ClassifiedParagraphs;";
 		Statement stmt = inputConnection.createStatement();
@@ -90,17 +97,49 @@ public class MatchTools {
 		// starte Matching
 		long before = System.currentTimeMillis();
 		IE_DBConnector.createIndex(inputConnection, "ClassifiedParagraphs", "ClassTWO, ClassTHREE");
-		Extractor extractor = new Extractor(tools, null,IEType.TOOL, resolveCoordinations);
-		extractor.stringMatch(statisticsFile, inputConnection, outputConnection, maxCount, startPos);
+		Extractor extractor = new Extractor(tools, null, IEType.TOOL, expandCoordinates);
+		extractor.stringMatch(statisticsFile, inputConnection, outputConnection, maxCount,
+				startPos, fetchSize);
 		long after = System.currentTimeMillis();
-		double time = (((double) after - before)/1000)/60;
-		if(time > 60.0){
-			System.out.println("\nfinished matching in " + (time/60) +" hours");
+		double time = (((double) after - before) / 1000) / 60;
+		if (time > 60.0) {
+			log.info("finished matching in " + (time / 60) + " hours");
+		} else {
+			log.info("finished matching in " + time + " minutes");
 		}
-		else{
-			System.out.println("\nfinished matching in " + time +" minutes");
-		}
-	
+
 	}
 
+	private static void loadProperties(String folderPath) throws IOException {
+
+		File configFolder = new File(folderPath);
+
+		if (!configFolder.exists()) {
+			System.err.println("Config Folder " + folderPath + " does not exist."
+					+ "\nPlease change configuration and start again.");
+			System.exit(0);
+		}
+		
+		// initialize and load all properties files
+		String quenfoData = configFolder.getParent();		
+		PropertiesHandler.initialize(configFolder);
+		
+		
+		// get values from properties files
+		paraInputDB = quenfoData + "/sqlite/classification/" + PropertiesHandler.getStringProperty("general", "classifiedParagraphs");
+		
+		maxCount = PropertiesHandler.getIntProperty("matching", "queryLimit");
+		startPos = PropertiesHandler.getIntProperty("matching", "startPos");
+		fetchSize = PropertiesHandler.getIntProperty("matching", "fetchSize");
+		expandCoordinates = PropertiesHandler.getBoolProperty("matching", "expandCoordinates");
+		
+		String toolsFolder = quenfoData + "/resources/information_extraction/tools/";	
+		tools = new File(toolsFolder + PropertiesHandler.getStringProperty("matching", "tools"));	
+		
+		statisticsFile = new File(toolsFolder + PropertiesHandler.getStringProperty("matching", "toolMatchingStats"));
+		
+		toolMOutputFolder = quenfoData + "/sqlite/matching/tools/";
+		toolMOutputDB = PropertiesHandler.getStringProperty("matching", "toolMOutputDB");
+		
+	}
 }
