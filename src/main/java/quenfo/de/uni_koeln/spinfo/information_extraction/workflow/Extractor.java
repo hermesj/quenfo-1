@@ -266,8 +266,8 @@ public class Extractor {
 //			this.jobs = new IEJobs(entitiesFile, noEntitiesFile, modifier, contexts, type, resolveCoordinations,
 //					possCompoundsFile, splittedCompoundsFile);
 			// TODO JB: warum IEJobs neu instanziiert?
-			jobs.addKnownEntities(knownEntities);
-			jobs.addNoEntities(noEntities);
+//			jobs.addKnownEntities(knownEntities);
+//			jobs.addNoEntities(noEntities);
 		}
 		lemmatizer = null;
 		tagger = null;
@@ -279,7 +279,7 @@ public class Extractor {
 		} else {
 			// Speichern der Extraktionsergebnisse in der Output-DB
 			String outputPath = outputConnection.getMetaData().getURL().replace("jdbc:sqlite:", "");
-			log.info("write extracted " + type.name().toLowerCase() + "in output-DB " + outputPath);
+			log.info("write extracted " + type.name().toLowerCase() + " in output-DB " + outputPath);
 			IE_DBConnector.createExtractionOutputTable(outputConnection, type, true);
 			if (type == IEType.TOOL) {
 				IE_DBConnector.writeToolExtractions(allExtractions, outputConnection, true);
@@ -289,15 +289,12 @@ public class Extractor {
 			}
 
 		}
-		// schreibt die txt-Files (competences.txt & noCompetences.txt) neu, da
-		// zu Beginn evtl. neue manuell annotierte eingelesen wurden
-		// (eigentlich nicht mehr notwendig, da im BIBB nicht mehr manuell
-		// annotiert wird)
-		reWriteFiles();
+
 		if (possCompoundSplits.size() > 0) {
 			log.info("write new compounds to evaluate in: " + possCompoundsFile.getAbsolutePath());
 			writeNewCoordinations();
 		}
+		reWriteFiles();
 		return allExtractions;
 	}
 
@@ -428,8 +425,7 @@ public class Extractor {
 		}
 		return toReturn;
 	}
-
-	@Deprecated
+	
 	private void reWriteFiles() throws IOException {
 
 		if (!entitiesFile.exists()) {
@@ -465,6 +461,7 @@ public class Extractor {
 		}
 		out.close();
 	}
+
 
 	private void writeNewCoordinations() {
 		StringBuffer sb = new StringBuffer();

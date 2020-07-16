@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import quenfo.de.uni_koeln.spinfo.classification.core.data.DBMode;
 import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.IEType;
 import quenfo.de.uni_koeln.spinfo.information_extraction.db_io.IE_DBConnector;
@@ -60,11 +62,20 @@ public class MatchCompetences {
 	
 	// true, falls Koordinationen  in Informationseinheit aufgelöst werden sollen
 	static boolean expandCoordinates;
+	
+	static DBMode dbMode;
 
 	public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException {
 		
 		if (args.length > 0) {
 			String configPath = args[1];
+			try {
+				dbMode = DBMode.valueOf(args[2].toUpperCase());
+			} catch (RuntimeException e) { //IllegalArgumentException oder ArrayIndexOutOfBoundsException
+				System.out.println("No Database Mode set. Append results to existing DB.\n"
+						+ "To choose mode add 'overwrite' or 'append' to command line interface.");
+				dbMode = DBMode.APPEND;
+			}
 			loadProperties(configPath);
 		}
 		
@@ -83,11 +94,29 @@ public class MatchCompetences {
 			new File(outputFolder).mkdirs();
 		}
 		Connection outputConnection = IE_DBConnector.connect(outputFolder + outputDB);
-		IE_DBConnector.createExtractionOutputTable(outputConnection, ieType, false);
+		Statement stmt;
+		int outputSize = 0;
+		try {
+			outputConnection = IE_DBConnector.connect(outputFolder + outputDB);
+			stmt = outputConnection.createStatement();
+			
+			outputSize = stmt.executeQuery("SELECT COUNT (*) FROM Competences;").getInt(1);
+			stmt.close();
+		} catch (ClassNotFoundException e) {
+
+		} catch (SQLException e) {
+
+		}
+	
+		// Matching Table is empty OR mode=overwrite
+		if (outputSize == 0 || dbMode.equals(DBMode.OVERWRITE)) 
+				IE_DBConnector.createExtractionOutputTable(outputConnection, ieType, false);
+		
+		
 		
 		// Prüfe ob maxCount und startPos gültige Werte haben
 		String query = "SELECT COUNT(*) FROM ClassifiedParagraphs;";
-		Statement stmt = inputConnection.createStatement();
+		stmt = inputConnection.createStatement();
 		ResultSet countResult = stmt.executeQuery(query);
 		int tableSize = countResult.getInt(1);
 		stmt.close();

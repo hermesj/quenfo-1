@@ -1,9 +1,7 @@
 package quenfo.de.uni_koeln.spinfo.classification.jasc.workflow;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,7 +26,6 @@ import quenfo.de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 import quenfo.de.uni_koeln.spinfo.classification.jasc.preprocessing.ClassifyUnitSplitter;
 import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.classifier.RegexClassifier;
 import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.helpers.SingleToMultiClassConverter;
-import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.workflow.ExperimentSetupUI;
 import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.workflow.ZoneJobs;
 import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
 
@@ -36,7 +33,7 @@ public class ConfigurableDatabaseClassifier {
 	
 	private static Logger log = Logger.getLogger(ConfigurableDatabaseClassifier.class);
 
-	private Connection inputDb, origConnection;
+	private Connection inputDb, outputDb;
 	int queryLimit, fetchSize, currentId;
 
 	private String trainingDataFileName;
@@ -47,7 +44,7 @@ public class ConfigurableDatabaseClassifier {
 					throws IOException {
 		this.inputDb = inputDb;
 //		this.corrConnection = corrConnection;
-		this.origConnection = origConnection;
+		this.outputDb = origConnection;
 		this.queryLimit = queryLimit;
 		this.fetchSize = fetchSize;
 		this.currentId = currentId;
@@ -71,16 +68,6 @@ public class ConfigurableDatabaseClassifier {
 		classify(config, tableName);
 	}
 
-	@Deprecated
-	public void classify(StringBuffer sb, String tableName) throws ClassNotFoundException, IOException, SQLException {
-		// get ExperimentConfiguration
-		ExperimentSetupUI ui = new ExperimentSetupUI();
-		ExperimentConfiguration expConfig = ui.getExperimentConfiguration(trainingDataFileName);
-		if (sb != null) {
-			log.info("Configuration: " + sb.toString());
-		}
-		classify(expConfig, tableName);
-	}
 
 
 	private void classify(ExperimentConfiguration config, String tableName)
@@ -113,7 +100,9 @@ public class ConfigurableDatabaseClassifier {
 		// get data from db
 		int done = 0;
 		String query = null;
-		int zeilenNr = 0, jahrgang = 0;
+		int zeilenNr = 0;
+		String postingID;
+		int jahrgang = 0;
 		if (tableName.equals("jobs_textkernel"))
 			query = "SELECT ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM " + tableName + " WHERE LANG='de' LIMIT ? OFFSET ?;";
 		else
@@ -141,16 +130,17 @@ public class ConfigurableDatabaseClassifier {
 			queryLimit = rs.getInt(1);
 		}
 
-		boolean goOn = true;
-		boolean askAgain = true;	
+//		boolean goOn = true;
+//		boolean askAgain = true;	
 		
-		Map<Integer, String> unsplitted = new HashMap<>();
+//		Map<Integer, String> unsplitted = new HashMap<>();
 		
 
-		while (queryResult.next() && goOn) {			
+		while (queryResult.next()/* && goOn*/) {
 
 			String jobAd = null;
 			zeilenNr = queryResult.getInt("ZEILENNR");
+//			postingID = queryResult.getString("POSTINGID");
 			jahrgang = queryResult.getInt("Jahrgang");
 			jobAd = queryResult.getString("STELLENBESCHREIBUNG");
 			// if there is an empty job description, classifying is of no use,
@@ -180,10 +170,10 @@ public class ConfigurableDatabaseClassifier {
 
 			// 1. Split into paragraphs and create a ClassifyUnit per paragraph
 			Set<String> paragraphs = ClassifyUnitSplitter.splitIntoParagraphs(jobAd);		
-			if (paragraphs.size() == 1)
-				if (jobAd.length() > 450)
-					unsplitted.put(zeilenNr, jobAd);
-			
+//			if (paragraphs.size() == 1)
+//				if (jobAd.length() > 450)
+//					unsplitted.put(zeilenNr, jobAd);
+			//log.info(paragraphs.size() + " paragraphs");
 			
 			// if treat enc
 			if (config.getFeatureConfiguration().isTreatEncoding()) {
@@ -191,6 +181,7 @@ public class ConfigurableDatabaseClassifier {
 			}
 			List<ClassifyUnit> classifyUnits = new ArrayList<ClassifyUnit>();
 			for (String string : paragraphs) {
+//				classifyUnits.add(new JASCClassifyUnit(string, jahrgang, postingID));
 				classifyUnits.add(new JASCClassifyUnit(string, jahrgang, zeilenNr));
 			}
 			// prepare ClassifyUnits
@@ -218,46 +209,47 @@ public class ConfigurableDatabaseClassifier {
 				((JASCClassifyUnit) cu).setClassIDs(classified.get(cu));
 				results.add(cu);
 			}
-
-			Class_DBConnector.insertClassifiedParagraphsinDB(origConnection, results, jahrgang, zeilenNr);
+			Class_DBConnector.insertClassifiedParagraphsinDB(outputDb, results, jahrgang, zeilenNr);
+//			Class_DBConnector.insertClassifiedParagraphsinDB(outputDb, results, jahrgang, zeilenNr, postingID);
 			done++;
 
-
-			// time needed
-			if (done % fetchSize == 0) {
-				// continue?
-				if (askAgain) {
-
-					System.out.println(
-							"\n\n" + "continue (c),\n" + "don't interrupt again (d),\n" + "or stop (s) classifying?");
-
-					boolean answered = false;
-					while (!answered) {
-						BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-						String answer = in.readLine();
-
-						if (answer.toLowerCase().trim().equals("c")) {
-							goOn = true;
-							answered = true;
-							log.info("...classifying...");
-						} else if (answer.toLowerCase().trim().equals("d")) {
-							goOn = true;
-							askAgain = false;
-							answered = true;
-							log.info("...classifying...");
-						} else if (answer.toLowerCase().trim().equals("s")) {
-							goOn = false;
-							answered = true;
-						} else {
-							System.out.println("C: invalid answer! please try again...");
-							System.out.println();
-						}
-					}
-				}
-			}
+			if (done % fetchSize == 0)
+				log.info(done + " Anzeigen bearbeitet");
+//			// time needed
+//			if (done % fetchSize == 0) {
+//				// continue?
+//				if (askAgain) {
+//
+//					System.out.println(
+//							"\n\n" + "continue (c),\n" + "don't interrupt again (d),\n" + "or stop (s) classifying?");
+//
+//					boolean answered = false;
+//					while (!answered) {
+//						BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+//						String answer = in.readLine();
+//
+//						if (answer.toLowerCase().trim().equals("c")) {
+//							goOn = true;
+//							answered = true;
+//							log.info("...classifying...");
+//						} else if (answer.toLowerCase().trim().equals("d")) {
+//							goOn = true;
+//							askAgain = false;
+//							answered = true;
+//							log.info("...classifying...");
+//						} else if (answer.toLowerCase().trim().equals("s")) {
+//							goOn = false;
+//							answered = true;
+//						} else {
+//							System.out.println("C: invalid answer! please try again...");
+//							System.out.println();
+//						}
+//					}
+//				}
+//			}
 		
 		}
-		Class_DBConnector.writeUnsplittedJobAds(origConnection, unsplitted);		
+//		Class_DBConnector.writeUnsplittedJobAds(origConnection, unsplitted);		
 	}
 
 

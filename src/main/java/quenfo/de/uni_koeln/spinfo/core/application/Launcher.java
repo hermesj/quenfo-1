@@ -23,24 +23,24 @@ public class Launcher {
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
 		
-		switch (args[0]) {
+		switch (args[0].toLowerCase()) {
 		case "classify":
 			log.info("--- Classification starts ---");
 			ClassifyDatabase.main(args);
 			break;
-		case "extractCompetences":
+		case "extractcompetences":
 			log.info("--- Extracting competences starts ---");
 			ExtractNewCompetences.main(args);
 			break;
-		case "extractTools":
+		case "extracttools":
 			log.info("--- Extracting tools starts ---");
 			ExtractNewTools.main(args);
 			break;
-		case "matchCompetences":
+		case "matchcompetences":
 			log.info("--- Matching competences starts ---");
 			MatchCompetences.main(args);
 			break;
-		case "matchTools":
+		case "matchtools":
 			log.info("--- Matching tools starts ---");
 			MatchTools.main(args);
 			break;

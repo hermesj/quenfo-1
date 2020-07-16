@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
+import quenfo.de.uni_koeln.spinfo.classification.core.data.DBMode;
 import quenfo.de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 
 public class Class_DBConnector {
@@ -59,15 +60,26 @@ public class Class_DBConnector {
 		connection.commit();
 		
 	}
+	
+	public static void dropOutput(Connection connection) throws SQLException {
+		connection.setAutoCommit(false);
+		Statement stmt = connection.createStatement();
+		stmt.executeUpdate("DELETE FROM ClassifiedParagraphs");
+		stmt.close();
+		connection.commit();
+	}
 
 
-	public static void createClassificationOutputTables(Connection connection/*, boolean correctable*/)
+	public static void createClassificationOutputTables(Connection connection, DBMode dbMode/*, boolean correctable*/)
 			throws SQLException {
 		StringBuffer sql;
 		connection.setAutoCommit(false);
 		Statement stmt = connection.createStatement();
-		sql = new StringBuffer("DROP TABLE IF EXISTS ClassifiedParagraphs");
-		stmt.executeUpdate(sql.toString());
+		if (dbMode.equals(DBMode.OVERWRITE)) {
+			stmt.executeUpdate("DROP TABLE IF EXISTS ClassifiedParagraphs");
+			connection.commit();
+		}
+			
 		sql = new StringBuffer("CREATE TABLE ClassifiedParagraphs" + "(ID INTEGER PRIMARY KEY AUTOINCREMENT , "
 				+ " Text TEXT, " + " Jahrgang 	INT		NOT NULL, " + " ZEILENNR	INT		NOT	NULL, "
 				+ " ClassONE   	INT     NOT NULL, " + " ClassTWO    INT    	NOT NULL, "
@@ -121,6 +133,11 @@ public class Class_DBConnector {
 		
 		try {
 			connection.setAutoCommit(false);
+//			if (overwrite) {
+//				PreparedStatement delete = connection.prepareStatement("DELETE FROM ClassifiedParagraphs");
+//				delete.execute();
+//			}
+
 			Statement stmt = connection.createStatement();
 			PreparedStatement prepStmt;
 			prepStmt = connection.prepareStatement(
@@ -131,6 +148,7 @@ public class Class_DBConnector {
 				prepStmt.setString(1, cu.getContent());
 				prepStmt.setInt(2, jahrgang);
 				prepStmt.setInt(3, zeilennummer);
+//				prepStmt.setString(4, postingID);
 				for (int classID = 0; classID <= 3; classID++) {
 					if (classIDs[classID]) {
 						booleanRpl = 1;
@@ -197,26 +215,6 @@ public class Class_DBConnector {
 		return null;
 	}
 
-	//Nicht mehr in Gebrauch
-	@Deprecated
-	public static void updateTrainingData(Connection connection, Map<ClassifyUnit, int[]> td) throws SQLException {
-		connection.setAutoCommit(false);
-		String sql = "INSERT OR REPLACE INTO Trainingdata (Jahrgang, ZEILENNR, Text, ClassONE, ClassTWO, ClassTHREE, ClassFOUR) VALUES (?,?,?,?,?,?,?)";
-		PreparedStatement prepStmt = connection.prepareStatement(sql);
-		for (ClassifyUnit cu : td.keySet()) {
-			prepStmt.setInt(1, ((JASCClassifyUnit) cu).getParentID());
-			prepStmt.setInt(2, ((JASCClassifyUnit) cu).getSecondParentID());
-			prepStmt.setString(3, cu.getContent());
-			prepStmt.setInt(4, td.get(cu)[0]);
-			prepStmt.setInt(5, td.get(cu)[1]);
-			prepStmt.setInt(6, td.get(cu)[2]);
-			prepStmt.setInt(7, td.get(cu)[3]);
-			prepStmt.executeUpdate();
-		}
-		prepStmt.close();
-		connection.commit();
-	}
-
 
 	@Deprecated
 	public static void writeInputDB(SortedMap<Integer, String> jobAds,Connection connection) throws SQLException {
@@ -231,4 +229,6 @@ public class Class_DBConnector {
 		stmt.close();
 		connection.commit();
 	}
+
+
 }

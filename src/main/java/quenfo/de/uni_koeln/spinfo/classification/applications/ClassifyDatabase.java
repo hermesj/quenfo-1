@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
+
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.AbstractClassifier;
+import quenfo.de.uni_koeln.spinfo.classification.core.data.DBMode;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.FeatureUnitConfiguration;
 import quenfo.de.uni_koeln.spinfo.classification.core.distance.Distance;
@@ -24,8 +27,7 @@ import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
  * 
  *  Die Klassifikation kann in den config-Files general.properties und classification.properties konfiguriert werden.<br><br>
  *  
- *  Es werden zunächst [fetchSize] Anzeigen bearbeitet. Danach kann im Konsolen-Dialog ausgewählt werden, ob man
- *  das Programm stoppen (s), die nächsten [fetchSize] Stellenanzeigen verarbeiten (c), oder ohne Unterbrechung zu Ende klassifizieren lässt (d).
+ *  Es werden immer [fetchSize] Anzeigen bearbeitet, für die anschließend direkt das Ergebnis in die Datenbank überführt wird.
  * 
  * 
  * 
@@ -79,11 +81,22 @@ public class ClassifyDatabase {
 	static int miScore = 0;
 
 	static boolean suffixTree = false;
+	
+	static DBMode dbMode;
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
+	
 
 		if (args.length > 0) {
 			String configFolder = args[1];
+			try {
+				dbMode = DBMode.valueOf(args[2].toUpperCase());
+			} catch (RuntimeException e) { //IllegalArgumentException oder ArrayIndexOutOfBoundsException
+				System.out.println("No Database Mode set. Append results to existing DB.\n"
+						+ "To choose mode add 'overwrite' or 'append' to command line interface.");
+				dbMode = DBMode.APPEND;
+			}
+			
 			loadProperties(configFolder);
 		}
 
@@ -104,6 +117,10 @@ public class ClassifyDatabase {
 		// if outputdatabase already exists
 		if (outputDBFile.exists()) {
 			outputConnection = Class_DBConnector.connect(outputDBFile.getPath());// (outputFolder + origOutputDB);
+			
+			if(dbMode.equals(DBMode.OVERWRITE)) {
+				Class_DBConnector.dropOutput(outputConnection);
+			}
 		}
 
 		// if output database does not exist
@@ -113,7 +130,7 @@ public class ClassifyDatabase {
 				new File(outputFolder).mkdirs();
 			}
 			outputConnection = Class_DBConnector.connect(outputDBFile.getPath());
-			Class_DBConnector.createClassificationOutputTables(outputConnection/* , false */);
+			Class_DBConnector.createClassificationOutputTables(outputConnection, dbMode/* , false */);
 		}
 
 

@@ -63,9 +63,6 @@ public class IE_DBConnector {
 			sql = "DROP TABLE IF EXISTS Competences";
 		}
 		
-//		if (type == IEType.COMPETENCE_IN_3) {
-//			sql = "DROP TABLE IF EXISTS Competences";
-//		}
 		
 		stmt.executeUpdate(sql);
 		if (correctable) {
@@ -73,7 +70,6 @@ public class IE_DBConnector {
 				sql = "CREATE TABLE Tools (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, Zeilennr INT NOT NULL, ParaID TEXT NOT NULL, Sentence TEXT NOT NULL, Tool TEXT NOT NULL, Contexts TEXT NOT NULL, ContextDescriptions TEXT NOT NULL, isTool INT NOT NULL, Notes TEXT)";
 			}
 			else {
-//			if (type == IEType.COMPETENCE_IN_3) {
 				sql = "CREATE TABLE Competences (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, Zeilennr INT NOT NULL, ParaID TEXT NOT NULL, Sentence TEXT NOT NULL, Comp TEXT, Contexts INT, ContextDescriptions TEXT NOT NULL, isCompetence INT NOT NULL, Notes TEXT)";
 			}
 		} else {
@@ -81,7 +77,6 @@ public class IE_DBConnector {
 				sql = "CREATE TABLE Tools (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, Zeilennr INT NOT NULL, ParaID TEXT NOT NULL, SentenceID TEXT NOT NULL, Lemmata TEXT NOT NULL ,Sentence TEXT NOT NULL, Tool TEXT NOT NULL)";
 
 			} else {
-//			if (type == IEType.COMPETENCE_IN_3) {
 				sql = "CREATE TABLE Competences (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, Zeilennr INT NOT NULL, ParaID TEXT NOT NULL, SentenceID TEXT NOT NULL, Lemmata TEXT NOT NULL, Sentence TEXT NOT NULL, Label TEXT, Comp TEXT, Importance TEXT)";
 			}
 			
@@ -194,6 +189,7 @@ public class IE_DBConnector {
 			boolean correctable) throws SQLException {
 		Set<String> types = new HashSet<String>();
 		connection.setAutoCommit(false);
+		
 		PreparedStatement prepStmt;
 		if (correctable) {
 			// für den Output der Extraktions-Workflows
