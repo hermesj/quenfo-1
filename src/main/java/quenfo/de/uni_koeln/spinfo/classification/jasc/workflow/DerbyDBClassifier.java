@@ -13,7 +13,10 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+//import org.apache.log4j.Logger;
 
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
@@ -29,8 +32,9 @@ import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
 
 public class DerbyDBClassifier {
 
-	private Logger log = Logger.getLogger(DerbyDBClassifier.class);
-
+//	private Logger log = Logger.getLogger(DerbyDBClassifier.class);
+	private Logger log = LogManager.getLogger();
+	
 	private String trainingDataFileName;
 	private ZoneJobs jobs;
 

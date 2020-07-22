@@ -5,3 +5,4 @@
 /bin/
 
 /src/main/resources/nlp/openNLPmodels/
+*.ucls

@@ -15,7 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+//import org.apache.log4j.Logger;
 
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
@@ -31,8 +34,9 @@ import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
 
 public class ConfigurableDatabaseClassifier {
 	
-	private static Logger log = Logger.getLogger(ConfigurableDatabaseClassifier.class);
-
+//	private static Logger log = Logger.getLogger(ConfigurableDatabaseClassifier.class);
+	private Logger log = LogManager.getLogger();
+	
 	private Connection inputDb, outputDb;
 	int queryLimit, fetchSize, currentId;
 
@@ -100,11 +104,10 @@ public class ConfigurableDatabaseClassifier {
 		// get data from db
 		int done = 0;
 		String query = null;
-		int zeilenNr = 0;
-		String postingID;
+		String postingID = "";
 		int jahrgang = 0;
 		if (tableName.equals("jobs_textkernel"))
-			query = "SELECT ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM " + tableName + " WHERE LANG='de' LIMIT ? OFFSET ?;";
+			query = "SELECT POSTINGID, Jahrgang, STELLENBESCHREIBUNG FROM " + tableName + " WHERE LANG='de' LIMIT ? OFFSET ?;";
 		else
 			query = "SELECT ZEILENNR, Jahrgang, STELLENBESCHREIBUNG FROM " + tableName + " LIMIT ? OFFSET ?;";
 		
@@ -137,9 +140,14 @@ public class ConfigurableDatabaseClassifier {
 		
 
 		while (queryResult.next()/* && goOn*/) {
+			
+			/*
+			 *  TODO JB: improvement
+			 *  bereits klassifizierte Anzeigen schon vorher abfangen
+			 */
 
 			String jobAd = null;
-			zeilenNr = queryResult.getInt("ZEILENNR");
+			postingID = queryResult.getString("POSTINGID");
 //			postingID = queryResult.getString("POSTINGID");
 			jahrgang = queryResult.getInt("Jahrgang");
 			jobAd = queryResult.getString("STELLENBESCHREIBUNG");
@@ -148,7 +156,7 @@ public class ConfigurableDatabaseClassifier {
 			if (jobAd == null) {
 				System.out.println("________________________________________________________________");
 				System.out.println("JobAd ist null");
-				System.out.println("Zeilennummer: " + zeilenNr);
+				System.out.println("Zeilennummer: " + postingID);
 				System.out.println("Jahrgang: " + jahrgang);
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd 'at' HH:mm:ss ");
 				Date currentTime = new Date();
@@ -159,7 +167,7 @@ public class ConfigurableDatabaseClassifier {
 			if (jobAd.isEmpty()) {
 				System.out.println("__________________________________________________________________");
 				System.out.println(" JobAd ist leer!");
-				System.out.println("Zeilennummer: " + zeilenNr);
+				System.out.println("Zeilennummer: " + postingID);
 				System.out.println("Jahrgang: " + jahrgang);
 				SimpleDateFormat formatter = new SimpleDateFormat("yyyy.MM.dd 'at' HH:mm:ss ");
 				Date currentTime = new Date();
@@ -182,7 +190,7 @@ public class ConfigurableDatabaseClassifier {
 			List<ClassifyUnit> classifyUnits = new ArrayList<ClassifyUnit>();
 			for (String string : paragraphs) {
 //				classifyUnits.add(new JASCClassifyUnit(string, jahrgang, postingID));
-				classifyUnits.add(new JASCClassifyUnit(string, jahrgang, zeilenNr));
+				classifyUnits.add(new JASCClassifyUnit(string, jahrgang, postingID));
 			}
 			// prepare ClassifyUnits
 			classifyUnits = jobs.initializeClassifyUnits(classifyUnits);
@@ -209,8 +217,7 @@ public class ConfigurableDatabaseClassifier {
 				((JASCClassifyUnit) cu).setClassIDs(classified.get(cu));
 				results.add(cu);
 			}
-			Class_DBConnector.insertClassifiedParagraphsinDB(outputDb, results, jahrgang, zeilenNr);
-//			Class_DBConnector.insertClassifiedParagraphsinDB(outputDb, results, jahrgang, zeilenNr, postingID);
+			Class_DBConnector.insertClassifiedParagraphsinDB(outputDb, results, jahrgang, postingID);
 			done++;
 
 			if (done % fetchSize == 0)

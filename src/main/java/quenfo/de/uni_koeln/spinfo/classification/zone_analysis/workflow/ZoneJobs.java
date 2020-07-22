@@ -13,7 +13,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
@@ -37,8 +40,8 @@ import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
 
 public class ZoneJobs {
 
-	private static Logger log = Logger.getLogger(ZoneJobs.class);
-
+//	private static Logger log = Logger.getLogger(ZoneJobs.class);
+	private Logger log = LogManager.getLogger();
 	@Deprecated
 	public ZoneJobs() throws IOException {
 		log.info("ZoneJobs: Achtung - keine Translations gesetzt");
@@ -107,20 +110,19 @@ public class ZoneJobs {
 		ClassifyUnit cu;
 		while (result.next()) {
 			String content = result.getString(3);
-			int parentID = result.getInt(1);
-			int secondParentID = result.getInt(2);
+			int jahrgang = result.getInt(1);
+			String postingID = result.getString(2);
 			boolean[] classIDs = new boolean[stmc.getNumberOfCategories()];
 			for (int i = 0; i < stmc.getNumberOfCategories(); i++) {
 				classIDs[i] = parseIntToBool(result.getInt(4 + i));
 			}
 			JASCClassifyUnit.setNumberOfCategories(stmc.getNumberOfCategories(), stmc.getNumberOfClasses(),
 					stmc.getTranslations());
-			if (treatEncoding) {
-				cu = new JASCClassifyUnit(EncodingProblemTreatment.normalizeEncoding(content), parentID,
-						secondParentID);
-			} else {
-				cu = new JASCClassifyUnit(content, parentID, secondParentID);
-			}
+			if (treatEncoding)
+				content = EncodingProblemTreatment.normalizeEncoding(content);
+			
+			cu = new JASCClassifyUnit(content, jahrgang, postingID);
+
 			((JASCClassifyUnit) cu).setClassIDs(classIDs);
 			toReturn.add(cu);
 		}

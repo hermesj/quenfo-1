@@ -13,7 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+//import org.apache.log4j.Logger;
 
 import com.google.common.io.Files;
 
@@ -66,8 +69,8 @@ public class IEJobs {
 	private CoordinateExpander ce;
 
 	//private static Logger log = LoggerFactory.getLogger(IEJobs.class);
-	Logger log = Logger.getLogger(getClass());
-	
+//	Logger log = Logger.getLogger(getClass());
+	private Logger log = LogManager.getLogger();
 	/**
 	 * @param competences
 	 * @param noCompetences

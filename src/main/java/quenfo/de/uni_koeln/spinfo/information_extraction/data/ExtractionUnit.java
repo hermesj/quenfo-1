@@ -35,7 +35,7 @@ import lombok.ToString;
 
 @Entity
 @Data
-@EqualsAndHashCode(of = { "jobAdID", "secondJobAdID", "classifyUnitID", "sentence" })
+@EqualsAndHashCode(of = { "jobAdID", "postingID", "classifyUnitID", "sentence" })
 @ToString(of = { "sentence" })
 public class ExtractionUnit implements Serializable {
 	
@@ -85,9 +85,9 @@ public class ExtractionUnit implements Serializable {
 	 */
 	private int jobAdID;
 	/**
-	 * second ID of the containing JobAd (Zeilennummer)
+	 * second ID of the containing JobAd (former: Zeilennummer)
 	 */
-	private int secondJobAdID;
+	private String postingID;
 	/**
 	 * Tokens in this sentence
 	 */

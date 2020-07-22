@@ -39,12 +39,19 @@ public class JASCClassifyUnit extends ClassifyUnit {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long jpaID;
 	
-	private int parentID;
-	private int secondParentID = -1;
+	private int jahrgang;
+	/**
+	 * ID of containing jobad posting
+	 */
+	private String postingID = "";
 
 	private int actualClassID; //TODO JB: warum protected?
 	
 	private int tableID = -1;
+	
+	/**
+	 * String mit Sätzen (durch || getrennt)
+	 */
 	private String sentences;
 	
 	@Setter(AccessLevel.NONE)
@@ -62,19 +69,19 @@ public class JASCClassifyUnit extends ClassifyUnit {
 
 	public JASCClassifyUnit(String content, int parentID, UUID id) {
 		super(content,id);
-		this.parentID = parentID;
+		this.jahrgang = parentID;
 		setActualClassID(-1);
 	}
 
-	public JASCClassifyUnit(String content, int parentID, int secondParentID, UUID id, int actualClassID) {
+	public JASCClassifyUnit(String content, int jahrgang, String postingID, UUID id, int actualClassID) {
 		super(content,id);
-		this.parentID = parentID;
-		this.secondParentID = secondParentID;
+		this.jahrgang = jahrgang;
+		this.postingID = postingID;
 		setActualClassID(actualClassID);
 	}
 	
-	public JASCClassifyUnit(String content, int parentID, int secondParentID){
-		this(content, parentID, secondParentID, UUID.randomUUID(), -1);
+	public JASCClassifyUnit(String content, int jahrgang, String postingID){
+		this(content, jahrgang, postingID, UUID.randomUUID(), -1);
 	}
 	
 	public JASCClassifyUnit(String content, int parentID) {
@@ -88,8 +95,8 @@ public class JASCClassifyUnit extends ClassifyUnit {
 		this("",-1);
 	}
 
-	public JASCClassifyUnit(String string, int jahrgang, int zeilenNr, long jobAdJpaID) {
-		this(string, jahrgang, zeilenNr);
+	public JASCClassifyUnit(String string, int jahrgang, String postingID, long jobAdJpaID) {
+		this(string, jahrgang, postingID);
 		super.setJobAdJpaID(jobAdJpaID);
 	}
 	

@@ -3,7 +3,10 @@ package quenfo.de.uni_koeln.spinfo.core.application;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+//import org.apache.log4j.Logger;
 
 import quenfo.de.uni_koeln.spinfo.classification.applications.ClassifyDatabase;
 import quenfo.de.uni_koeln.spinfo.information_extraction.applications.ExtractNewCompetences;
@@ -19,8 +22,9 @@ import quenfo.de.uni_koeln.spinfo.information_extraction.applications.MatchTools
  */
 public class Launcher {
 	
-	static Logger log = Logger.getLogger(Launcher.class);
-
+//	static Logger log = Logger.getLogger(Launcher.class);
+	private static Logger log = LogManager.getLogger();
+	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
 		
 		switch (args[0].toLowerCase()) {

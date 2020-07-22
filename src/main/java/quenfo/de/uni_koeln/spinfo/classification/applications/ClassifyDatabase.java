@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.UUID;
 
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.AbstractClassifier;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.DBMode;
@@ -85,8 +85,7 @@ public class ClassifyDatabase {
 	static DBMode dbMode;
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
-	
-
+		
 		if (args.length > 0) {
 			String configFolder = args[1];
 			try {

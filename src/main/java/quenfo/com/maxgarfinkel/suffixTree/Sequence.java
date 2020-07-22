@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-import org.apache.log4j.Logger;
 
 /**
  * Represents a sequence of items. This plays the part of the string in a non
@@ -20,7 +19,6 @@ import org.apache.log4j.Logger;
 public class Sequence<I, S extends Iterable<I>> implements Iterable<Object> {
 
 	private List<Object> masterSequence = new ArrayList<Object>();
-	Logger logger = Logger.getLogger(getClass());
 
 	Sequence(){
 	}

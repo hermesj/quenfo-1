@@ -6,7 +6,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+//import org.apache.logging.log4j.LogManager;
+////import org.apache.log4j.core.Logger;
+//import org.apache.logging.log4j.core.Logger;
 
 import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.IEType;
@@ -26,8 +32,10 @@ import quenfo.de.uni_koeln.spinfo.information_extraction.workflow.Extractor;
  */
 public class MatchTools {
 
-	static Logger log = Logger.getLogger(MatchTools.class);
 
+//	static Logger log = LogManager.getLogger(MatchTools.class);//Logger.getLogger(MatchTools.class);
+	static Logger log = LogManager.getLogger();
+	
 	// Pfad zur Input-DB mit den klassifizierten Paragraphen
 	static String paraInputDB = null;
 

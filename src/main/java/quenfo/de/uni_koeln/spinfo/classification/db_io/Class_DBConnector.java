@@ -70,9 +70,9 @@ public class Class_DBConnector {
 	}
 
 
-	public static void createClassificationOutputTables(Connection connection, DBMode dbMode/*, boolean correctable*/)
+	public static void createClassificationOutputTables(Connection connection, DBMode dbMode)
 			throws SQLException {
-		StringBuffer sql;
+//		StringBuffer sql;
 		connection.setAutoCommit(false);
 		Statement stmt = connection.createStatement();
 		if (dbMode.equals(DBMode.OVERWRITE)) {
@@ -80,17 +80,22 @@ public class Class_DBConnector {
 			connection.commit();
 		}
 			
-		sql = new StringBuffer("CREATE TABLE ClassifiedParagraphs" + "(ID INTEGER PRIMARY KEY AUTOINCREMENT , "
-				+ " Text TEXT, " + " Jahrgang 	INT		NOT NULL, " + " ZEILENNR	INT		NOT	NULL, "
-				+ " ClassONE   	INT     NOT NULL, " + " ClassTWO    INT    	NOT NULL, "
-				+ " ClassTHREE  INT    	NOT NULL, " + " ClassFOUR  	INT    	NOT NULL)");
-		// if (correctable) {
-		// sql.append(", UseForTraining INT NOT NULL)");
-		// } else {
-		//
-		// sql.append(")");
-		// }
-		stmt.executeUpdate(sql.toString());
+//		sql = new StringBuffer("CREATE TABLE ClassifiedParagraphs" + "(ID INTEGER PRIMARY KEY AUTOINCREMENT , "
+//				+ " JAHRGANG 	INT		NOT NULL, " + " POSTINGID	TEXT	NOT	NULL, TEXT TEXT, "
+//				+ " ClassONE   	INT     NOT NULL, " + " ClassTWO    INT    	NOT NULL, "
+//				+ " ClassTHREE  INT    	NOT NULL, " + " ClassFOUR  	INT    	NOT NULL)");
+		
+		String query = "CREATE TABLE ClassifiedParagraphs (ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ " JAHRGANG INT NOT NULL, "
+				+ "POSTINGID TEXT NOT NULL, "
+				+ "PARAGRAPHID INT UNIQUE NOT NULL, "
+				+ "TEXT TEXT, "
+				+ "ClassONE INT NOT NULL, "
+				+ "ClassTWO INT NOT NULL, "
+				+ "ClassTHREE INT NOT NULL, "
+				+ "ClassFOUR INT NOT NULL)";
+
+		stmt.executeUpdate(query);
 		stmt.close();
 		connection.commit();
 
@@ -110,52 +115,37 @@ public class Class_DBConnector {
 		}
 	}
 
-	public static void createTrainingDataTable(Connection connection) throws SQLException {
-		String sql;
-		connection.setAutoCommit(false);
-		Statement stmt = connection.createStatement();
-		sql = "DROP TABLE IF EXISTS TrainingData";
-		stmt.executeUpdate(sql);
-		sql = "CREATE TABLE trainingData ( " + " ID	INTEGER	PRIMARY	KEY	AUTOINCREMENT ," + " Jahrgang	INT	NOT	NULL,"
-				+ " ZEILENNR INT NOT NULL, " + " Text TEXT, " + " ClassONE INT NOT NULL, " + " ClassTWO INT NOT NULL, "
-				+ " ClassTHREE INT NOT NULL, " + " ClassFOUR INT NOT NULL,"
-				+ "CONSTRAINT paragraph UNIQUE(Jahrgang, ZEILENNR, Text))";
-		stmt.executeUpdate(sql);
-		stmt.close();
-		connection.commit();
-		System.out.println("initialized new trainingData-Database");
-	}
-
-
+	/**
+	 * adds all paragraphs of one job ad to the output connection
+	 * @param connection output connection (classifiedParagraphs.db)
+	 * @param results splitted and classified paragraphs 
+	 * @param jahrgang year of job ad
+	 * @param postingID posting ID of job ad
+	 * @return
+	 */
 	public static boolean insertClassifiedParagraphsinDB(Connection connection, List<ClassifyUnit> results,
-			int jahrgang, int zeilennummer/*, boolean correctable*/) throws SQLException {
+			int jahrgang, String postingID) {
 		boolean[] classIDs;
-		
+		int paraID;
 		try {
 			connection.setAutoCommit(false);
-//			if (overwrite) {
-//				PreparedStatement delete = connection.prepareStatement("DELETE FROM ClassifiedParagraphs");
-//				delete.execute();
-//			}
 
 			Statement stmt = connection.createStatement();
 			PreparedStatement prepStmt;
 			prepStmt = connection.prepareStatement(
-					"INSERT INTO ClassifiedParagraphs (Text, Jahrgang, ZEILENNR, ClassONE,ClassTWO,ClassTHREE,ClassFOUR) VALUES(?,?,?,?,?,?,?)");
+					"INSERT INTO ClassifiedParagraphs (TEXT, JAHRGANG, POSTINGID, PARAGRAPHID, ClassONE,ClassTWO,ClassTHREE,ClassFOUR) VALUES(?,?,?,?,?,?,?,?)");
 			for (ClassifyUnit cu : results) {
-				int booleanRpl; // replaces true/false for saving into sqliteDB
+				int booleanRpl = 0; // replaces true/false for saving into sqliteDB
+				paraID = (((JASCClassifyUnit) cu).getPostingID() + cu.getContent()).hashCode();
 				classIDs = ((JASCClassifyUnit) cu).getClassIDs();
 				prepStmt.setString(1, cu.getContent());
 				prepStmt.setInt(2, jahrgang);
-				prepStmt.setInt(3, zeilennummer);
-//				prepStmt.setString(4, postingID);
+				prepStmt.setString(3, postingID);
+				prepStmt.setInt(4, paraID);
 				for (int classID = 0; classID <= 3; classID++) {
-					if (classIDs[classID]) {
-						booleanRpl = 1;
-					} else {
-						booleanRpl = 0;
-					}
-					prepStmt.setInt(4 + classID, booleanRpl);
+					if (classIDs[classID])
+						booleanRpl = 1;				
+					prepStmt.setInt(5 + classID, booleanRpl);
 				}
 				prepStmt.addBatch();
 			}
@@ -164,70 +154,12 @@ public class Class_DBConnector {
 			stmt.close();
 			connection.commit();
 			return true;
+			
 		} catch (SQLException e) {
-			System.out.println("\nFehler beim Schreiben: \n");
-//			boolean printIds = true;;
-			for (ClassifyUnit cu : results) {
-//				if(printIds){
-//					System.out.println("Zeilennr & Jahrgang: " + ((JASCClassifyUnit) cu).getParentID()+" "+ ((JASCClassifyUnit) cu).getSecondParentID()+"\n");
-//					printIds = false;
-//				}
-				
-				System.out.println(cu.getContent());
-			}
-			System.out.println("\n\n");
-			//outputConnection.rollback();
-			e.printStackTrace();
+			System.err.println("Fehler beim Schreiben von Stellenanzeige: " + postingID);
 			return false;
 		}
-
-	}
-
-
-	//Nicht mehr in Gebrauch
-	@Deprecated
-	public static Map<ClassifyUnit, int[]> getTrainingDataFromClassesCorrectable(Connection connection)
-			throws SQLException {
-		Map<ClassifyUnit, int[]> toReturn = new HashMap<ClassifyUnit, int[]>();
-		connection.setAutoCommit(false);
-		DatabaseMetaData dbmd = connection.getMetaData();
-		ResultSet tables = dbmd.getTables(null, null, "ClassifiedParagraphs", null);
-		if (tables.next()) {
-			String sql = "SELECT Jahrgang, ZEILENNR, Text, ClassONE, ClassTWO, ClassTHREE, ClassFOUR FROM ClassifiedParagraphs WHERE (UseForTraining = '1')";
-			Statement stmt = connection.createStatement();
-			ResultSet result = stmt.executeQuery(sql);
-			ClassifyUnit cu;
-			int[] classes;
-			while (result.next()) {
-				cu = new JASCClassifyUnit(result.getString(3), result.getInt(1), result.getInt(2));
-				classes = new int[4];
-				for (int i = 0; i < 4; i++) {
-					classes[i] = result.getInt(4 + i);
-				}
-				toReturn.put(cu, classes);
-			}
-			stmt.close();
-			connection.commit();
-			return toReturn;
-		}
-		tables.close();
-		connection.commit();
-		return null;
-	}
-
-
-	@Deprecated
-	public static void writeInputDB(SortedMap<Integer, String> jobAds,Connection connection) throws SQLException {
-		connection.setAutoCommit(false);
-		String sql = "INSERT INTO DL_ALL_Spinfo (ZEILENNR, Jahrgang, STELLENBESCHREIBUNG) VALUES(?,2011,?)";
-		PreparedStatement stmt = connection.prepareStatement(sql);
-		for (int i : jobAds.keySet()) {
-			stmt.setInt(1, i);
-			stmt.setString(2, jobAds.get(i));
-			stmt.executeUpdate();
-		}
-		stmt.close();
-		connection.commit();
+			
 	}
 
 

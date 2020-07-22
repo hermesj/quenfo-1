@@ -16,7 +16,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+//import org.apache.log4j.Logger;
 
 import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import quenfo.de.uni_koeln.spinfo.classification.db_io.Class_DBConnector;
@@ -47,8 +50,9 @@ import is2.tools.Tool;
  */
 public class Extractor {
 
-	Logger log = Logger.getLogger(getClass());
-
+//	Logger log = Logger.getLogger(getClass());
+	private Logger log = LogManager.getLogger();
+	
 	private IEJobs jobs;
 	private IEType type;
 	private Set<String> knownEntities = new HashSet<String>();

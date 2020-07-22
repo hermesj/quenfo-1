@@ -35,7 +35,7 @@ public class ExtractionUnitBuilder {
 			sentences = tokenizer.splitIntoSentences(cu.getContent());
 			long classifyUnitJpaID = ((JASCClassifyUnit) cu).getJpaID();
 			long jobAdJpaID = ((JASCClassifyUnit) cu).getJobAdJpaID();
-			int jahrgang = ((JASCClassifyUnit) cu).getParentID();
+			int jahrgang = ((JASCClassifyUnit) cu).getJahrgang();
 			
 //			System.out.println(classifyUnitJpaID + " " + jobAdJpaID);
 			
@@ -107,14 +107,14 @@ public class ExtractionUnitBuilder {
 					extractionUnit = new ExtractionUnit();
 
 					extractionUnit.setSentence(sentence);
-					extractionUnit.setJobAdID(((JASCClassifyUnit) cu).getParentID());
-					extractionUnit.setSecondJobAdID(((JASCClassifyUnit) cu).getSecondParentID()); //TODO SecondJob = JobAdJPA???
+					extractionUnit.setJobAdID(((JASCClassifyUnit) cu).getJahrgang());
+					extractionUnit.setPostingID(((JASCClassifyUnit) cu).getPostingID()); //TODO SecondJob = JobAdJPA???
 					extractionUnit.setClassifyUnitID(cu.getId());
 					extractionUnit.setClassifyUnitTableID(((JASCClassifyUnit) cu).getTableID());
 					Long jpaID = ((JASCClassifyUnit) cu).getJpaID();
 					if (jpaID != null)
 						extractionUnit.setClassifyUnitjpaID(jpaID);
-					extractionUnit.setJobAdID(((JASCClassifyUnit) cu).getParentID());
+					extractionUnit.setJobAdID(((JASCClassifyUnit) cu).getJahrgang());
 				
 					if (lemmata != null) {
 						extractionUnit.setLemmata(lemmata.get(i).split(" \\| "));

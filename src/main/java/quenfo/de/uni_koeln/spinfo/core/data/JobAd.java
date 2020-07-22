@@ -24,7 +24,7 @@ public class JobAd {
 	
 	@Lob
 	private String content;
-	private int zeilenNr;
+	private String zeilenNr;
 	private int jahrgang;
 	
 	/**
@@ -43,9 +43,9 @@ public class JobAd {
 		
 	}
 	
-	public JobAd(String content, int zeilenNr, int jahrgang) {
+	public JobAd(String content, String postingID, int jahrgang) {
 		this.content = content;
-		this.zeilenNr = zeilenNr;
+		this.zeilenNr = postingID;
 		this.jahrgang = jahrgang;
 	}
 	

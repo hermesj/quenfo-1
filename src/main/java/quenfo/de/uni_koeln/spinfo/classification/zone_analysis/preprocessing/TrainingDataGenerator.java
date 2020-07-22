@@ -73,8 +73,8 @@ public class TrainingDataGenerator {
 				line = in.readLine();
 			}	
 			StringBuffer content = new StringBuffer();
-			int parentID = 0;
-			int secondParentID = 0;
+			int jahrgang = 0;
+			String postingID = "";
 			UUID paragraphID = null;
 			int classID = 0;
 			while (line != null) {
@@ -85,7 +85,7 @@ public class TrainingDataGenerator {
 					classID != 0) {
 						JASCClassifyUnit utc = null;
 						if(splits.length == 3){
-							utc = new JASCClassifyUnit(content.toString(), parentID,secondParentID, paragraphID, classID);
+							utc = new JASCClassifyUnit(content.toString(), jahrgang,postingID, paragraphID, classID);
 						}
 //						else{
 //							System.out.println("2Spalten: " + line);
@@ -98,9 +98,9 @@ public class TrainingDataGenerator {
 					paragraphID = UUID.fromString(splits[0]);
 					if(splits.length == 3){
 						String[] parentIDs = splits[1].split("-");
-						parentID = Integer.parseInt(parentIDs[0]);
+						jahrgang = Integer.parseInt(parentIDs[0]);
 						if(parentIDs.length == 2){
-							secondParentID = Integer.parseInt(parentIDs[1]);
+							postingID = parentIDs[1];
 						}
 						classID = Integer.parseInt(splits[2]);
 					}
@@ -121,7 +121,7 @@ public class TrainingDataGenerator {
 			if (/** classes.length **/
 			classID != 0) {
 				JASCClassifyUnit utc = new JASCClassifyUnit(content.toString(),
-						parentID, secondParentID, paragraphID, classID);
+						jahrgang, postingID, paragraphID, classID);
 //				utc.setActualClassID(classID);
 				
 				classifiedData.add(utc);
@@ -281,7 +281,7 @@ public class TrainingDataGenerator {
 				for (ClassifyUnit unitToClassify : toWrite) {
 					out.print(unitToClassify.getId() + "\t");
 					if(unitToClassify instanceof JASCClassifyUnit){
-						out.print(((JASCClassifyUnit) unitToClassify).getParentID() +"-"+((JASCClassifyUnit) unitToClassify).getSecondParentID()+"\t");
+						out.print(((JASCClassifyUnit) unitToClassify).getJahrgang() +"-"+((JASCClassifyUnit) unitToClassify).getPostingID()+"\t");
 					}
 					out.print(( (JASCClassifyUnit) unitToClassify).getActualClassID()+"\n");
 					out.println(unitToClassify.getContent().trim().replaceAll("\t", " "));

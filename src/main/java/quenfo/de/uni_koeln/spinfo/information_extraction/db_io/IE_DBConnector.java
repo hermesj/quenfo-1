@@ -135,8 +135,8 @@ public class IE_DBConnector {
 			} else {
 				classID = 3;
 			}
-			classifyUnit = new JASCClassifyUnit(result.getString("Text"), result.getInt("Jahrgang"),
-					result.getInt("ZEILENNR"));
+			classifyUnit = new JASCClassifyUnit(result.getString("TEXT"), result.getInt("JAHRGANG"),
+					result.getString("POSTINGID"));
 			((JASCClassifyUnit) classifyUnit).setTableID(result.getInt("ID"));
 			((JASCClassifyUnit) classifyUnit).setActualClassID(classID);
 			try {
@@ -204,7 +204,7 @@ public class IE_DBConnector {
 		for (ExtractionUnit extractionUnit : extractions.keySet()) {
 			Map<InformationEntity, List<Pattern>> ies = extractions.get(extractionUnit);
 			int jahrgang = extractionUnit.getJobAdID();
-			int zeilennr = extractionUnit.getSecondJobAdID();
+			String postingID = extractionUnit.getPostingID();
 			String paraID;
 			try {
 				paraID = extractionUnit.getClassifyUnitID().toString();
@@ -238,7 +238,7 @@ public class IE_DBConnector {
 					types.add(expression);
 				}
 				prepStmt.setInt(1, jahrgang);
-				prepStmt.setInt(2, zeilennr);
+				prepStmt.setString(2, postingID);
 				prepStmt.setString(3, paraID);
 
 				if (correctable) {
@@ -303,7 +303,7 @@ public class IE_DBConnector {
 		for (ExtractionUnit extractionUnit : extractions.keySet()) {
 			Map<InformationEntity, List<Pattern>> ies = extractions.get(extractionUnit);
 			int jahrgang = extractionUnit.getJobAdID();
-			int zeilennr = extractionUnit.getSecondJobAdID();
+			String zeilennr = extractionUnit.getPostingID();
 			String paraID = extractionUnit.getClassifyUnitID().toString();
 			String sentence = extractionUnit.getSentence();
 			StringBuffer lemmata = null;
@@ -333,7 +333,7 @@ public class IE_DBConnector {
 				}
 
 				prepStmt.setInt(1, jahrgang);
-				prepStmt.setInt(2, zeilennr);
+				prepStmt.setString(2, zeilennr);
 				prepStmt.setString(3, paraID);
 				if (correctable) {
 					prepStmt.setString(4, sentence);
