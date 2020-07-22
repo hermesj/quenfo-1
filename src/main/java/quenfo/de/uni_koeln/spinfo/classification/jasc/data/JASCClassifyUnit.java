@@ -4,11 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Lob;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -27,7 +22,7 @@ import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.helpers.SingleToM
  * @author geduldia
  *
  */
-@Entity
+//@Entity
 //@Inheritance(strategy = InheritanceType.JOINED)
 //@MappedSuperclass
 @Data
@@ -35,8 +30,8 @@ import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.helpers.SingleToM
 @EqualsAndHashCode(of = {}, callSuper=true)
 public class JASCClassifyUnit extends ClassifyUnit {
 	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+//	@Id
+//	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long jpaID;
 	
 	private int jahrgang;
@@ -60,11 +55,11 @@ public class JASCClassifyUnit extends ClassifyUnit {
 	private static int NUMBEROFMULTICLASSES;
 	private static SingleToMultiClassConverter CONVERTER;
 	
-	@Lob
+//	@Lob
 	private String lemmata;
 	private String posTags;
 	
-	@Lob
+//	@Lob
 	private String tokens;
 
 	public JASCClassifyUnit(String content, int parentID, UUID id) {

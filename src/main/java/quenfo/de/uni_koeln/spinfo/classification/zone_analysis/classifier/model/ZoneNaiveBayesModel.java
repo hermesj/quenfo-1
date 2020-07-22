@@ -4,9 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.AbstractClassifier;
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.classifier.ZoneNaiveBayesClassifier;
@@ -17,8 +14,6 @@ import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.classifier.ZoneNa
  * model-object based on NaiveBayesClassifier
  *
  */
-@Entity
-@DiscriminatorValue(value="NB")
 public class ZoneNaiveBayesModel extends Model implements Serializable  {
 	
 

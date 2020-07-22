@@ -2,27 +2,21 @@ package quenfo.de.uni_koeln.spinfo.core.data;
 
 import java.util.List;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-@Entity
+//@Entity
 @Data
 @EqualsAndHashCode(of = {"zeilenNr"}) //TODO JB: equals auf jpaID?
 @ToString(of = {"zeilenNr"})
 public class JobAd {
 	
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+//	@Id
+//	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long jpaID;
 	
-	@Lob
+//	@Lob
 	private String content;
 	private String zeilenNr;
 	private int jahrgang;

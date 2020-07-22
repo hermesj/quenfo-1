@@ -5,14 +5,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.persistence.DiscriminatorColumn;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.MappedSuperclass;
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.AbstractClassifier;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.FeatureUnitConfiguration;
 import quenfo.de.uni_koeln.spinfo.classification.core.feature_engineering.feature_weighting.AbsoluteFrequencyFeatureQuantifier;
@@ -28,14 +20,14 @@ import quenfo.de.uni_koeln.spinfo.classification.core.feature_engineering.featur
  *  contains basic functionality of an model object
 **/
  
-@Entity
-@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name="type")
-@MappedSuperclass
+//@Entity
+//@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+//@DiscriminatorColumn(name="type")
+//@MappedSuperclass
 public  class Model implements Serializable{
 	
-	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+//	@Id
+//	@GeneratedValue(strategy=GenerationType.AUTO)
 	private long jpaID;
 	
 	

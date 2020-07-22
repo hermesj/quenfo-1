@@ -3,8 +3,7 @@ package quenfo.de.uni_koeln.spinfo.classification.core.data;
 import java.util.List;
 import java.util.UUID;
 
-import javax.persistence.Lob;
-import javax.persistence.MappedSuperclass;
+import com.j256.ormlite.table.DatabaseTable;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,13 +16,12 @@ import lombok.ToString;
  *         represents a basic classification-object
  *
  */
-@MappedSuperclass
+@DatabaseTable(tableName = "classifyunits")
 @Data
 @EqualsAndHashCode(of = { "id" })
 @ToString(of = { "id" })
 public class ClassifyUnit {
 
-	@Lob
 	protected String content;
 
 	protected UUID id;

@@ -5,13 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Lob;
-import javax.persistence.NamedQuery;
-
 import is2.data.SentenceData09;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -28,12 +21,12 @@ import lombok.ToString;
  *
  */
 
-@NamedQuery(
-		name = "getClassXExtractionUnits", 
-		query = "SELECT e FROM ExtractionUnit e JOIN JASCClassifyUnit  c ON e.classifyUnitjpaID = c.jpaID WHERE c.actualClassID = :class"		
-		)
-
-@Entity
+//@NamedQuery(
+//		name = "getClassXExtractionUnits", 
+//		query = "SELECT e FROM ExtractionUnit e JOIN JASCClassifyUnit  c ON e.classifyUnitjpaID = c.jpaID WHERE c.actualClassID = :class"		
+//		)
+//
+//@Entity
 @Data
 @EqualsAndHashCode(of = { "jobAdID", "postingID", "classifyUnitID", "sentence" })
 @ToString(of = { "sentence" })
@@ -45,13 +38,11 @@ public class ExtractionUnit implements Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+
 	private Long jpaID;
 
 	private UUID sentenceID;
 
-	@Lob
 	private String sentence;
 
 	// wird von den Mate-Tools produziert (enthält Lemmata, posTags und Tokens)
