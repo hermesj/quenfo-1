@@ -23,35 +23,35 @@ public class ExtractionUnitBuilder {
 	
 	
 	
-	public static List<ExtractionUnit> initializeFromDerby(List<ClassifyUnit> classifyUnits, Tool lemmatizer,
-			Tool morphTagger, Tool tagger) throws IOException {
-		
-		List<ExtractionUnit> extractionUnits = new ArrayList<ExtractionUnit>();
-		IETokenizer tokenizer = new IETokenizer();
-		List<String> sentences;
-		
-		
-		for (ClassifyUnit cu : classifyUnits) {
-			sentences = tokenizer.splitIntoSentences(cu.getContent());
-			long classifyUnitJpaID = ((JASCClassifyUnit) cu).getJpaID();
-			long jobAdJpaID = ((JASCClassifyUnit) cu).getJobAdJpaID();
-			int jahrgang = ((JASCClassifyUnit) cu).getJahrgang();
-			
-//			System.out.println(classifyUnitJpaID + " " + jobAdJpaID);
-			
-			for (String sentence : sentences) {
-				ExtractionUnit eu = new ExtractionUnit(sentence);
-				eu.setClassifyUnitjpaID(classifyUnitJpaID);
-				eu.setJobAdjpaID(jobAdJpaID);
-				eu.setJobAdID(jahrgang);
-				extractionUnits.add(eu);
-			}
-		}
-
-		MateTagger.setLexicalData(extractionUnits, lemmatizer, morphTagger, tagger);
-		classifyUnits = null;
-		return extractionUnits;
-	}
+//	public static List<ExtractionUnit> initializeFromDerby(List<ClassifyUnit> classifyUnits, Tool lemmatizer,
+//			Tool morphTagger, Tool tagger) throws IOException {
+//		
+//		List<ExtractionUnit> extractionUnits = new ArrayList<ExtractionUnit>();
+//		IETokenizer tokenizer = new IETokenizer();
+//		List<String> sentences;
+//		
+//		
+//		for (ClassifyUnit cu : classifyUnits) {
+//			sentences = tokenizer.splitIntoSentences(cu.getContent());
+////			long classifyUnitJpaID = ((JASCClassifyUnit) cu).getJpaID();
+//			long jobAdJpaID = ((JASCClassifyUnit) cu).getJobAdJpaID();
+//			int jahrgang = ((JASCClassifyUnit) cu).getJahrgang();
+//			
+////			System.out.println(classifyUnitJpaID + " " + jobAdJpaID);
+//			
+//			for (String sentence : sentences) {
+//				ExtractionUnit eu = new ExtractionUnit(sentence);
+////				eu.setClassifyUnitjpaID(classifyUnitJpaID);
+//				eu.setJobAdjpaID(jobAdJpaID);
+//				eu.setJobAdID(jahrgang);
+//				extractionUnits.add(eu);
+//			}
+//		}
+//
+//		MateTagger.setLexicalData(extractionUnits, lemmatizer, morphTagger, tagger);
+//		classifyUnits = null;
+//		return extractionUnits;
+//	}
 	
 	
 	
@@ -89,14 +89,14 @@ public class ExtractionUnitBuilder {
 			}
 			
 			
-			if (((JASCClassifyUnit) cu).getLemmata() != null) {
-				lemmata = Arrays.asList(((JASCClassifyUnit) cu).getLemmata().split("  \\|\\|  "));
+			if (cu.getLemmata() != null) {
+				lemmata = Arrays.asList(cu.getLemmata().split("  \\|\\|  "));
 			}
-			if (((JASCClassifyUnit) cu).getPosTags() != null) {
-				posTags = Arrays.asList(((JASCClassifyUnit) cu).getPosTags().split("  \\|\\|  "));
+			if (cu.getPosTags() != null) {
+				posTags = Arrays.asList(cu.getPosTags().split("  \\|\\|  "));
 			}
-			if (((JASCClassifyUnit) cu).getTokens() != null) {
-				tokens = Arrays.asList(((JASCClassifyUnit) cu).getTokens().split("  \\|\\|  "));
+			if (cu.getTokens() != null) {
+				tokens = Arrays.asList(cu.getTokens().split("  \\|\\|  "));
 			}
 			
 			
@@ -107,14 +107,15 @@ public class ExtractionUnitBuilder {
 					extractionUnit = new ExtractionUnit();
 
 					extractionUnit.setSentence(sentence);
-					extractionUnit.setJobAdID(((JASCClassifyUnit) cu).getJahrgang());
-					extractionUnit.setPostingID(((JASCClassifyUnit) cu).getPostingID()); //TODO SecondJob = JobAdJPA???
-					extractionUnit.setClassifyUnitID(cu.getId());
-					extractionUnit.setClassifyUnitTableID(((JASCClassifyUnit) cu).getTableID());
-					Long jpaID = ((JASCClassifyUnit) cu).getJpaID();
-					if (jpaID != null)
-						extractionUnit.setClassifyUnitjpaID(jpaID);
-					extractionUnit.setJobAdID(((JASCClassifyUnit) cu).getJahrgang());
+					extractionUnit.setJahrgang(cu.getJahrgang());
+					extractionUnit.setPostingID(cu.getPostingID()); //TODO SecondJob = JobAdJPA???
+//					extractionUnit.setClassifyUnitID(cu.getId());
+					extractionUnit.setParagraph(cu);
+					extractionUnit.setClassifyUnitTableID(cu.getTableID());
+//					Long jpaID = ((JASCClassifyUnit) cu).getJpaID();
+//					if (jpaID != null)
+//						extractionUnit.setClassifyUnitjpaID(jpaID);
+//					extractionUnit.setJobAdID(((JASCClassifyUnit) cu).getJahrgang());
 				
 					if (lemmata != null) {
 						extractionUnit.setLemmata(lemmata.get(i).split(" \\| "));

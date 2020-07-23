@@ -224,6 +224,7 @@ public class TrainingDataGenerator {
 	 * @param badDataFile
 	 * @throws IOException
 	 */
+	@Deprecated
 	public void filterUglyTrainingData(File newTrainingDataFile, File badDataFile) throws IOException {
 		getTrainingData();
 		List<ClassifyUnit> goodData = new ArrayList<ClassifyUnit>();
@@ -270,7 +271,7 @@ public class TrainingDataGenerator {
 	 * @param toWrite
 	 * @throws IOException
 	 */
-	public void writeTrainingDataFile(File trainingDataFile, List<ClassifyUnit> toWrite) throws IOException{
+	private void writeTrainingDataFile(File trainingDataFile, List<ClassifyUnit> toWrite) throws IOException{
 		if(! trainingDataFile.exists() ){
 			trainingDataFile.createNewFile();
 		}
@@ -279,7 +280,7 @@ public class TrainingDataGenerator {
 				PrintWriter out = new PrintWriter(new FileWriter(trainingDataFile));
 				out.write("deletions:"+deletions+"\n");
 				for (ClassifyUnit unitToClassify : toWrite) {
-					out.print(unitToClassify.getId() + "\t");
+					out.print(unitToClassify.hashCode() + "\t");
 					if(unitToClassify instanceof JASCClassifyUnit){
 						out.print(((JASCClassifyUnit) unitToClassify).getJahrgang() +"-"+((JASCClassifyUnit) unitToClassify).getPostingID()+"\t");
 					}

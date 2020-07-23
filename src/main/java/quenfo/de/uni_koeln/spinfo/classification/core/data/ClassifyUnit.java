@@ -5,8 +5,10 @@ import java.util.UUID;
 
 import com.j256.ormlite.table.DatabaseTable;
 
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -18,16 +20,29 @@ import lombok.ToString;
  */
 @DatabaseTable(tableName = "classifyunits")
 @Data
-@EqualsAndHashCode(of = { "id" })
-@ToString(of = { "id" })
+@EqualsAndHashCode(of = { "content", "jahrgang", "postingID" })
+@ToString(of = { "content" }) //TODO JB: toString classifyUnit
 public class ClassifyUnit {
+	
+	@Deprecated
+	protected UUID id;
+	
+	/**
+	 * publication year of jobad posting that contains this classify unit
+	 */
+	@Setter(AccessLevel.NONE)
+	private int jahrgang;
+	
+	/**
+	 * ID of jobad posting that contains this classify unit
+	 */
+	@Setter(AccessLevel.NONE)
+	private String postingID = "";
+	
+	private int tableID = -1;
 
 	protected String content;
 
-	protected UUID id;
-
-	// Derby ID der beihaltenden Stellenanzeige
-	private Long jobAdJpaID;
 
 	/**
 	 * list of features
@@ -38,29 +53,47 @@ public class ClassifyUnit {
 	 * weighted document vector
 	 */
 	private double[] featureVector;
+	
+	/**
+	 * String mit Sätzen (durch || getrennt)
+	 */
+	private String sentences;
+	
+	private String lemmata;
+	private String posTags;
+	private String tokens;
 
 	/**
-	 * default constructor for eclipseLink
+	 * default constructor for object relational mapping
 	 */
 	public ClassifyUnit() {
-		this("", UUID.randomUUID());
+		
+	}
+	
+	
+	/**
+	 * @param content
+	 * @param id
+	 * @param postingID 
+	 */
+	public ClassifyUnit(String content, UUID id, int jahrgang) {
+		this.id = id;
+		this.content = content;
+		this.jahrgang = jahrgang;
 	}
 
 	/**
 	 * @param content
 	 * @param id
+	 * @param postingID 
 	 */
-	public ClassifyUnit(String content, UUID id) {
+	public ClassifyUnit(String content, UUID id, int jahrgang, String postingID) {
 		this.id = id;
 		this.content = content;
+		this.postingID = postingID;
+		this.jahrgang = jahrgang;
 	}
 
-	/**
-	 * 
-	 * @param content
-	 */
-	public ClassifyUnit(String content) {
-		this(content, UUID.randomUUID());
-	}
+
 
 }

@@ -113,11 +113,11 @@
 
 
 		<!-- Databases -->
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
 			<version>${derby.version}</version>
-		</dependency>
+		</dependency>  -->
 
 		<dependency>
 			<groupId>org.xerial</groupId>

@@ -30,69 +30,46 @@ import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.helpers.SingleToM
 @EqualsAndHashCode(of = {}, callSuper=true)
 public class JASCClassifyUnit extends ClassifyUnit {
 	
-//	@Id
-//	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long jpaID;
-	
-	private int jahrgang;
-	/**
-	 * ID of containing jobad posting
-	 */
-	private String postingID = "";
 
-	private int actualClassID; //TODO JB: warum protected?
-	
-	private int tableID = -1;
-	
-	/**
-	 * String mit Sätzen (durch || getrennt)
-	 */
-	private String sentences;
-	
-	@Setter(AccessLevel.NONE)
-	boolean[] classIDs;
 	private static int NUMBEROFSINGLECLASSES;
 	private static int NUMBEROFMULTICLASSES;
 	private static SingleToMultiClassConverter CONVERTER;
 	
-//	@Lob
-	private String lemmata;
-	private String posTags;
+
+	@Setter(AccessLevel.NONE)
+	private int actualClassID; 
 	
-//	@Lob
-	private String tokens;
+	@Setter(AccessLevel.NONE)
+	boolean[] classIDs;
+	
+	
+	
+	
+	
+	
+	/**
+	 * default constructor for object relational mapping
+	 */
+	public JASCClassifyUnit() {
 
-	public JASCClassifyUnit(String content, int parentID, UUID id) {
-		super(content,id);
-		this.jahrgang = parentID;
-		setActualClassID(-1);
 	}
 
-	public JASCClassifyUnit(String content, int jahrgang, String postingID, UUID id, int actualClassID) {
-		super(content,id);
-		this.jahrgang = jahrgang;
-		this.postingID = postingID;
-		setActualClassID(actualClassID);
-	}
 	
 	public JASCClassifyUnit(String content, int jahrgang, String postingID){
 		this(content, jahrgang, postingID, UUID.randomUUID(), -1);
 	}
-	
-	public JASCClassifyUnit(String content, int parentID) {
-		this(content, parentID, UUID.randomUUID());
-	}
-	
-	/**
-	 * default constructor for jpa
-	 */
-	public JASCClassifyUnit() {
-		this("",-1);
-	}
 
-	public JASCClassifyUnit(String string, int jahrgang, String postingID, long jobAdJpaID) {
-		this(string, jahrgang, postingID);
-		super.setJobAdJpaID(jobAdJpaID);
+	/**
+	 * constructor for training data classify units
+	 * @param content
+	 * @param jahrgang
+	 * @param postingID
+	 * @param id
+	 * @param actualClassID
+	 */
+	public JASCClassifyUnit(String content, int jahrgang, String postingID, UUID id, int actualClassID) {
+		super(content,id, jahrgang, postingID);
+		setActualClassID(actualClassID);
 	}
 	
 	

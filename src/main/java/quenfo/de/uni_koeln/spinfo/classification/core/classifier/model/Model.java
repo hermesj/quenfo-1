@@ -28,7 +28,7 @@ public  class Model implements Serializable{
 	
 //	@Id
 //	@GeneratedValue(strategy=GenerationType.AUTO)
-	private long jpaID;
+//	private long jpaID;
 	
 	
 	private static final long serialVersionUID = 1L;

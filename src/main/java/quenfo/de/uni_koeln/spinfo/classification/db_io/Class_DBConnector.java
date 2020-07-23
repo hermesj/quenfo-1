@@ -131,7 +131,7 @@ public class Class_DBConnector {
 					"INSERT INTO ClassifiedParagraphs (TEXT, JAHRGANG, POSTINGID, PARAGRAPHID, ClassONE,ClassTWO,ClassTHREE,ClassFOUR) VALUES(?,?,?,?,?,?,?,?)");
 			for (ClassifyUnit cu : results) {
 				int booleanRpl = 0; // replaces true/false for saving into sqliteDB
-				paraID = (((JASCClassifyUnit) cu).getPostingID() + cu.getContent()).hashCode();
+				paraID = cu.hashCode();
 				classIDs = ((JASCClassifyUnit) cu).getClassIDs();
 				prepStmt.setString(1, cu.getContent());
 				prepStmt.setInt(2, jahrgang);

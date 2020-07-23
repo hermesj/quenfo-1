@@ -62,7 +62,7 @@ public class MateTagger {
 			}
 			
 			extractionUnit.setSentenceData(sd);
-			extractionUnit.setLexicalDataIsStoredInDB(lexicalDataIsStoredInDB);
+			extractionUnit.setLexicalDataStoredInDB(lexicalDataIsStoredInDB);
 
 		}
 

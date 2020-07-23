@@ -67,17 +67,17 @@ public class IE_DBConnector {
 		stmt.executeUpdate(sql);
 		if (correctable) {
 			if (type == IEType.TOOL) {
-				sql = "CREATE TABLE Tools (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, Zeilennr INT NOT NULL, ParaID TEXT NOT NULL, Sentence TEXT NOT NULL, Tool TEXT NOT NULL, Contexts TEXT NOT NULL, ContextDescriptions TEXT NOT NULL, isTool INT NOT NULL, Notes TEXT)";
+				sql = "CREATE TABLE Tools (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, POSTINGID TEXT NOT NULL, ParaID TEXT NOT NULL, Sentence TEXT NOT NULL, Tool TEXT NOT NULL, Contexts TEXT NOT NULL, ContextDescriptions TEXT NOT NULL, isTool INT NOT NULL, Notes TEXT)";
 			}
 			else {
-				sql = "CREATE TABLE Competences (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, Zeilennr INT NOT NULL, ParaID TEXT NOT NULL, Sentence TEXT NOT NULL, Comp TEXT, Contexts INT, ContextDescriptions TEXT NOT NULL, isCompetence INT NOT NULL, Notes TEXT)";
+				sql = "CREATE TABLE Competences (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, POSTINGID TEXT NOT NULL, ParaID TEXT NOT NULL, Sentence TEXT NOT NULL, Comp TEXT, Contexts INT, ContextDescriptions TEXT NOT NULL, isCompetence INT NOT NULL, Notes TEXT)";
 			}
 		} else {
 			if (type == IEType.TOOL) {
-				sql = "CREATE TABLE Tools (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, Zeilennr INT NOT NULL, ParaID TEXT NOT NULL, SentenceID TEXT NOT NULL, Lemmata TEXT NOT NULL ,Sentence TEXT NOT NULL, Tool TEXT NOT NULL)";
+				sql = "CREATE TABLE Tools (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, POSTINGID TEXT NOT NULL, ParaID TEXT NOT NULL, SentenceID TEXT NOT NULL, Lemmata TEXT NOT NULL ,Sentence TEXT NOT NULL, Tool TEXT NOT NULL)";
 
 			} else {
-				sql = "CREATE TABLE Competences (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, Zeilennr INT NOT NULL, ParaID TEXT NOT NULL, SentenceID TEXT NOT NULL, Lemmata TEXT NOT NULL, Sentence TEXT NOT NULL, Label TEXT, Comp TEXT, Importance TEXT)";
+				sql = "CREATE TABLE Competences (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, POSTINGID TEXT NOT NULL, ParaID TEXT NOT NULL, SentenceID TEXT NOT NULL, Lemmata TEXT NOT NULL, Sentence TEXT NOT NULL, Label TEXT, Comp TEXT, Importance TEXT)";
 			}
 			
 		}
@@ -137,22 +137,20 @@ public class IE_DBConnector {
 			}
 			classifyUnit = new JASCClassifyUnit(result.getString("TEXT"), result.getInt("JAHRGANG"),
 					result.getString("POSTINGID"));
-			((JASCClassifyUnit) classifyUnit).setTableID(result.getInt("ID"));
+			classifyUnit.setTableID(result.getInt("ID"));
 			((JASCClassifyUnit) classifyUnit).setActualClassID(classID);
 			try {
 				String sentences = result.getString("ExtractionUnits");
-				// System.out.println(sentences);
 				if (sentences != null && !(sentences.equals(""))) {
-					((JASCClassifyUnit) classifyUnit)
-							.setSentences((sentences.replace(" | ", " ").replace("<root> ", "")));
-					((JASCClassifyUnit) classifyUnit).setTokens(sentences);
+					classifyUnit.setSentences((sentences.replace(" | ", " ").replace("<root> ", "")));
+					classifyUnit.setTokens(sentences);
 				}
 			} catch (SQLException e) {
 			}
 			try {
 				String lemmata = result.getString("Lemmata");
 				if (lemmata != null && !lemmata.equals("")) {
-					((JASCClassifyUnit) classifyUnit).setLemmata(lemmata);
+					classifyUnit.setLemmata(lemmata);
 				}
 
 			} catch (SQLException e) {
@@ -161,7 +159,7 @@ public class IE_DBConnector {
 			try {
 				String posTags = result.getString("POSTags");
 				if (posTags != null && !posTags.equals("")) {
-					((JASCClassifyUnit) classifyUnit).setPosTags(posTags);
+					classifyUnit.setPosTags(posTags);
 				}
 
 			} catch (SQLException e) {
@@ -195,21 +193,24 @@ public class IE_DBConnector {
 			// für den Output der Extraktions-Workflows
 
 			prepStmt = connection.prepareStatement(
-					"INSERT INTO Competences (Jahrgang, Zeilennr, ParaID, Sentence, Comp, Contexts, ContextDescriptions, isCompetence) VALUES(?,?,?,?,?,?,?,-1)");
+					"INSERT INTO Competences (Jahrgang, POSTINGID, ParaID, Sentence, Comp, Contexts, ContextDescriptions, isCompetence) VALUES(?,?,?,?,?,?,?,-1)");
 		} else {
 			// Für den Output der Matching-Workflows
 			prepStmt = connection.prepareStatement(
-					"INSERT INTO Competences (Jahrgang, Zeilennr, ParaID, SentenceID, Lemmata, Sentence, Label, Comp,  Importance) VALUES(?,?,?,?,?,?,?,?,?)");
+					"INSERT INTO Competences (Jahrgang, POSTINGID, ParaID, SentenceID, Lemmata, Sentence, Label, Comp,  Importance) VALUES(?,?,?,?,?,?,?,?,?)");
 		}
 		for (ExtractionUnit extractionUnit : extractions.keySet()) {
 			Map<InformationEntity, List<Pattern>> ies = extractions.get(extractionUnit);
-			int jahrgang = extractionUnit.getJobAdID();
+			int jahrgang = extractionUnit.getJahrgang();
 			String postingID = extractionUnit.getPostingID();
-			String paraID;
+			int paraID;
 			try {
-				paraID = extractionUnit.getClassifyUnitID().toString();
+//				paraID = extractionUnit.getClassifyUnitID().toString();
+				paraID = extractionUnit.getParagraph().hashCode();
 			} catch (Exception e) {
-				paraID = extractionUnit.getClassifyUnitjpaID() + "";
+//				paraID = extractionUnit.getClassifyUnitjpaID() + "";
+				paraID = -1;
+				System.err.println("keine Parent ID: " + postingID);
 			}
 			String sentence = extractionUnit.getSentence();
 			StringBuffer lemmata = null;
@@ -239,7 +240,7 @@ public class IE_DBConnector {
 				}
 				prepStmt.setInt(1, jahrgang);
 				prepStmt.setString(2, postingID);
-				prepStmt.setString(3, paraID);
+				prepStmt.setInt(3, paraID);
 
 				if (correctable) {
 					prepStmt.setString(4, sentence);
@@ -294,17 +295,18 @@ public class IE_DBConnector {
 		PreparedStatement prepStmt;
 		if (correctable) {
 			prepStmt = connection.prepareStatement(
-					"INSERT INTO Tools (Jahrgang, Zeilennr, ParaID, Sentence, Tool, Contexts, ContextDescriptions, isTool) VALUES(?,?,?,?,?,?,?,-1)");
+					"INSERT INTO Tools (Jahrgang, POSTINGID, ParaID, Sentence, Tool, Contexts, ContextDescriptions, isTool) VALUES(?,?,?,?,?,?,?,-1)");
 		} else {
 			prepStmt = connection.prepareStatement(
-					"INSERT INTO Tools (Jahrgang, Zeilennr, ParaID, SentenceID, Lemmata, Sentence, Tool) VALUES(?,?,?,?,?,?,?)");
+					"INSERT INTO Tools (Jahrgang, POSTINGID, ParaID, SentenceID, Lemmata, Sentence, Tool) VALUES(?,?,?,?,?,?,?)");
 		}
 		Set<String> types = new HashSet<String>();
 		for (ExtractionUnit extractionUnit : extractions.keySet()) {
 			Map<InformationEntity, List<Pattern>> ies = extractions.get(extractionUnit);
-			int jahrgang = extractionUnit.getJobAdID();
+			int jahrgang = extractionUnit.getJahrgang();
 			String zeilennr = extractionUnit.getPostingID();
-			String paraID = extractionUnit.getClassifyUnitID().toString();
+//			String paraID = extractionUnit.getClassifyUnitID().toString();
+			int paraID = extractionUnit.getParagraph().hashCode();
 			String sentence = extractionUnit.getSentence();
 			StringBuffer lemmata = null;
 			if (!correctable) {
@@ -334,7 +336,7 @@ public class IE_DBConnector {
 
 				prepStmt.setInt(1, jahrgang);
 				prepStmt.setString(2, zeilennr);
-				prepStmt.setString(3, paraID);
+				prepStmt.setInt(3, paraID);
 				if (correctable) {
 					prepStmt.setString(4, sentence);
 					prepStmt.setString(5, ie.toString());
@@ -428,16 +430,17 @@ public class IE_DBConnector {
 	public static void upateClassifyUnits(Connection connection, List<ExtractionUnit> extractionUnits)
 			throws SQLException {
 		connection.setAutoCommit(false);
-		String sql = "UPDATE ClassifiedParagraphs SET ExtractionUnits = ?, Lemmata = ?, POSTags = ? WHERE ID = ?";
+		String sql = "UPDATE ClassifiedParagraphs SET ExtractionUnits = ?, Lemmata = ?, POSTags = ? WHERE PARAGRAPHID = ?";
 		PreparedStatement stmt = connection.prepareStatement(sql);
 		Map<Integer, StringBuffer> sentences = new HashMap<Integer, StringBuffer>();
 		Map<Integer, StringBuffer> lemmata = new HashMap<Integer, StringBuffer>();
 		Map<Integer, StringBuffer> posTags = new HashMap<Integer, StringBuffer>();
 		for (ExtractionUnit e : extractionUnits) {
-			if (e.isLexicalDataIsStoredInDB())
+			if (e.isLexicalDataStoredInDB())
 				continue;
-			int cuID = e.getClassifyUnitTableID();
-			StringBuffer sb = sentences.get(cuID);
+			int cuParaID = e.getClassifyUnitTableID();
+			// TODO JB !!! cuParaID mit paragraphID von ClassifyUnit belegen
+			StringBuffer sb = sentences.get(cuParaID);
 			if (sb == null)
 				sb = new StringBuffer();
 			else
@@ -447,9 +450,9 @@ public class IE_DBConnector {
 			}
 			sb.delete(sb.length() - 3, sb.length());
 			// sb.append(e.getSentence());
-			sentences.put(cuID, sb);
+			sentences.put(cuParaID, sb);
 
-			sb = lemmata.get(cuID);
+			sb = lemmata.get(cuParaID);
 			if (sb == null)
 				sb = new StringBuffer();
 			else
@@ -458,9 +461,9 @@ public class IE_DBConnector {
 				sb.append(lemma + " | ");
 			}
 			sb.delete(sb.length() - 3, sb.length());
-			lemmata.put(cuID, sb);
+			lemmata.put(cuParaID, sb);
 
-			sb = posTags.get(cuID);
+			sb = posTags.get(cuParaID);
 			if (sb == null)
 				sb = new StringBuffer();
 			else
@@ -469,7 +472,7 @@ public class IE_DBConnector {
 				sb.append(pos + " | ");
 			}
 			sb.delete(sb.length() - 3, sb.length());
-			posTags.put(cuID, sb);
+			posTags.put(cuParaID, sb);
 		}
 		for (Integer id : sentences.keySet()) {
 			stmt.setString(1, sentences.get(id).toString());

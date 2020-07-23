@@ -11,6 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 
 /**
  * @author geduldia
@@ -28,37 +29,50 @@ import lombok.ToString;
 //
 //@Entity
 @Data
-@EqualsAndHashCode(of = { "jobAdID", "postingID", "classifyUnitID", "sentence" })
+@EqualsAndHashCode(of = { "postingID", "classifyUnitID", "sentence" })
 @ToString(of = { "sentence" })
 public class ExtractionUnit implements Serializable {
 	
+
+	private static final long serialVersionUID = 1L;
 	
 	/**
-	 * 
+	 * first ID of the containing JobAd (Jahrgang)
 	 */
-	private static final long serialVersionUID = 1L;
+	private int jahrgang;
+	/**
+	 * second ID of the containing JobAd (former: Zeilennummer)
+	 */
+	private String postingID;
+	
+	/**
+	 * ID of the containing classifyUnit (paragraph)
+	 */
+	@Deprecated
+	private UUID classifyUnitID;
+	
+	private ClassifyUnit paragraph;
 
+	/**
+	 * ID of the containing classifyUnit in SQLite table
+	 */
+	private int classifyUnitTableID;
 
-	private Long jpaID;
-
+	/**
+	 * ID of this extractionUnit
+	 */
 	private UUID sentenceID;
 
+	/**
+	 * content of this extractionUnit
+	 */
 	private String sentence;
-
-	// wird von den Mate-Tools produziert (enthält Lemmata, posTags und Tokens)
-//	private SentenceData09 sentenceData = new SentenceData09();
-
-	// ID der beinhaltenden ClassifyUnit
-	private UUID classifyUnitID;
-
-	// Table-ID der beinhaltenden ClassifyUnit
-	private int classifyUnitTableID;
 	
-	// Derby ID der beinhaltenden ClassifyUnit
-	private long classifyUnitjpaID;
-	
-	// Derby ID der beinhaltenden Stellenanzeige
-	private long jobAdjpaID;
+	/**
+	 * Tokens in this sentence
+	 */
+	private List<TextToken> tokenObjects = new ArrayList<TextToken>();
+
 
 	@Getter(AccessLevel.NONE)
 	private String[] tokens;
@@ -68,26 +82,12 @@ public class ExtractionUnit implements Serializable {
 
 	@Getter(AccessLevel.NONE)
 	private String[] posTags;
-	//
-	private boolean lexicalDataIsStoredInDB;
 
-	/**
-	 * first ID of the containing JobAd (Jahrgang)
-	 */
-	private int jobAdID;
-	/**
-	 * second ID of the containing JobAd (former: Zeilennummer)
-	 */
-	private String postingID;
-	/**
-	 * Tokens in this sentence
-	 */
-	private List<TextToken> tokenObjects = new ArrayList<TextToken>();
+	
+	private boolean lexicalDataStoredInDB;
 
-	public ExtractionUnit(String sentence) {
-		this.sentenceID = UUID.randomUUID();
-		this.sentence = sentence;
-	}
+	
+
 
 	public ExtractionUnit() {
 		this.sentenceID = UUID.randomUUID();
@@ -99,8 +99,6 @@ public class ExtractionUnit implements Serializable {
 	public String[] getTokens() {
 		if (this.tokens != null)
 			return tokens;
-//		if (this.sentenceData != null)
-//			return sentenceData.forms;
 		return null;
 	}
 
@@ -110,8 +108,6 @@ public class ExtractionUnit implements Serializable {
 	public String[] getLemmata() {
 		if (this.lemmata != null)
 			return this.lemmata;
-//		if (this.sentenceData != null)
-//			return sentenceData.plemmas;
 		return null;
 	}
 
@@ -121,8 +117,6 @@ public class ExtractionUnit implements Serializable {
 	public String[] getPosTags() {
 		if (this.posTags != null)
 			return this.posTags;
-//		if (this.sentenceData != null)
-//			return sentenceData.ppos;
 		return null;
 	}
 
@@ -141,11 +135,7 @@ public class ExtractionUnit implements Serializable {
 	 * @param sentenceData
 	 */
 	public void setSentenceData(SentenceData09 sentenceData) {
-//		this.sentenceData = sentenceData;
 		TextToken token = null;
-//		String[] tokens = getTokens();
-//		String[] lemmas = getLemmata();
-//		String[] posTags = getPosTags();
 		
 		this.tokens = sentenceData.forms;
 		this.lemmata = sentenceData.plemmas;
@@ -165,7 +155,6 @@ public class ExtractionUnit implements Serializable {
 	}
 
 	public void deleteData() {
-//		this.sentenceData = null;
 		this.tokenObjects = null;
 	}
 

@@ -3,7 +3,6 @@ package quenfo.com.maxgarfinkel.suffixTree;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
 
 
 /**
@@ -28,7 +27,7 @@ public class Sequence<I, S extends Iterable<I>> implements Iterable<Object> {
 	 * 
 	 * @param sequence
 	 */
-	Sequence(S sequence, UUID id) {
+	Sequence(S sequence, int id) {
 		for(Object item : sequence)
 			masterSequence.add(item);
 		SequenceTerminal<S> sequenceTerminal = new SequenceTerminal<S>(sequence, id);
@@ -49,7 +48,7 @@ public class Sequence<I, S extends Iterable<I>> implements Iterable<Object> {
 	 * Adds a Sequence to the suffix tree. 
 	 * @param sequence
 	 */
-	void add(S sequence, UUID id){
+	void add(S sequence, int id){
 		for(I item : sequence){
 			masterSequence.add(item);
 		}

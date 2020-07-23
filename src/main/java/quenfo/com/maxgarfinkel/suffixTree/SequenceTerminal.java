@@ -1,7 +1,5 @@
 package quenfo.com.maxgarfinkel.suffixTree;
 
-import java.util.UUID;
-
 /**
  * Represents the terminating item of a sequence.
  * 
@@ -10,13 +8,13 @@ import java.util.UUID;
  */
 class SequenceTerminal<S> {
 	
-	UUID id;
+	int id;
 
 	private final S sequence;
 	
-	SequenceTerminal(S sequence, UUID id){
+	SequenceTerminal(S sequence, int id2){
 		this.sequence = sequence;
-		this.id = id;
+		this.id = id2;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -34,14 +32,14 @@ class SequenceTerminal<S> {
 	@Override
 	public String toString() {
 		//return "$"+sequence.toString()+"$";
-		return "$"+id.toString();
+		return "$"+id;
 	}
 	
 	public S getSequence(){
 		return sequence;
 	}
 	
-	public UUID getId(){
+	public int getId(){
 		return id;
 	}
 	

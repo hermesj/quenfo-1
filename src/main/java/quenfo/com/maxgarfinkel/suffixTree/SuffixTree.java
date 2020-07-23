@@ -1,7 +1,5 @@
 package quenfo.com.maxgarfinkel.suffixTree;
 
-import java.util.UUID;
-
 /**
  * A suffix tree implementation using Ukkonen's algorithm capable of generating a generialised suffix tree.
  * 
@@ -48,7 +46,7 @@ public class SuffixTree<I,S extends Iterable<I>> {
 	 *            tree.
 	 * @throws Exception
 	 */
-	public SuffixTree(S sequenceArray, UUID id) {
+	public SuffixTree(S sequenceArray, int id) {
 		nodeCounter=0;
 		sequence = new Sequence<I, S>(sequenceArray, id);
 		root = new Node<I,S>(null, this.sequence, this);
@@ -62,7 +60,7 @@ public class SuffixTree<I,S extends Iterable<I>> {
 	 * and added to the tree. 
 	 * @param sequence A sequence to be added.
 	 */
-	public void add(S sequence, UUID id){
+	public void add(S sequence, int id){
 		int start = currentEnd;
 		this.sequence.add(sequence, id);
 		suffix = new Suffix<I,S>(currentEnd,currentEnd,this.sequence);
