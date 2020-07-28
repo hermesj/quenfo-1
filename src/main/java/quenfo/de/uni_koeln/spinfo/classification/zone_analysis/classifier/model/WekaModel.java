@@ -5,6 +5,10 @@ import weka.core.Instances;
 
 public class WekaModel extends Model{
 	
+	/**
+	 * TODO Persistierung mit ORMLite
+	 */
+	
 	private static final long serialVersionUID = -3254990813492590623L;
 	
 	private Instances trainingData;

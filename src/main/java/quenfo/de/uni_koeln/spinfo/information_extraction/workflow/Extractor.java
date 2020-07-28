@@ -247,7 +247,7 @@ public class Extractor {
 			// falls bei der Initialisierung noch lexikaische Daten generiert
 			// werden mussten, werden diese fürs nächste Mal in der Input-DB
 			// gespeichert.
-			IE_DBConnector.upateClassifyUnits(inputConnection, extractionUnits);
+//			IE_DBConnector.upateClassifyUnits(inputConnection, extractionUnits);
 
 			// Informationsextraktion
 			jobs.annotateTokens(extractionUnits);

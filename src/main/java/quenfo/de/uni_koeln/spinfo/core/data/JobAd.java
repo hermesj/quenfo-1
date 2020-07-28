@@ -1,34 +1,45 @@
 package quenfo.de.uni_koeln.spinfo.core.data;
 
-import java.util.List;
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 //@Entity
+@DatabaseTable(tableName = "jobads")
 @Data
-@EqualsAndHashCode(of = {"zeilenNr"}) //TODO JB: equals auf jpaID?
-@ToString(of = {"zeilenNr"})
+@EqualsAndHashCode(of = {"postingID", "jahrgang"}) 
+@ToString(of = {"postingID", "jahrgang"})
 public class JobAd {
 	
 //	@Id
 //	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long jpaID;
+//	private long jpaID;
 	
 //	@Lob
-	private String content;
-	private String zeilenNr;
+	
+	@DatabaseField(uniqueCombo = true)
+	private String postingID;
+	
+	@DatabaseField(uniqueCombo = true)
 	private int jahrgang;
 	
-	/**
-	 * speichert mit welchen Konfigurationen vorverarbeitet wurde
-	 */
-	private String preprocessingConfig;
+	@DatabaseField()
+	private String language;
 	
-	private List<String> featureUnits;
+	@DatabaseField()
+	private String content;
 	
-	private double[] featureVector;
+//	/**
+//	 * speichert mit welchen Konfigurationen vorverarbeitet wurde
+//	 */
+//	private String preprocessingConfig;
+//	
+//	private List<String> featureUnits;
+//	
+//	private double[] featureVector;
 	
 	//private Vector sparseVector;
 	
@@ -39,7 +50,7 @@ public class JobAd {
 	
 	public JobAd(String content, String postingID, int jahrgang) {
 		this.content = content;
-		this.zeilenNr = postingID;
+		this.postingID = postingID;
 		this.jahrgang = jahrgang;
 	}
 	

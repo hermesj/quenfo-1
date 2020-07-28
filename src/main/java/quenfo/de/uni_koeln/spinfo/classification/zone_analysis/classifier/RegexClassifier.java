@@ -10,6 +10,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.support.ConnectionSource;
+
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.FeatureUnitConfiguration;
@@ -123,6 +126,22 @@ public class RegexClassifier extends ZoneAbstractClassifier {
 	public Model buildModel(List<ClassifyUnit> cus,
 			FeatureUnitConfiguration fuc, AbstractFeatureQuantifier fq,
 			File dataFile) {
+		return null;
+	}
+
+
+
+	@Override
+	public Dao<? extends Model, ?> getModelDao(ConnectionSource connection) {
+		//Regex Classifier has no model
+		return null;
+	}
+
+
+
+	@Override
+	public List<? extends Model> getPersistedModels(int configHash) {
+		//Regex Classifier has no model
 		return null;
 	}
 

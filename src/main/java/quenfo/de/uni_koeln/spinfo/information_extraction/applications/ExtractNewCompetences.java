@@ -145,7 +145,8 @@ public class ExtractNewCompetences {
 		ieType = PropertiesHandler.getSearchType("ie");
 
 
-		paraInputDB = quenfoData + "/sqlite/classification/" + PropertiesHandler.getStringProperty("general", "classifiedParagraphs");
+//		paraInputDB = quenfoData + "/sqlite/classification/" + PropertiesHandler.getStringProperty("general", "classifiedParagraphs");
+		paraInputDB = quenfoData + "/sqlite/orm/" + PropertiesHandler.getStringProperty("general", "orm_database");
 		
 		queryLimit = PropertiesHandler.getIntProperty("ie", "queryLimit");
 		startPos = PropertiesHandler.getIntProperty("ie", "startPos");

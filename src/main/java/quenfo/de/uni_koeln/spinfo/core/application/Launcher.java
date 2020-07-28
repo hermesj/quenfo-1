@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 //import org.apache.log4j.Logger;
 
 import quenfo.de.uni_koeln.spinfo.classification.applications.ClassifyDatabase;
+import quenfo.de.uni_koeln.spinfo.classification.applications.ClassifyORMLite;
 import quenfo.de.uni_koeln.spinfo.information_extraction.applications.ExtractNewCompetences;
 import quenfo.de.uni_koeln.spinfo.information_extraction.applications.ExtractNewTools;
 import quenfo.de.uni_koeln.spinfo.information_extraction.applications.MatchCompetences;
@@ -32,6 +33,10 @@ public class Launcher {
 			log.info("--- Classification starts ---");
 			ClassifyDatabase.main(args);
 			break;
+		case "classifyorm":
+			log.info("--- Classification with ORM starts ---");
+			ClassifyORMLite.main(args);
+			break;
 		case "extractcompetences":
 			log.info("--- Extracting competences starts ---");
 			ExtractNewCompetences.main(args);
@@ -51,6 +56,7 @@ public class Launcher {
 		default:
 			System.out.println(args[0] + " is not available. Please choose\n"
 					+ "classify\n"
+					+ "classifyORM\n"
 					+ "extractCompetences\n"
 					+ "extractTools\n"
 					+ "matchCompetences\n"

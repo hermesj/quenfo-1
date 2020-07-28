@@ -194,7 +194,7 @@ public class ExperimentSetupUI {
 			System.out.println("invalid answer! Please try again...");
 			chooseModel(in, outputFolder);
 		}
-		Model model = new Model();
+		Model model;// = new Model();
 		FileInputStream fis = new FileInputStream(modelFile);
 		ObjectInputStream ois = new ObjectInputStream(fis);
 		Object o = ois.readObject();

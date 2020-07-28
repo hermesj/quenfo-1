@@ -10,6 +10,12 @@ import java.util.Map;
  *
  */
 public class NaiveBayesClassModel implements Serializable{
+	
+	
+	/**
+	 * TODO Persistierung mit ORMLite
+	 */
+	
 	private static final long serialVersionUID = 1L;
 	private Map<String,Integer> inClassDFs;
 	private Map<String,Integer> notInClassDFs;

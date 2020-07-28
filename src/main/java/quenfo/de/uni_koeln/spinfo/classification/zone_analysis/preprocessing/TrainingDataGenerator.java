@@ -85,7 +85,7 @@ public class TrainingDataGenerator {
 					classID != 0) {
 						JASCClassifyUnit utc = null;
 						if(splits.length == 3){
-							utc = new JASCClassifyUnit(content.toString(), jahrgang,postingID, paragraphID, classID);
+							utc = new JASCClassifyUnit(content.toString(), jahrgang,postingID, classID);
 						}
 //						else{
 //							System.out.println("2Spalten: " + line);
@@ -121,7 +121,7 @@ public class TrainingDataGenerator {
 			if (/** classes.length **/
 			classID != 0) {
 				JASCClassifyUnit utc = new JASCClassifyUnit(content.toString(),
-						jahrgang, postingID, paragraphID, classID);
+						jahrgang, postingID, classID);
 //				utc.setActualClassID(classID);
 				
 				classifiedData.add(utc);
@@ -234,7 +234,10 @@ public class TrainingDataGenerator {
 		for (int i = 0; i < classifiedData.size(); i++) {
 			ClassifyUnit cu = classifiedData.get(i);
 			System.out.println(cu.getContent());
-			System.out.println(((JASCClassifyUnit) cu).getActualClassID());
+			for(boolean b : ((JASCClassifyUnit) cu).getClassIDs()) {
+				System.out.print(b + " ");
+			} 
+			System.out.println();
 			String answer = in.readLine();
 			if (answer.equals("y")) {
 				goodData.add(cu);
@@ -284,7 +287,7 @@ public class TrainingDataGenerator {
 					if(unitToClassify instanceof JASCClassifyUnit){
 						out.print(((JASCClassifyUnit) unitToClassify).getJahrgang() +"-"+((JASCClassifyUnit) unitToClassify).getPostingID()+"\t");
 					}
-					out.print(( (JASCClassifyUnit) unitToClassify).getActualClassID()+"\n");
+					out.print(( (JASCClassifyUnit) unitToClassify).transformToClassID()+"\n");
 					out.println(unitToClassify.getContent().trim().replaceAll("\t", " "));
 					out.println();
 				}

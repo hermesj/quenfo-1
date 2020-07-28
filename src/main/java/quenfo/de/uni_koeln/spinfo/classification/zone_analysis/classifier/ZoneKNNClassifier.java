@@ -1,12 +1,17 @@
  package quenfo.de.uni_koeln.spinfo.classification.zone_analysis.classifier;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.support.ConnectionSource;
 
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
@@ -70,7 +75,7 @@ public class ZoneKNNClassifier extends ZoneAbstractClassifier{
 	@Override
 	public Model buildModel(List<ClassifyUnit> cus, FeatureUnitConfiguration fuc, AbstractFeatureQuantifier fq, File dataFile){
 		Model model = new ZoneKNNModel();
-		    Map<double[], boolean[]> trainingdata = new HashMap<double[], boolean[]>();
+		    HashMap<double[], boolean[]> trainingdata = new HashMap<double[], boolean[]>();
 			for (ClassifyUnit classifyUnit : cus) {
 				trainingdata.put(classifyUnit.getFeatureVector(), ((JASCClassifyUnit) classifyUnit).getClassIDs());
 			}	
@@ -171,6 +176,30 @@ public class ZoneKNNClassifier extends ZoneAbstractClassifier{
 	 */
 	public String getClassifierConfig(){
 		return "k="+knn;
+	}
+
+	@Override
+	public Dao<? extends Model, ?> getModelDao(ConnectionSource connection) {
+		try {
+			super.modelDao = DaoManager.createDao(connection, ZoneKNNModel.class);
+			return super.modelDao;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+
+	@Override
+	public List<? extends Model> getPersistedModels(int configHash) {
+		try {
+			return super.modelDao.queryForEq("configHash", configHash);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return new ArrayList<ZoneKNNModel>();
+			
+		}
+
 	}
 
 

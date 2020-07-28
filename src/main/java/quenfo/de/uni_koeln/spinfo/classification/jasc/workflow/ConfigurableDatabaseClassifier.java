@@ -178,10 +178,6 @@ public class ConfigurableDatabaseClassifier {
 
 			// 1. Split into paragraphs and create a ClassifyUnit per paragraph
 			Set<String> paragraphs = ClassifyUnitSplitter.splitIntoParagraphs(jobAd);		
-//			if (paragraphs.size() == 1)
-//				if (jobAd.length() > 450)
-//					unsplitted.put(zeilenNr, jobAd);
-			//log.info(paragraphs.size() + " paragraphs");
 			
 			// if treat enc
 			if (config.getFeatureConfiguration().isTreatEncoding()) {
@@ -189,7 +185,6 @@ public class ConfigurableDatabaseClassifier {
 			}
 			List<ClassifyUnit> classifyUnits = new ArrayList<ClassifyUnit>();
 			for (String string : paragraphs) {
-//				classifyUnits.add(new JASCClassifyUnit(string, jahrgang, postingID));
 				classifyUnits.add(new JASCClassifyUnit(string, jahrgang, postingID));
 			}
 			// prepare ClassifyUnits
@@ -222,41 +217,9 @@ public class ConfigurableDatabaseClassifier {
 
 			if (done % fetchSize == 0)
 				log.info(done + " Anzeigen bearbeitet");
-//			// time needed
-//			if (done % fetchSize == 0) {
-//				// continue?
-//				if (askAgain) {
-//
-//					System.out.println(
-//							"\n\n" + "continue (c),\n" + "don't interrupt again (d),\n" + "or stop (s) classifying?");
-//
-//					boolean answered = false;
-//					while (!answered) {
-//						BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-//						String answer = in.readLine();
-//
-//						if (answer.toLowerCase().trim().equals("c")) {
-//							goOn = true;
-//							answered = true;
-//							log.info("...classifying...");
-//						} else if (answer.toLowerCase().trim().equals("d")) {
-//							goOn = true;
-//							askAgain = false;
-//							answered = true;
-//							log.info("...classifying...");
-//						} else if (answer.toLowerCase().trim().equals("s")) {
-//							goOn = false;
-//							answered = true;
-//						} else {
-//							System.out.println("C: invalid answer! please try again...");
-//							System.out.println();
-//						}
-//					}
-//				}
-//			}
 		
 		}
-//		Class_DBConnector.writeUnsplittedJobAds(origConnection, unsplitted);		
+		
 	}
 
 

@@ -7,7 +7,7 @@
 
 	<groupId>de.uni_koeln.spinfo</groupId>
 	<artifactId>quenfo</artifactId>
-	<version>1.0.1</version>
+	<version>1.1.0</version>
 
 	<name>quenfo</name>
 
@@ -109,15 +109,20 @@
 			<version>5.1</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/com.j256.ormlite/ormlite-jdbc -->
+		<dependency>
+			<groupId>com.j256.ormlite</groupId>
+			<artifactId>ormlite-jdbc</artifactId>
+			<version>5.1</version>
+		</dependency>
+
+
 
 
 
 		<!-- Databases -->
-		<!-- <dependency>
-			<groupId>org.apache.derby</groupId>
-			<artifactId>derby</artifactId>
-			<version>${derby.version}</version>
-		</dependency>  -->
+		<!-- <dependency> <groupId>org.apache.derby</groupId> <artifactId>derby</artifactId> 
+			<version>${derby.version}</version> </dependency> -->
 
 		<dependency>
 			<groupId>org.xerial</groupId>

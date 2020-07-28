@@ -3,8 +3,17 @@ package quenfo.de.uni_koeln.spinfo.classification.core.classifier.model;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 
+import com.j256.ormlite.field.DataType;
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.field.ForeignCollectionField;
+
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.AbstractClassifier;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.FeatureUnitConfiguration;
 import quenfo.de.uni_koeln.spinfo.classification.core.feature_engineering.feature_weighting.AbsoluteFrequencyFeatureQuantifier;
@@ -24,7 +33,8 @@ import quenfo.de.uni_koeln.spinfo.classification.core.feature_engineering.featur
 //@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
 //@DiscriminatorColumn(name="type")
 //@MappedSuperclass
-public  class Model implements Serializable{
+@Data
+public abstract class Model implements Serializable{
 	
 //	@Id
 //	@GeneratedValue(strategy=GenerationType.AUTO)
@@ -36,34 +46,56 @@ public  class Model implements Serializable{
 	/**
 	 * the trainingSet this model is based on
 	 */
+	@DatabaseField(dataType = DataType.SERIALIZABLE)
 	private File dataFile;
 	
 	/**
 	 * the used FeatureUnitConfiguration
 	 */
+	@DatabaseField(dataType = DataType.SERIALIZABLE)
 	private FeatureUnitConfiguration fuc;
+	
+	@DatabaseField(dataType = DataType.SERIALIZABLE)
+	private String[] fUOrderArray;
 	
 	/**
 	 * order of the FeatureUnits (translation of the Vector-Dimensions)
 	 */
+//	@DatabaseField(dataType = DataType.SERIALIZABLE)
+	@Setter(AccessLevel.NONE)
+	@Getter(AccessLevel.NONE)
 	private List<String> fUOrder;
 	
 	/**
 	 * name of the corresponding classifier
 	 */
+	@DatabaseField(dataType = DataType.STRING)
 	protected String classifierName;
 	
 	/**
 	 * name of the used FeatureQuantifier
 	 */
+	@DatabaseField(dataType = DataType.STRING)
 	private String fQName;
 	
-	
+	@DatabaseField(unique = true)
 	private int configHash;
 	
 	
+	public void setFUOrder(List<String> fUOrder) {		
+		this.fUOrder = fUOrder;
+		this.fUOrderArray = new String[fUOrder.size()];
+		this.fUOrderArray = fUOrder.toArray(fUOrderArray);
+	}
 	
 	
+	public List<String> getFUOrder() {
+		if (fUOrder == null)
+			fUOrder = Arrays.asList(fUOrderArray);
+		
+		return fUOrder;
+	}
+
 	
 	/**
 	 * @return  an instance of the used FeatureQuantifier (specified in FQName)
@@ -88,95 +120,14 @@ public  class Model implements Serializable{
 		
 		return null;
 	}
-	
-	
-	
 
-	/**
-	 * @return the trainingdata-file this model is based on
-	 */
-	public File getDataFile() {
-		return dataFile;
-	}
 
-	/**
-	 * set training-data file for model
-	 * @param dataFile
-	 */
-	public void setDataFile(File dataFile) {
-		this.dataFile = dataFile;
-	}
 
-	/**
-	 * @return the featureUnitConfiguration this model is based on
-	 */
-	public FeatureUnitConfiguration getFuc() {
-		return fuc;
-	}
-
-	/**
-	 * set a FeatureUnitConfiguration
-	 * @param fuc
-	 */
-	public void setFuc(FeatureUnitConfiguration fuc) {
-		this.fuc = fuc;
-	}
-
-	/**
-	 * @return featureUnitOrder of model
-	 */
-	public List<String> getFUOrder() {
-		return fUOrder;
-	}
-
-	/**
-	 * set the featureUnitOrder 
-	 * @param fUOrder
-	 */
-	public void setFUOrder(List<String> fUOrder) {
-		this.fUOrder = fUOrder;
-	}
-
-	/**
-	 * @return name of the classifier this model is based on
-	 */
-	public String getClassifierName() {
-		return classifierName;
-	}
-
-	/**
-	 * set a classifier(-name) 
-	 * @param classifierName
-	 */
-	public void setClassifierName(String classifierName) {
-		this.classifierName = classifierName;
-	}
-
-	/**
-	 * @return name of the FeatureQuantifier this model is based on
-	 */
-	public String getFQName() {
-		return fQName;
-	}
-
-	/**
-	 * set a FeatureQuantifier(-name)
-	 * @param fQName
-	 */
-	public void setFQName(String fQName) {
-		this.fQName = fQName;
-	}
 	
 	public  AbstractClassifier getClassifier(){
 		return null;
 	}
 
 
-	public int getConfigHash() {
-		return configHash;
-	}
 
-	public void setConfigHash(int configHash) {
-		this.configHash = configHash;
-	}
 }

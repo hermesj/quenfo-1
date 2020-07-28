@@ -3,6 +3,10 @@ package quenfo.de.uni_koeln.spinfo.classification.zone_analysis.classifier.model
 import java.util.HashMap;
 import java.util.Map;
 
+import com.j256.ormlite.field.DataType;
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.AbstractClassifier;
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.classifier.ZoneKNNClassifier;
@@ -13,6 +17,7 @@ import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.classifier.ZoneKN
  * a model-object based on the KNNClassifier
  *
  */
+@DatabaseTable
 public class ZoneKNNModel extends Model {
 	
 	
@@ -20,7 +25,8 @@ public class ZoneKNNModel extends Model {
 
 	private static final long serialVersionUID = 1L;
 	
-	private Map<double[], boolean[]> trainingData = new HashMap<double[], boolean[]>();
+	@DatabaseField(dataType = DataType.SERIALIZABLE)
+	private HashMap<double[], boolean[]> trainingData = new HashMap<double[], boolean[]>();
 	
 	
 	
@@ -37,7 +43,7 @@ public class ZoneKNNModel extends Model {
 	/**
 	 * @param trainingData
 	 */
-	public void setTrainingData(Map<double[], boolean[]> trainingData){
+	public void setTrainingData(HashMap<double[], boolean[]> trainingData){
 		this.trainingData = trainingData;
 	}
 

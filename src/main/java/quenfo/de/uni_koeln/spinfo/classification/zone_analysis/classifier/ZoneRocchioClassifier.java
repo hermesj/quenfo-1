@@ -1,7 +1,13 @@
 package quenfo.de.uni_koeln.spinfo.classification.zone_analysis.classifier;
 
 import java.io.File;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.support.ConnectionSource;
 
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.model.Model;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
@@ -10,6 +16,7 @@ import quenfo.de.uni_koeln.spinfo.classification.core.distance.Distance;
 import quenfo.de.uni_koeln.spinfo.classification.core.distance.DistanceCalculator;
 import quenfo.de.uni_koeln.spinfo.classification.core.feature_engineering.feature_weighting.AbstractFeatureQuantifier;
 import quenfo.de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
+import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.classifier.model.ZoneKNNModel;
 import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.classifier.model.ZoneRocchioModel;
 
 /**
@@ -171,6 +178,28 @@ public class ZoneRocchioClassifier extends ZoneAbstractClassifier {
 
 		}
 		return toReturn;
+	}
+
+	@Override
+	public Dao<? extends Model, ?> getModelDao(ConnectionSource connection) {
+		try {
+			super.modelDao = DaoManager.createDao(connection, ZoneRocchioModel.class);
+			return super.modelDao;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	@Override
+	public List<? extends Model> getPersistedModels(int configHash) {
+		try {
+			return super.modelDao.queryForEq("configHash", configHash);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return new ArrayList<ZoneKNNModel>();
+			
+		}
 	}
 
 

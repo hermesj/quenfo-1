@@ -5,4 +5,5 @@
 /bin/
 
 /src/main/resources/nlp/openNLPmodels/
+/src/main/java/ormlitetest/*
 *.ucls
