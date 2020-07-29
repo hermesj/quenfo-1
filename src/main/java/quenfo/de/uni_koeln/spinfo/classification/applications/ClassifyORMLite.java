@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
@@ -24,6 +27,8 @@ import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.classifier.ZoneKN
 import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
 
 public class ClassifyORMLite {
+	
+	static Logger log = LogManager.getLogger();
 	
 	static String resourcesDB = "jdbc:sqlite:C:\\quenfo_data/resources/models.db";
 	
@@ -83,66 +88,58 @@ public class ClassifyORMLite {
 			loadProperties(configFolder);
 		}
 
-		// dbFilePath = "C:\\quenfo_data/sqlite/jobads/ormlite_test.db";
-//		String trainingDataFileName = "";
-
+		// create connection to jobad sqlite database
 		String databaseUrl = "jdbc:sqlite:" + dbFilePath;
-		// create a connection source to our database
-		ConnectionSource connectionSource = new JdbcConnectionSource(databaseUrl);
-		
-		
-		
-		ConnectionSource resourcesConnection = new JdbcConnectionSource(resourcesDB);
+		ConnectionSource jobadConnection = new JdbcConnectionSource(databaseUrl);
 		
 		if (dbMode.equals(DBMode.OVERWRITE)) {
 			try {
-				TableUtils.clearTable(connectionSource, JASCClassifyUnit.class);
+				TableUtils.clearTable(jobadConnection, JASCClassifyUnit.class);
 			} catch (SQLException e) {
 				System.err.println("Noch keine Daten zum Überschreiben vorhanden.");
 			}
 		}
-			
 		
 		
-		long before = System.currentTimeMillis();
-		ORMDatabaseClassifier ormClassifier = new ORMDatabaseClassifier(connectionSource, queryLimit, fetchSize,
-				startPos, trainingdataFile);
+		// create connection to model database
+		ConnectionSource resourcesConnection = new JdbcConnectionSource(resourcesDB);
+		
 
+		long before = System.currentTimeMillis();
+		
+		// configurate classification
 		FeatureUnitConfiguration fuc = new FeatureUnitConfiguration(normalize, stem, filterSW, nGrams, continousNGrams,
 				miScore, suffixTree);
 		AbstractFeatureQuantifier fq = new LogLikeliHoodFeatureQuantifier();
 		AbstractClassifier classifier = new ZoneKNNClassifier(false, 5, Distance.COSINUS);
 		ExperimentConfiguration config = new ExperimentConfiguration(fuc, fq, classifier, new File(trainingdataFile),
 				outputFolder);
+				
+		ORMDatabaseClassifier ormClassifier = new ORMDatabaseClassifier(jobadConnection, queryLimit, fetchSize,
+				startPos, trainingdataFile);
 		
+		
+		// dao to models database 
 		Dao<? extends Model, ?> modelDao = classifier.getModelDao(resourcesConnection);
-		
-		
-		
-
 		if (!modelDao.isTableExists())
 				TableUtils.createTable(modelDao);
-		
-		List<? extends Model> trainedModels = classifier.getPersistedModels(config.hashCode());
-		
-//		if (classifier instanceof ZoneKNNClassifier)
-//			List<ZoneKNNModel> trainedModels = (List<ZoneKNNModel>) modelDao.queryForEq("configHash", configHash);
-//		System.out.println(trainedModels);
-		
-		if (trainedModels.isEmpty()) {
-			ormClassifier.trainAndClassify(config, modelDao);
-			// Model trainieren und persistieren
+		// query persisted model with current configuration
+		Model trainedModel;
+		try {
+			trainedModel = classifier.getPersistedModels(config.hashCode()).get(0);
 			
-		} else {
+			fq = trainedModel.getFQ();
 			
-			// mit trainiertem Model klassifizieren
-			ormClassifier.classify(trainedModels.get(0), config);
-			
-			
-			
+			config = new ExperimentConfiguration(fuc, fq, classifier, new File(trainingdataFile),
+					outputFolder);
+			log.info("Persistertes Modell geladen.");
+		} catch (IndexOutOfBoundsException e) {
+			log.info("Kein trainiertes Modell mit gewünschter Konfiguration vorhanden. Modell wird trainiert ...");
+			trainedModel = ormClassifier.train(config, modelDao);
 		}
-		//TODO falls trainedModels, nur classify, sonst train and classify
+		
 
+		ormClassifier.classify(trainedModel, config);
 		
 		long after = System.currentTimeMillis();
 		double time = (((double) after - before) / 1000) / 60;
@@ -151,7 +148,7 @@ public class ClassifyORMLite {
 		} else {
 			System.out.println("\nfinished Classification in " + time + " minutes");
 		}
-		connectionSource.close();
+		jobadConnection.close();
 		resourcesConnection.close();
 
 	}

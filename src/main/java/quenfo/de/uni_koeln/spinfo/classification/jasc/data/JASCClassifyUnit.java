@@ -59,12 +59,12 @@ public class JASCClassifyUnit extends ClassifyUnit {
 	@Getter(AccessLevel.NONE)
 	boolean classTwo;
 	
-	@DatabaseField(columnName = "ClassFOUR")
+	@DatabaseField(columnName = "ClassTHREE")
 	@Setter(AccessLevel.NONE)
 	@Getter(AccessLevel.NONE)
 	boolean classThree;
 	
-	@DatabaseField(columnName = "ClassTHREE")
+	@DatabaseField(columnName = "ClassFOUR")
 	@Setter(AccessLevel.NONE)
 	@Getter(AccessLevel.NONE)
 	boolean classFour;

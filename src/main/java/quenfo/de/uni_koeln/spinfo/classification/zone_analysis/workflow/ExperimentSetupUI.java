@@ -47,6 +47,7 @@ public class ExperimentSetupUI {
 		distances.add(Distance.MANHATTAN);
 	}
 
+	@Deprecated
 	public ExperimentConfiguration getExperimentConfiguration(
 			String dataFileName) throws IOException, ClassNotFoundException {	
 		String outputFolderName = dataFileName.substring(0,dataFileName.indexOf("/"))+"/output";	

@@ -119,6 +119,7 @@ public class ZoneNaiveBayesClassifier extends ZoneAbstractClassifier {
 		model.setClassifierName(this.getClass().getSimpleName());
 		if(fq!=null){
 			model.setFQName(fq.getClass().getSimpleName());
+			model.setFq(fq);
 			model.setFUOrder(fq.getFeatureUnitOrder());
 		}
 		

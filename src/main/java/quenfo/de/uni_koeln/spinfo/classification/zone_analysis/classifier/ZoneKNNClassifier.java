@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.support.ConnectionSource;
@@ -30,7 +33,8 @@ import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.classifier.model.
  */
 public class ZoneKNNClassifier extends ZoneAbstractClassifier{
 
-
+	private Logger log = LogManager.getLogger();
+	
 	private static final long serialVersionUID = 1L;
 	
 	//nearest neighbors
@@ -82,16 +86,12 @@ public class ZoneKNNClassifier extends ZoneAbstractClassifier{
 			((ZoneKNNModel) model).setTrainingData(trainingdata);		
 			model.setClassifierName(this.getClass().getSimpleName());
 			model.setFQName(fq.getClass().getSimpleName());
+			model.setFq(fq);
 			model.setDataFile(dataFile);
 			model.setFuc(fuc);
 			model.setFUOrder(fq.getFeatureUnitOrder());
 			return model;		
 	}
-
-
-	
-	
-
 
 	
 	/* (non-Javadoc)
@@ -100,13 +100,14 @@ public class ZoneKNNClassifier extends ZoneAbstractClassifier{
 	
 	@Override
 	public boolean[] classify(ClassifyUnit cu, Model model){
-		//log.info(cu.toString());
+		
 		int numberOfClasses = ( (JASCClassifyUnit) cu).getClassIDs().length;
 		boolean[] toReturn = new boolean[numberOfClasses];
-		
 		//sort classIDs by distance to cu:
 		Map<Double,List<boolean[]>> classIDsByDistance = new TreeMap<Double,List<boolean[]>>();
 		Iterator<double[]> fuIterator = ((ZoneKNNModel) model).getTrainingData().keySet().iterator();
+		
+		
 		while(fuIterator.hasNext()){
 			
 			
@@ -130,6 +131,7 @@ public class ZoneKNNClassifier extends ZoneAbstractClassifier{
 		while(KNNs.size()< knn){
 			KNNs.addAll(iterator.next());
 		}
+
 		//count classMembers of knn
 		int[] classCounts = new int[numberOfClasses]; 
 		for (boolean[] classIDs : KNNs) {

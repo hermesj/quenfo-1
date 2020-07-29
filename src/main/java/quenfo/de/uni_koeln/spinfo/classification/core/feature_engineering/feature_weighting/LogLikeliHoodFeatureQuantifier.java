@@ -1,5 +1,6 @@
 package quenfo.de.uni_koeln.spinfo.classification.core.feature_engineering.feature_weighting;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.apache.mahout.math.stats.LogLikelihood;
@@ -19,10 +20,14 @@ import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
  */
 
 
-public class LogLikeliHoodFeatureQuantifier extends AbstractFeatureQuantifier {
+public class LogLikeliHoodFeatureQuantifier extends AbstractFeatureQuantifier implements Serializable {
 	
 	
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	Multiset<String> bagOfWords2 = HashMultiset.create();
 	
 	private void initialize(List<ClassifyUnit> trainingdata){
@@ -32,15 +37,20 @@ public class LogLikeliHoodFeatureQuantifier extends AbstractFeatureQuantifier {
 		}
 		
 	}
+	
+	public Multiset<String> getBoW() {
+		return bagOfWords2;
+	}
 
 
 	
 	@Override
 	public void setFeatureValues(List<ClassifyUnit> classifyUnits, List<String> featureUnitOrder) {
 		
+
+		
 		this.featureUnitOrder = featureUnitOrder;
 		if(featureUnitOrder==null){
-			
 			this.featureUnitOrder = getFeatureUnitOrder(classifyUnits);
 			this.initialize(classifyUnits);
 		}
@@ -49,9 +59,7 @@ public class LogLikeliHoodFeatureQuantifier extends AbstractFeatureQuantifier {
 			Multiset<String> bowTemp =  HashMultiset.create(bagOfWords2);
 			Multiset<String> bagOfWords1 = HashMultiset.create();
 			bagOfWords1.addAll(classifyUnit.getFeatureUnits());
-		//	System.out.println("bow1 size: " + bagOfWords1.size());
 			bowTemp.removeAll(bagOfWords1);	
-		//	System.out.println("bowTemp: " + bowTemp.size());
 			
 			List<ScoredItem<String>> llh = LogLikelihood.compareFrequencies(
 					bagOfWords1, bowTemp, bagOfWords1.size(), 0.0);

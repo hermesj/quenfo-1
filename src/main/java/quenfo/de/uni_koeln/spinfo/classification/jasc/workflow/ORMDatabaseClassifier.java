@@ -67,7 +67,7 @@ public class ORMDatabaseClassifier {
 		jobs = new ZoneJobs(stmc);
 	}
 
-	public void trainAndClassify(ExperimentConfiguration config, Dao<? extends Model, ?> modelDao) throws IOException, SQLException {
+	public Model train(ExperimentConfiguration config, Dao<? extends Model, ?> modelDao) throws IOException, SQLException {
 		
 		log.info("...training...");
 		// get trainingdata from file (and db)
@@ -92,13 +92,17 @@ public class ORMDatabaseClassifier {
 		// build model
 		Dao<Model, ? > castedModelDao = (Dao<Model, ?>) modelDao;
 		Model model = jobs.getNewModelForClassifier(trainingData, config);
-		castedModelDao.create(model);
+		try {
+			castedModelDao.create(model);
+		} catch (SQLException e) {
+			System.err.println("Modell mit diesen Konfiguationen bereits persistiert.");
+		}
 		
-		
+		return model;
 		
 		
 		//modelDao.create(model);
-		classify(model, config);
+//		classify(model, config);
 
 	}
 
@@ -152,6 +156,15 @@ public class ORMDatabaseClassifier {
 		classifyUnits = jobs.initializeClassifyUnits(classifyUnits);
 		classifyUnits = jobs.setFeatures(classifyUnits, config.getFeatureConfiguration(), false);
 		classifyUnits = jobs.setFeatureVectors(classifyUnits, config.getFeatureQuantifier(), model.getFUOrder());
+		
+//		double[] vec;
+//		for(ClassifyUnit cu : classifyUnits) {
+//			vec = cu.getFeatureVector();
+//			for(int i = 0; i < vec.length; i++)
+//				System.out.print(vec[0] + " ");
+//			System.out.println();
+//		}
+			
 
 		// 2. Classify
 //		RegexClassifier regexClassifier = new RegexClassifier(PropertiesHandler.getRegex());

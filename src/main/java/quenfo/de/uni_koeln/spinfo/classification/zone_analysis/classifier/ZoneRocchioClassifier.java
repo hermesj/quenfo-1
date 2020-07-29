@@ -94,6 +94,7 @@ public class ZoneRocchioClassifier extends ZoneAbstractClassifier {
 		((ZoneRocchioModel) model).setCenters(centers);
 		model.setClassifierName(this.getClass().getSimpleName());
 		model.setFQName(fq.getClass().getSimpleName());
+		model.setFq(fq);
 		model.setDataFile(dataFile);
 		model.setFuc(fuc);
 		model.setFUOrder(fq.getFeatureUnitOrder());

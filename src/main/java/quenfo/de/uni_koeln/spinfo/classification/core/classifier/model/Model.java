@@ -78,6 +78,9 @@ public abstract class Model implements Serializable{
 	@DatabaseField(dataType = DataType.STRING)
 	private String fQName;
 	
+	@DatabaseField(dataType = DataType.SERIALIZABLE)
+	private AbstractFeatureQuantifier fq;
+	
 	@DatabaseField(unique = true)
 	private int configHash;
 	
@@ -101,24 +104,26 @@ public abstract class Model implements Serializable{
 	 * @return  an instance of the used FeatureQuantifier (specified in FQName)
 	 */
 	public AbstractFeatureQuantifier getFQ(){
-	
-		if(fQName == null) {
-			;return null;
-		}
-		if(fQName.equals("LogLikeliHoodFeatureQuantifier")){
-			return new LogLikeliHoodFeatureQuantifier();
-		}
-		if(fQName.equals("TFIDFFeatureQuantifier")){
-			return new TFIDFFeatureQuantifier();
-		}
-		if(fQName.equals("AbsoluteFrequencyFeatureQuantifier")){
-			return new AbsoluteFrequencyFeatureQuantifier();
-		}
-		if(fQName.equals("RelativeFrequencyFeatureQuantifier")){
-			return new RelativeFrequencyFeatureQuantifier();
-		}
 		
-		return null;
+		return fq;
+	
+//		if(fQName == null) {
+//			;return null;
+//		}
+//		if(fQName.equals("LogLikeliHoodFeatureQuantifier")){
+//			return new LogLikeliHoodFeatureQuantifier();
+//		}
+//		if(fQName.equals("TFIDFFeatureQuantifier")){
+//			return new TFIDFFeatureQuantifier();
+//		}
+//		if(fQName.equals("AbsoluteFrequencyFeatureQuantifier")){
+//			return new AbsoluteFrequencyFeatureQuantifier();
+//		}
+//		if(fQName.equals("RelativeFrequencyFeatureQuantifier")){
+//			return new RelativeFrequencyFeatureQuantifier();
+//		}
+//		
+//		return null;
 	}
 
 

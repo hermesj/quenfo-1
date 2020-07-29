@@ -4,6 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.AbstractClassifier;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.DBMode;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.ExperimentConfiguration;
@@ -34,6 +38,8 @@ import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
  *
  */
 public class ClassifyDatabase {
+	
+	static Logger log = LogManager.getLogger();
 
 	// Pfad zur Input-DB
 	static String inputDB = null; 
@@ -106,6 +112,8 @@ public class ClassifyDatabase {
 		} else {
 			inputConnection = Class_DBConnector.connect(inputDB);
 		}
+		
+		log.info("Inputdb: " + inputDB);
 
 		Connection outputConnection = null;
 

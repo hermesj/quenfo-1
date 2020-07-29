@@ -137,11 +137,17 @@ public class Class_DBConnector {
 				prepStmt.setInt(2, jahrgang);
 				prepStmt.setString(3, postingID);
 				prepStmt.setInt(4, paraID);
+//				System.out.println(postingID);
 				for (int classID = 0; classID <= 3; classID++) {
 					if (classIDs[classID])
-						booleanRpl = 1;				
+						booleanRpl = 1;	
+					else
+						booleanRpl = 0;
+					
+//					System.out.println(classID + " -> " + booleanRpl);
 					prepStmt.setInt(5 + classID, booleanRpl);
 				}
+//				System.out.println();
 				prepStmt.addBatch();
 			}
 			prepStmt.executeBatch();

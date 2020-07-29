@@ -157,6 +157,7 @@ public class ZoneJobs {
 
 
 			List<String> tokens = tokenizer.tokenize(paragraph.getContent());
+//			System.out.println(tokens);
 			if (tokens == null) {
 				continue;
 			}
@@ -207,6 +208,8 @@ public class ZoneJobs {
 				}
 				cu.setFeatureUnits(ngrams);
 			}
+			
+//			System.out.println(cu.getFeatureUnits());
 
 		}
 		if (fuc.getMiScore() != 0) {
@@ -251,17 +254,9 @@ public class ZoneJobs {
 	 */
 	public Model getNewModelForClassifier(List<ClassifyUnit> cus, ExperimentConfiguration expConfig)
 			throws IOException {		
-		
-		Model model;
-//		if (expConfig.getClassifier() instanceof SVMClassifier) {
-//			SVMClassifier svmC = (SVMClassifier) expConfig.getClassifier();
-//			svmC.buildModel(expConfig, cus);
-//			model = new Model();
-//			model.setFUOrder(expConfig.getFeatureQuantifier().getFeatureUnitOrder());
-//			return model;
-//		}
+
 		// build model...
-		model = expConfig.getClassifier().buildModel(cus, expConfig.getFeatureConfiguration(),
+		Model model = expConfig.getClassifier().buildModel(cus, expConfig.getFeatureConfiguration(),
 				expConfig.getFeatureQuantifier(), expConfig.getDataFile());
 		// store model
 		// exportModel(expConfig.getModelFile(), model);
@@ -269,19 +264,6 @@ public class ZoneJobs {
 		
 		return model;
 
-	}
-
-	public void exportModel(File modelFile, Model model) throws IOException {
-		if (modelFile.exists()) {
-			return;
-		} else {
-			modelFile.createNewFile();
-			FileOutputStream fos = new FileOutputStream(modelFile);
-			ObjectOutputStream out = new ObjectOutputStream(fos);
-			out.writeObject(model);
-			out.flush();
-			out.close();
-		}
 	}
 
 	/**
@@ -298,20 +280,10 @@ public class ZoneJobs {
 	public Map<ClassifyUnit, boolean[]> classify(List<ClassifyUnit> paragraphs, ExperimentConfiguration expConfig,
 			Model model) {
 		ZoneAbstractClassifier classifier = (ZoneAbstractClassifier) expConfig.getClassifier();
-//		if (classifier instanceof SVMClassifier) {
-//			try {
-//				Map<ClassifyUnit, boolean[]> classified = ((SVMClassifier) classifier).predict(paragraphs, expConfig,
-//						stmc);
-//				// TODO ....
-//				return classified;
-//			} catch (IOException e) {
-//
-//				e.printStackTrace();
-//			}
-//		}
+
 		Map<ClassifyUnit, boolean[]> classified = new HashMap<ClassifyUnit, boolean[]>();
 		for (ClassifyUnit cu : paragraphs) {
-			boolean[] classes = ((ZoneAbstractClassifier) classifier).classify((JASCClassifyUnit) cu, model);
+			boolean[] classes = ((ZoneAbstractClassifier) classifier).classify(cu, model);
 			classified.put(cu, classes);
 		}
 		return classified;
