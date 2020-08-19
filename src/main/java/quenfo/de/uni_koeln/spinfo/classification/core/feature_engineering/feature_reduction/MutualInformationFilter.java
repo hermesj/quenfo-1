@@ -1,6 +1,7 @@
 package quenfo.de.uni_koeln.spinfo.classification.core.feature_engineering.feature_reduction;
 
 import java.util.ArrayList;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -12,15 +13,14 @@ import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.FeatureUnitConfiguration;
 import quenfo.de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 
+/**
+ * Filters FeatureUnits according to their Mutual Information values. 
+ * 
+ * @author geduldig
+ * 
+ */
 public class MutualInformationFilter {
 
-	/**
-	 * Filters FeatureUnits according to their Mutual Information values. 
-	 * TODO what about multiclass units?
-	 * 
-	 * @author geduldig
-	 * 
-	 */
 
 	private Map<String, Integer> allTFs;
 	private Map<String, Integer> relevantTFs;
@@ -30,11 +30,7 @@ public class MutualInformationFilter {
 	private int classifyUnitsInCategory = 0;
 
 	Set<String> relevantFeatureUnitsOverall;
-	
-	
-	
 
-	
 	public void initialize(FeatureUnitConfiguration fuc, List<ClassifyUnit> trainingdata){
 	
 		int numberOfClasses = ( (JASCClassifyUnit) trainingdata.get(0)).getClassIDs().length;

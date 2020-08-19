@@ -118,7 +118,7 @@ public class IE_DBConnector {
 		PreparedStatement prepStmt = connection.prepareStatement(query);
 		prepStmt.setInt(1, count);
 		prepStmt.setInt(2, startPos);
-		prepStmt.setFetchSize(100); //TODO fetchSize
+		prepStmt.setFetchSize(100); 
 		result = prepStmt.executeQuery();
 		List<ClassifyUnit> classifyUnits = new ArrayList<ClassifyUnit>();
 		ClassifyUnit classifyUnit;
@@ -147,6 +147,8 @@ public class IE_DBConnector {
 				}
 			} catch (SQLException e) {
 			}
+			
+			// TODO lemmata und pos tags aus db entfernen
 			try {
 				String lemmata = result.getString("Lemmata");
 				if (lemmata != null && !lemmata.equals("")) {
@@ -205,10 +207,8 @@ public class IE_DBConnector {
 			String postingID = extractionUnit.getPostingID();
 			int paraID;
 			try {
-//				paraID = extractionUnit.getClassifyUnitID().toString();
 				paraID = extractionUnit.getParagraph().hashCode();
 			} catch (Exception e) {
-//				paraID = extractionUnit.getClassifyUnitjpaID() + "";
 				paraID = -1;
 				System.err.println("keine Parent ID: " + postingID);
 			}
@@ -427,6 +427,7 @@ public class IE_DBConnector {
 	 * @param extractionUnits
 	 * @throws SQLException
 	 */
+	@Deprecated
 	public static void upateClassifyUnits(Connection connection, List<ExtractionUnit> extractionUnits)
 			throws SQLException {
 		connection.setAutoCommit(false);
@@ -439,7 +440,6 @@ public class IE_DBConnector {
 			if (e.isLexicalDataStoredInDB())
 				continue;
 			int cuParaID = e.getClassifyUnitTableID();
-			// TODO JB !!! cuParaID mit paragraphID von ClassifyUnit belegen
 			StringBuffer sb = sentences.get(cuParaID);
 			if (sb == null)
 				sb = new StringBuffer();

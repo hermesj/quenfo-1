@@ -146,21 +146,11 @@ public class ZoneJobs {
 	public List<ClassifyUnit> initializeClassifyUnits(List<ClassifyUnit> paragraphs) {
 		List<ClassifyUnit> toProcess = new ArrayList<ClassifyUnit>();
 		for (ClassifyUnit paragraph : paragraphs) {
-			//TODO JB: kein neues Objekt erzeugen?
-//			ZoneClassifyUnit newParagraph = new ZoneClassifyUnit(paragraph.getContent(),
-//					paragraph.getId());
-//
-//			newParagraph.setJobAdJpaID(paragraph.getJobAdJpaID());
-//			newParagraph.setClassIDs(((ZoneClassifyUnit) paragraph).getClassIDs());
-//			newParagraph.setActualClassID(((ZoneClassifyUnit) paragraph).getActualClassID());
-			
-
-
 			List<String> tokens = tokenizer.tokenize(paragraph.getContent());
-//			System.out.println(tokens);
-			if (tokens == null) {
+
+			if (tokens == null) 
 				continue;
-			}
+			
 			paragraph.setFeatureUnits(tokens);
 			toProcess.add(paragraph);
 		}

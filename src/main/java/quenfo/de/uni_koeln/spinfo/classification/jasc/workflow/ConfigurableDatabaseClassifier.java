@@ -142,8 +142,7 @@ public class ConfigurableDatabaseClassifier {
 		while (queryResult.next()/* && goOn*/) {
 			
 			/*
-			 *  TODO JB: improvement
-			 *  bereits klassifizierte Anzeigen schon vorher abfangen
+			 *  ENHANCE bereits klassifizierte Anzeigen schon vorher abfangen
 			 */
 
 			String jobAd = null;

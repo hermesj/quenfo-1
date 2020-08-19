@@ -296,15 +296,12 @@ public final class Util {
 				
 				List<String> lemmas = new ArrayList<>();
 				for (String token : tokens) {
-//					System.out.println(token);
 					List<TaggedWord> readings = tagger.tag(token);
 					if(readings.size() == 0)
 						lemmas.add(token.toLowerCase());
 					else
 						lemmas.add(readings.get(0).getLemma().toLowerCase());
 				}
-				
-//				System.out.println("Tokens: " + tokens + "Lemmas: " + lemmas);
 				
 				keyword = Util.normalizeLemma(lemmas.get(0));
 				Set<InformationEntity> iesForKeyword = entities.get(keyword);
@@ -326,37 +323,8 @@ public final class Util {
 					}
 				} else
 					iesForKeyword.add(ie);
-				
-				//System.out.println(ie.getLemmata() + " " + ie.getLabels());
+
 				entities.put(keyword, iesForKeyword);
-				
-				
-//				List<AnalyzedTokenReadings> tagged = tagger.tag(tokens);
-//							
-//				List<String> lemmaList = new ArrayList<>();
-//				
-//				for(AnalyzedTokenReadings readings : tagged) {
-//					
-//					Set<String> lemmas = new HashSet<>();
-//					
-//					List<AnalyzedToken> currReadings = readings.getReadings();
-//					String prefReading = currReadings.get(0).getLemma();
-//					if (prefReading != null)
-//						lemmaList.add(prefReading);
-//					else
-//						System.out.println(readings);
-//					
-//					for (AnalyzedToken t : currReadings) {						
-//						lemmas.add(t.getLemma());
-//					}
-//					if(lemmas.size() > 1)
-//						System.out.println(lemmas);				
-//					// TODO JB: richtiges Lemma auswählen				
-//				}
-//				
-//				
-				
-				
 
 			}
 		}

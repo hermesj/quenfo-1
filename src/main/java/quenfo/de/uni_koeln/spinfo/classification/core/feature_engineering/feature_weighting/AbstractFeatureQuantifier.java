@@ -97,7 +97,6 @@ public abstract class  AbstractFeatureQuantifier implements Serializable {
 	
 	@Override
 	public int hashCode() {
-		// TODO JB: HashCode & Equals FeatureQuantifier
 		return this.getClass().getName().hashCode();
 	}
 	

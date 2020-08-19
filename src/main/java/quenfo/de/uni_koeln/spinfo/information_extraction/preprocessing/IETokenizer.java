@@ -28,7 +28,7 @@ public class IETokenizer {
 	public IETokenizer() {
 		
 		setTokenizeModel(ClassLoader.getSystemResourceAsStream("nlp/openNLPmodels/de-token.bin"));
-		// TODO JB: custom sentence model
+		// ENHANCE custom sentence model
 		setSentenceSplittingModel(ClassLoader.getSystemResourceAsStream("nlp/openNLPmodels/de-sent.bin"));
 	}
 	

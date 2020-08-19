@@ -3,8 +3,6 @@ package quenfo.de.uni_koeln.spinfo.classification.applications;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,7 +28,7 @@ public class ClassifyORMLite {
 	
 	static Logger log = LogManager.getLogger();
 	
-	static String resourcesDB = "jdbc:sqlite:C:\\quenfo_data/resources/models.db";
+	static String resourcesDB = null;// = "jdbc:sqlite:C:\\quenfo_data/resources/models.db";
 	
 	static String dbFilePath = null;
 
@@ -123,7 +121,10 @@ public class ClassifyORMLite {
 		Dao<? extends Model, ?> modelDao = classifier.getModelDao(resourcesConnection);
 		if (!modelDao.isTableExists())
 				TableUtils.createTable(modelDao);
-		// query persisted model with current configuration
+		/*
+		 * query persisted model with current configuration
+		 * if no model with the given configuration is persisted train a new one
+		 */
 		Model trainedModel;
 		try {
 			trainedModel = classifier.getPersistedModels(config.hashCode()).get(0);
@@ -138,7 +139,7 @@ public class ClassifyORMLite {
 			trainedModel = ormClassifier.train(config, modelDao);
 		}
 		
-
+		// classify orm-objects with model
 		ormClassifier.classify(trainedModel, config);
 		
 		long after = System.currentTimeMillis();
@@ -168,10 +169,10 @@ public class ClassifyORMLite {
 		PropertiesHandler.initialize(configFolder);
 		
 		dbFilePath = quenfoData + "/sqlite/orm/" + PropertiesHandler.getStringProperty("general", "orm_database");
-//		inputDB = quenfoData + "/sqlite/jobads/" + PropertiesHandler.getStringProperty("general", "jobAdsDB");
-//		inputTable = PropertiesHandler.getStringProperty("general", "jobAds_inputTable");
 		outputFolder = quenfoData + "/sqlite/classification/";
-//		outputDB = PropertiesHandler.getStringProperty("general", "classifiedParagraphs");
+
+		
+		resourcesDB = "jdbc:sqlite:" + quenfoData + "/resources/models.db";
 		
 		trainingdataFile = quenfoData + "/resources/classification/trainingSets/" + PropertiesHandler.getStringProperty("classification", "trainingDataFile");
 		

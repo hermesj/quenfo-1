@@ -5,6 +5,7 @@ import com.j256.ormlite.field.DatabaseField;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -20,6 +21,11 @@ import lombok.ToString;
 @EqualsAndHashCode(of = { "content", "jahrgang", "postingID" })
 @ToString(of = { "content" }) //TODO JB: toString classifyUnit
 public class ClassifyUnit {
+	
+	@DatabaseField(id = true)
+	@Getter(AccessLevel.NONE)
+	@Setter(AccessLevel.NONE)
+	private Integer id;
 	
 	/**
 	 * publication year of jobad posting that contains this classify unit

@@ -98,7 +98,7 @@ public class PropertiesHandler {
 		}
 		String[] nGramString = getProperty(domain, key).split(",");
 		int[] nGrams = new int[nGramString.length];
-		// TODO JB: leere Strings abfangen ( , , )
+		// ENHANCE leere Strings abfangen ( , , )
 		for (int i = 0; i < nGramString.length; i++) {
 			nGrams[i] = Integer.parseInt(nGramString[i].replaceAll("\\D", ""));
 		}

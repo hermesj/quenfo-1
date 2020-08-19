@@ -31,12 +31,6 @@ import quenfo.de.uni_koeln.spinfo.information_extraction.data.TextToken;
 import de.uni_koeln.spinfo.data.Token;
 import quenfo.de.uni_koeln.spinfo.information_extraction.utils.Util;
 
-/**
- * TODO JB: Refactoring
- * 20.02.19: Methoden zur String-Verarbeitung in "Util" verschoben
- * public in knownEntities @Deprecated
- * 
- */
 
 /**
  * @author geduldia Enthält alle Methoden zur Extraktion und zum Matching von
@@ -60,8 +54,8 @@ public class IEJobs {
 	// Informationstyp (Kompetenz oder Tool)
 	IEType type;
 	// Anahl der bereits bekannten Kompetenzen/Tools
-	@Deprecated
-	public int knownEntities;
+//	@Deprecated
+//	public int knownEntities;
 	// Extraktionspatterns
 	public List<Pattern> patterns;
 	// Tool zur Morphemkoordinations-Auflösung
@@ -136,7 +130,7 @@ public class IEJobs {
 			this.ce = new CoordinateExpander(possCoordinates, splittedCompoundsFile); 
 
 
-		this.knownEntities = 0;
+//		this.knownEntities = 0;
 		entities = new HashMap<String, Set<InformationEntity>>();
 		if (knownEntities != null) {
 			readKnownEntitiesFromFile(knownEntities);
@@ -205,10 +199,10 @@ public class IEJobs {
 
 					}
 				}
-				boolean isnew = iesForKeyword.add(ie);
-				if (isnew) {
-					knownEntities++;
-				}
+				/*boolean isnew = */iesForKeyword.add(ie);
+//				if (isnew) {
+//					knownEntities++;
+//				}
 				entities.put(keyword, iesForKeyword);
 				line = in.readLine();
 			}
@@ -810,9 +804,9 @@ public class IEJobs {
 			String longestMatchingModifer = null;
 			int modifierLength = 0;
 			List<TextToken> tokens = extractionUnit.getTokenObjects();
-			// int skip = 0; //TODO Delete skip
+
 			for (int t = 0; t < tokens.size(); t++) {
-				if (t /* + skip */ >= tokens.size())
+				if (t >= tokens.size())
 					break;
 				Token currentToken = tokens.get(t /* + skip */);
 				String lemma = Util.normalizeLemma(currentToken.getLemma());
@@ -870,10 +864,10 @@ public class IEJobs {
 					ie.addLemma(Util.normalizeLemma(string));
 				}
 			}
-			boolean isnew = iesForKeyword.add(ie);
-			if (isnew) {
-				knownEntities++;
-			}
+			/*boolean isnew = */iesForKeyword.add(ie);
+//			if (isnew) {
+//				knownEntities++;
+//			}
 			this.entities.put(keyword, iesForKeyword);
 		}
 

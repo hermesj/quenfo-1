@@ -108,14 +108,9 @@ public class ExtractionUnitBuilder {
 
 					extractionUnit.setSentence(sentence);
 					extractionUnit.setJahrgang(cu.getJahrgang());
-					extractionUnit.setPostingID(cu.getPostingID()); //TODO SecondJob = JobAdJPA???
-//					extractionUnit.setClassifyUnitID(cu.getId());
+					extractionUnit.setPostingID(cu.getPostingID());
 					extractionUnit.setParagraph(cu);
 					extractionUnit.setClassifyUnitTableID(cu.getTableID());
-//					Long jpaID = ((JASCClassifyUnit) cu).getJpaID();
-//					if (jpaID != null)
-//						extractionUnit.setClassifyUnitjpaID(jpaID);
-//					extractionUnit.setJobAdID(((JASCClassifyUnit) cu).getJahrgang());
 				
 					if (lemmata != null) {
 						extractionUnit.setLemmata(lemmata.get(i).split(" \\| "));

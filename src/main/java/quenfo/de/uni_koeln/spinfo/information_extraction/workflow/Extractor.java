@@ -19,8 +19,6 @@ import java.util.TreeMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-//import org.apache.log4j.Logger;
-
 import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import quenfo.de.uni_koeln.spinfo.classification.db_io.Class_DBConnector;
 import quenfo.de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
@@ -36,10 +34,6 @@ import is2.lemmatizer.Lemmatizer;
 import is2.tag.Tagger;
 import is2.tools.Tool;
 
-/**
- * TODO JB: Refactoring
- * 20.02.19: reWriteFiles @Deprecated, auskommentierte Methoden gelöscht
- */
 
 /**
  * @author geduldia
@@ -50,7 +44,6 @@ import is2.tools.Tool;
  */
 public class Extractor {
 
-//	Logger log = Logger.getLogger(getClass());
 	private Logger log = LogManager.getLogger();
 	
 	private IEJobs jobs;
@@ -61,14 +54,7 @@ public class Extractor {
 	private File possCompoundsFile, splittedCompoundsFile;
 	private File entitiesFile;
 	private File noEntitiesFile;
-	// TODO Konstruktoren refactoring
-	// Konstruktor für die Matching-Workflows
-	/**
-	 * @param entities  file of already known/extracted entities
-	 * @param modifiers files with modifier-terms
-	 * @param type      type of information
-	 * @throws IOException
-	 */
+
 	/**
 	 * Constructor to match Tools
 	 * 
@@ -132,9 +118,7 @@ public class Extractor {
 		this.possCompoundsFile = new File(PropertiesHandler.getPossibleCompounds());
 		this.splittedCompoundsFile = new File(PropertiesHandler.getSplittedCompounds());
 		this.jobs = new IEJobs(entitiesFile, noEntitiesFile, modifier, contexts, type, resolveCoordinations,
-				possCompoundsFile, splittedCompoundsFile);// new
-		// contexts,
-		// type);
+				possCompoundsFile, splittedCompoundsFile);
 		if (outputConnection != null) {
 			// liest aus der Output-DB, die - falls vorhanen - manuell
 			// validierten Entitäten aus dem vorherigen Extraktionsdurchgang ein
@@ -247,6 +231,7 @@ public class Extractor {
 			// falls bei der Initialisierung noch lexikaische Daten generiert
 			// werden mussten, werden diese fürs nächste Mal in der Input-DB
 			// gespeichert.
+			// ENHANCE lexikalische Daten in Objekten persistieren
 //			IE_DBConnector.upateClassifyUnits(inputConnection, extractionUnits);
 
 			// Informationsextraktion
@@ -267,11 +252,7 @@ public class Extractor {
 			classifyUnits = null;
 			extractions = null;
 			extractionUnits = null;
-//			this.jobs = new IEJobs(entitiesFile, noEntitiesFile, modifier, contexts, type, resolveCoordinations,
-//					possCompoundsFile, splittedCompoundsFile);
-			// TODO JB: warum IEJobs neu instanziiert?
-//			jobs.addKnownEntities(knownEntities);
-//			jobs.addNoEntities(noEntities);
+
 		}
 		lemmatizer = null;
 		tagger = null;

@@ -122,6 +122,18 @@ public class ORMDatabaseClassifier {
 
 		QueryBuilder<JobAd, String> queryBuilder = jobAdDao.queryBuilder();
 
+		
+		
+		while(queryOffset < queryLimit) {
+			// FIXME fetchSize on ORMClassification
+			
+			// ...
+			
+			// queryOffset += fetchSize
+			
+			
+		}
+		
 		PreparedQuery<JobAd> prepQuery = queryBuilder.offset(queryOffset).limit(queryLimit).where().eq("language", "de")
 				.prepare();
 		List<JobAd> jobAds = jobAdDao.query(prepQuery);

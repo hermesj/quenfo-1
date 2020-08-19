@@ -17,6 +17,11 @@ public class TFIDFFeatureQuantifier extends AbstractFeatureQuantifier{
 
 
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	@Override
 	public void setFeatureValues(List<ClassifyUnit> classifyUnits, List<String> featureUnitOrder){
 		this.featureUnitOrder = featureUnitOrder;
