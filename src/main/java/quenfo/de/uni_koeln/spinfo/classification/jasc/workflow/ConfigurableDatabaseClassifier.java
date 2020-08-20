@@ -105,7 +105,7 @@ public class ConfigurableDatabaseClassifier {
 		int done = 0;
 		String query = null;
 		String postingID = "";
-		int jahrgang = 0;
+		String jahrgang = "";
 		if (tableName.equals("jobs_textkernel"))
 			query = "SELECT POSTINGID, Jahrgang, STELLENBESCHREIBUNG FROM " + tableName + " WHERE LANG='de' LIMIT ? OFFSET ?;";
 		else
@@ -148,7 +148,7 @@ public class ConfigurableDatabaseClassifier {
 			String jobAd = null;
 			postingID = queryResult.getString("POSTINGID");
 //			postingID = queryResult.getString("POSTINGID");
-			jahrgang = queryResult.getInt("Jahrgang");
+			jahrgang = queryResult.getString("Jahrgang");
 			jobAd = queryResult.getString("STELLENBESCHREIBUNG");
 			// if there is an empty job description, classifying is of no use,
 			// so skip

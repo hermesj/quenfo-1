@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +40,7 @@ public class ORMDatabaseClassifier {
 
 	private ZoneJobs jobs;
 
-	private long queryLimit, fetchSize, queryOffset;
+	private Long queryLimit, fetchSize, queryOffset;
 
 	private String trainingDataFileName;
 
@@ -48,9 +48,9 @@ public class ORMDatabaseClassifier {
 			String trainingDataFileName) throws IOException {
 		this.connection = connection;
 
-		this.queryLimit = queryLimit;
-		this.fetchSize = fetchSize;
-		this.queryOffset = offset;
+		this.queryLimit = (long) queryLimit;
+		this.fetchSize = (long) fetchSize;
+		this.queryOffset = (long) offset;
 		this.trainingDataFileName = trainingDataFileName;
 
 		// set Translations
@@ -78,14 +78,14 @@ public class ORMDatabaseClassifier {
 				config.getFeatureConfiguration().isTreatEncoding()));
 
 		if (trainingData.size() == 0) {
-			System.out.println(
+			System.err.println(
 					"\nthere are no training paragraphs in the specified training-DB. \nPlease check configuration and try again");
 			System.exit(0);
 		}
-		log.info("training paragraphs: " + trainingData.size());
+		log.info("training paragraphs: {}", trainingData.size());
 
 		trainingData = jobs.initializeClassifyUnits(trainingData);
-		log.info("Configuration: " + config.getFeatureConfiguration());
+		log.info("Configuration: {}", config.getFeatureConfiguration());
 		trainingData = jobs.setFeatures(trainingData, config.getFeatureConfiguration(), true);
 		trainingData = jobs.setFeatureVectors(trainingData, config.getFeatureQuantifier(), null);
 
@@ -95,7 +95,7 @@ public class ORMDatabaseClassifier {
 		try {
 			castedModelDao.create(model);
 		} catch (SQLException e) {
-			System.err.println("Modell mit diesen Konfiguationen bereits persistiert.");
+			log.error("Modell mit diesen Konfiguationen bereits persistiert.");
 		}
 		
 		return model;
@@ -107,7 +107,6 @@ public class ORMDatabaseClassifier {
 	}
 
 	public void classify(Model model, ExperimentConfiguration config) throws IOException, SQLException {
-//		log.info(model.getClass().getName());
 		log.info("...classifying...");
 
 		RegexClassifier regexClassifier = new RegexClassifier(PropertiesHandler.getRegex());
@@ -122,30 +121,37 @@ public class ORMDatabaseClassifier {
 
 		QueryBuilder<JobAd, String> queryBuilder = jobAdDao.queryBuilder();
 
-		
-		
-		while(queryOffset < queryLimit) {
-			// FIXME fetchSize on ORMClassification
-			
-			// ...
-			
-			// queryOffset += fetchSize
-			
-			
-		}
-		
-		PreparedQuery<JobAd> prepQuery = queryBuilder.offset(queryOffset).limit(queryLimit).where().eq("language", "de")
-				.prepare();
-		List<JobAd> jobAds = jobAdDao.query(prepQuery);
+		PreparedQuery<JobAd> prepQuery;
+		List<JobAd> jobAds;
+		List<JASCClassifyUnit> paragraphs;
 
-		for (JobAd jobad : jobAds) {
-			List<JASCClassifyUnit> paragraphs = classifyJobad(jobad, config, model, regexClassifier);
-			try {
-				cuDao.create(paragraphs);
-			} catch(SQLException e) {
-				System.err.println("Abschnitt von Anzeige " + jobad.getPostingID() + " bereits in DB enthalten.");
-			}
+		int countJobAds = 0;
+
+		// solange noch nicht so viele Anzeigen wie in querylimit angegeben sind bearbeitet wurden...
+		while(countJobAds < queryLimit) {		
 			
+			// pruefen, ob fetchsize uber querylimit hinaus geht
+			if ((countJobAds + fetchSize) > queryLimit)
+				fetchSize = queryLimit - countJobAds;
+			log.info("classifying {} job ads, skipping first {} rows", fetchSize, queryOffset);
+
+			// ENHANCE order by jobad id
+			prepQuery = queryBuilder.offset(queryOffset).orderBy("id", true).limit(fetchSize)
+					.where().eq("language", "de")
+					.prepare();
+			jobAds = jobAdDao.query(prepQuery);
+
+			for (JobAd jobad : jobAds) {
+				countJobAds++;
+				paragraphs = classifyJobad(jobad, config, model, regexClassifier);
+				try {
+					cuDao.create(paragraphs);
+				} catch (SQLException e) {
+					System.err.println("Abschnitt von Anzeige " + jobad.getPostingID() + " bereits in DB enthalten.");
+				}
+			}	
+			
+			queryOffset += fetchSize;
 		}
 
 	}

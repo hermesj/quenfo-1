@@ -119,7 +119,7 @@ public class Class_DBConnector {
 	 * @return
 	 */
 	public static boolean insertClassifiedParagraphsinDB(Connection connection, List<ClassifyUnit> results,
-			int jahrgang, String postingID) {
+			String jahrgang, String postingID) {
 		boolean[] classIDs;
 		int paraID;
 		try {
@@ -134,7 +134,7 @@ public class Class_DBConnector {
 				paraID = cu.hashCode();
 				classIDs = ((JASCClassifyUnit) cu).getClassIDs();
 				prepStmt.setString(1, cu.getContent());
-				prepStmt.setInt(2, jahrgang);
+				prepStmt.setString(2, jahrgang);
 				prepStmt.setString(3, postingID);
 				prepStmt.setInt(4, paraID);
 //				System.out.println(postingID);

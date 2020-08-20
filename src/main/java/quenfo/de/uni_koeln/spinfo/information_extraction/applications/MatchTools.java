@@ -134,7 +134,7 @@ public class MatchTools {
 		
 		
 		// get values from properties files
-		paraInputDB = quenfoData + "/sqlite/classification/" + PropertiesHandler.getStringProperty("general", "classifiedParagraphs");
+		paraInputDB = quenfoData + "/sqlite/orm/" + PropertiesHandler.getStringProperty("general", "orm_database");
 		
 		maxCount = PropertiesHandler.getIntProperty("matching", "queryLimit");
 		startPos = PropertiesHandler.getIntProperty("matching", "startPos");

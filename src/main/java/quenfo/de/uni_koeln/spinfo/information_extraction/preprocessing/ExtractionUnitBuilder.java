@@ -78,6 +78,7 @@ public class ExtractionUnitBuilder {
 		List<String> tokens;
 		ExtractionUnit extractionUnit = null;
 		for (ClassifyUnit cu : classifyUnits) {
+			
 			sentences = null;
 			lemmata = null;
 			posTags = null;

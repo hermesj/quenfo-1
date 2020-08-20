@@ -39,7 +39,7 @@ public class ExtractionUnit implements Serializable {
 	/**
 	 * first ID of the containing JobAd (Jahrgang)
 	 */
-	private int jahrgang;
+	private String jahrgang;
 	/**
 	 * second ID of the containing JobAd (former: Zeilennummer)
 	 */

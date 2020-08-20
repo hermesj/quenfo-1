@@ -88,6 +88,8 @@ public class MatchCompetences {
 		} else {
 			inputConnection = IE_DBConnector.connect(paraInputDB);
 		}
+		
+		System.out.println(paraInputDB);
 
 		// Verbindung mit Output-DB
 		if (!new File(outputFolder).exists()) {
@@ -163,7 +165,7 @@ public class MatchCompetences {
 		
 		ieType = PropertiesHandler.getSearchType("matching");
 
-		paraInputDB = quenfoData + "/sqlite/classification/" + PropertiesHandler.getStringProperty("general", "classifiedParagraphs");// + jahrgang + ".db";
+		paraInputDB = quenfoData + "/sqlite/orm/" + PropertiesHandler.getStringProperty("general", "orm_database");// + jahrgang + ".db";
 		
 		maxCount = PropertiesHandler.getIntProperty("matching", "queryLimit");
 		startPos = PropertiesHandler.getIntProperty("matching", "startPos");

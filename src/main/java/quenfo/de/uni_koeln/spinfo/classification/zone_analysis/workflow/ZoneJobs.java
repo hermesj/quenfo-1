@@ -121,7 +121,7 @@ public class ZoneJobs {
 			if (treatEncoding)
 				content = EncodingProblemTreatment.normalizeEncoding(content);
 			
-			cu = new JASCClassifyUnit(content, jahrgang, postingID);
+			cu = new JASCClassifyUnit(content, Integer.toString(jahrgang), postingID);
 
 			((JASCClassifyUnit) cu).setClassIDs(classIDs);
 			toReturn.add(cu);

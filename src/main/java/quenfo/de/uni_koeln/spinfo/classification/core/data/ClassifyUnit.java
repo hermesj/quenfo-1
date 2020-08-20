@@ -32,7 +32,7 @@ public class ClassifyUnit {
 	 */
 	@DatabaseField(uniqueCombo = true, columnName = "JAHRGANG")
 	@Setter(AccessLevel.NONE)
-	private int jahrgang;
+	private String jahrgang;
 	
 	/**
 	 * ID of jobad posting that contains this classify unit
@@ -79,7 +79,7 @@ public class ClassifyUnit {
 	 * @param id
 	 * @param postingID 
 	 */
-	public ClassifyUnit(String content, /*UUID id,*/ int jahrgang) {
+	public ClassifyUnit(String content, /*UUID id,*/ String jahrgang) {
 		this.content = content;
 		this.jahrgang = jahrgang;
 	}
@@ -89,7 +89,7 @@ public class ClassifyUnit {
 	 * @param id
 	 * @param postingID 
 	 */
-	public ClassifyUnit(String content, /*UUID id,*/ int jahrgang, String postingID) {
+	public ClassifyUnit(String content, /*UUID id,*/ String jahrgang, String postingID) {
 		this.content = content;
 		this.postingID = postingID;
 		this.jahrgang = jahrgang;

@@ -67,17 +67,17 @@ public class IE_DBConnector {
 		stmt.executeUpdate(sql);
 		if (correctable) {
 			if (type == IEType.TOOL) {
-				sql = "CREATE TABLE Tools (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, POSTINGID TEXT NOT NULL, ParaID TEXT NOT NULL, Sentence TEXT NOT NULL, Tool TEXT NOT NULL, Contexts TEXT NOT NULL, ContextDescriptions TEXT NOT NULL, isTool INT NOT NULL, Notes TEXT)";
+				sql = "CREATE TABLE Tools (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang VARCHAR NOT NULL, POSTINGID TEXT NOT NULL, ParaID TEXT NOT NULL, Sentence TEXT NOT NULL, Tool TEXT NOT NULL, Contexts TEXT NOT NULL, ContextDescriptions TEXT NOT NULL, isTool INT NOT NULL, Notes TEXT)";
 			}
 			else {
-				sql = "CREATE TABLE Competences (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, POSTINGID TEXT NOT NULL, ParaID TEXT NOT NULL, Sentence TEXT NOT NULL, Comp TEXT, Contexts INT, ContextDescriptions TEXT NOT NULL, isCompetence INT NOT NULL, Notes TEXT)";
+				sql = "CREATE TABLE Competences (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang VARCHAR NOT NULL, POSTINGID TEXT NOT NULL, ParaID TEXT NOT NULL, Sentence TEXT NOT NULL, Comp TEXT, Contexts INT, ContextDescriptions TEXT NOT NULL, isCompetence INT NOT NULL, Notes TEXT)";
 			}
 		} else {
 			if (type == IEType.TOOL) {
-				sql = "CREATE TABLE Tools (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, POSTINGID TEXT NOT NULL, ParaID TEXT NOT NULL, SentenceID TEXT NOT NULL, Lemmata TEXT NOT NULL ,Sentence TEXT NOT NULL, Tool TEXT NOT NULL)";
+				sql = "CREATE TABLE Tools (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang VARCHAR NOT NULL, POSTINGID TEXT NOT NULL, ParaID TEXT NOT NULL, SentenceID TEXT NOT NULL, Lemmata TEXT NOT NULL ,Sentence TEXT NOT NULL, Tool TEXT NOT NULL)";
 
 			} else {
-				sql = "CREATE TABLE Competences (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang INT NOT NULL, POSTINGID TEXT NOT NULL, ParaID TEXT NOT NULL, SentenceID TEXT NOT NULL, Lemmata TEXT NOT NULL, Sentence TEXT NOT NULL, Label TEXT, Comp TEXT, Importance TEXT)";
+				sql = "CREATE TABLE Competences (ID INTEGER PRIMARY KEY AUTOINCREMENT, Jahrgang VARCHAR NOT NULL, POSTINGID TEXT NOT NULL, ParaID TEXT NOT NULL, SentenceID TEXT NOT NULL, Lemmata TEXT NOT NULL, Sentence TEXT NOT NULL, Label TEXT, Comp TEXT, Importance TEXT)";
 			}
 			
 		}
@@ -123,6 +123,7 @@ public class IE_DBConnector {
 		List<ClassifyUnit> classifyUnits = new ArrayList<ClassifyUnit>();
 		ClassifyUnit classifyUnit;
 		while (result.next()) {
+
 			int class2 = result.getInt("ClassTWO");
 			int class3 = result.getInt("ClassTHREE");
 			int classID;
@@ -135,9 +136,10 @@ public class IE_DBConnector {
 			} else {
 				classID = 3;
 			}
-			classifyUnit = new JASCClassifyUnit(result.getString("TEXT"), result.getInt("JAHRGANG"),
+			classifyUnit = new JASCClassifyUnit(result.getString("TEXT"), result.getString("JAHRGANG"),
 					result.getString("POSTINGID"));
 			classifyUnit.setTableID(result.getInt("ID"));
+//			System.out.println("CU: " + classifyUnit.getJahrgang());
 			((JASCClassifyUnit) classifyUnit).setActualClassID(classID);
 			try {
 				String sentences = result.getString("ExtractionUnits");
@@ -203,7 +205,8 @@ public class IE_DBConnector {
 		}
 		for (ExtractionUnit extractionUnit : extractions.keySet()) {
 			Map<InformationEntity, List<Pattern>> ies = extractions.get(extractionUnit);
-			int jahrgang = extractionUnit.getJahrgang();
+			String jahrgang = extractionUnit.getJahrgang();
+//			System.out.println("EU: " + jahrgang);
 			String postingID = extractionUnit.getPostingID();
 			int paraID;
 			try {
@@ -238,7 +241,8 @@ public class IE_DBConnector {
 					}
 					types.add(expression);
 				}
-				prepStmt.setInt(1, jahrgang);
+
+				prepStmt.setString(1, jahrgang);
 				prepStmt.setString(2, postingID);
 				prepStmt.setInt(3, paraID);
 
@@ -303,7 +307,7 @@ public class IE_DBConnector {
 		Set<String> types = new HashSet<String>();
 		for (ExtractionUnit extractionUnit : extractions.keySet()) {
 			Map<InformationEntity, List<Pattern>> ies = extractions.get(extractionUnit);
-			int jahrgang = extractionUnit.getJahrgang();
+			String jahrgang = extractionUnit.getJahrgang();
 			String zeilennr = extractionUnit.getPostingID();
 //			String paraID = extractionUnit.getClassifyUnitID().toString();
 			int paraID = extractionUnit.getParagraph().hashCode();
@@ -334,7 +338,7 @@ public class IE_DBConnector {
 					types.add(expression);
 				}
 
-				prepStmt.setInt(1, jahrgang);
+				prepStmt.setString(1, jahrgang);
 				prepStmt.setString(2, zeilennr);
 				prepStmt.setInt(3, paraID);
 				if (correctable) {

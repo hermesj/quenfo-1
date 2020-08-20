@@ -77,7 +77,7 @@ public class JASCClassifyUnit extends ClassifyUnit {
 	}
 
 	
-	public JASCClassifyUnit(String content, int jahrgang, String postingID){
+	public JASCClassifyUnit(String content, String jahrgang, String postingID){
 		this(content, jahrgang, postingID, -1);
 	}
 
@@ -89,7 +89,7 @@ public class JASCClassifyUnit extends ClassifyUnit {
 	 * @param id
 	 * @param actualClassID
 	 */
-	public JASCClassifyUnit(String content, int jahrgang, String postingID, int actualClassID) {
+	public JASCClassifyUnit(String content, String jahrgang, String postingID, int actualClassID) {
 		super(content, jahrgang, postingID);
 		setActualClassID(actualClassID);
 //		System.out.println(actualClassID);

@@ -168,7 +168,7 @@ public class Extractor {
 	 * @throws IOException
 	 * @throws SQLException
 	 */
-	public Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extract(int startPos, int maxCount, int paragraphsPerRound,
+	public Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extract(int startPos, int maxCount, int fetchSize,
 			int tablesize, Connection inputConnection, Connection outputConnection) throws IOException, SQLException {
 
 		// Falls die lexikalischen Infos (lemmata, POS-Tags etc.) noch nicht in
@@ -192,8 +192,8 @@ public class Extractor {
 
 		int readParagraphs = 0;
 		int offset = startPos;
-		if (maxCount > -1 && paragraphsPerRound > maxCount) {
-			paragraphsPerRound = maxCount;
+		if (maxCount > -1 && fetchSize > maxCount) {
+			fetchSize = maxCount;
 		}
 
 		long before;
@@ -205,11 +205,11 @@ public class Extractor {
 			before = System.currentTimeMillis();
 
 			// Einlesen der Paragraphen
-			if (maxCount > -1 && readParagraphs + paragraphsPerRound > maxCount) {
-				paragraphsPerRound = maxCount - readParagraphs;
+			if (maxCount > -1 && readParagraphs + fetchSize > maxCount) {
+				fetchSize = maxCount - readParagraphs;
 			}
-			log.info("read ClassifyUnits from DB " + offset + " - " + (offset + paragraphsPerRound));
-			classifyUnits = IE_DBConnector.readClassifyUnits(paragraphsPerRound, offset, inputConnection, jobs.type);
+			log.info("read ClassifyUnits from DB " + offset + " - " + (offset + fetchSize));
+			classifyUnits = IE_DBConnector.readClassifyUnits(fetchSize, offset, inputConnection, jobs.type);
 			if (classifyUnits.isEmpty()) {
 				finished = true;
 			}
@@ -319,9 +319,9 @@ public class Extractor {
 		// generiert und im Anschluss gespeichert.
 		// Dafür werden hier (falls nocht nicht vorhanden) die entsprechenden
 		// Spalten eingefügt.
-		Class_DBConnector.addColumn(inputConnection, "ExtractionUnits", "ClassifiedParagraphs");
-		Class_DBConnector.addColumn(inputConnection, "Lemmata", "ClassifiedParagraphs");
-		Class_DBConnector.addColumn(inputConnection, "POSTags", "ClassifiedParagraphs");
+//		Class_DBConnector.addColumn(inputConnection, "ExtractionUnits", "ClassifiedParagraphs");
+//		Class_DBConnector.addColumn(inputConnection, "Lemmata", "ClassifiedParagraphs");
+//		Class_DBConnector.addColumn(inputConnection, "POSTags", "ClassifiedParagraphs");
 		// Lemmatizer (nur für den Fall, dass noch Lemmata generiert werden
 		// müssen)
 		Tool lemmatizer = new Lemmatizer(PropertiesHandler.getLemmatizerModel(), false);

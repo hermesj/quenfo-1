@@ -85,7 +85,7 @@ public class TrainingDataGenerator {
 					classID != 0) {
 						JASCClassifyUnit utc = null;
 						if(splits.length == 3){
-							utc = new JASCClassifyUnit(content.toString(), jahrgang,postingID, classID);
+							utc = new JASCClassifyUnit(content.toString(), Integer.toString(jahrgang),postingID, classID);
 						}
 //						else{
 //							System.out.println("2Spalten: " + line);
@@ -121,7 +121,7 @@ public class TrainingDataGenerator {
 			if (/** classes.length **/
 			classID != 0) {
 				JASCClassifyUnit utc = new JASCClassifyUnit(content.toString(),
-						jahrgang, postingID, classID);
+						Integer.toString(jahrgang), postingID, classID);
 //				utc.setActualClassID(classID);
 				
 				classifiedData.add(utc);
