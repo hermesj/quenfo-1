@@ -121,7 +121,7 @@ public class Class_DBConnector {
 	public static boolean insertClassifiedParagraphsinDB(Connection connection, List<ClassifyUnit> results,
 			String jahrgang, String postingID) {
 		boolean[] classIDs;
-		int paraID;
+		int paraID = -1;
 		try {
 			connection.setAutoCommit(false);
 
@@ -157,7 +157,8 @@ public class Class_DBConnector {
 			return true;
 			
 		} catch (SQLException e) {
-			System.err.println("Fehler beim Schreiben von Stellenanzeige: " + postingID);
+			System.err.println("Fehler beim Schreiben von Stellenanzeige: " + postingID + " " +
+		paraID + "\n" + e.getMessage());
 			return false;
 		}
 			

@@ -111,7 +111,7 @@ public class Extractor {
 	 * @throws SQLException
 	 */
 	public Extractor(Connection outputConnection, File entitiesFile, File noEntitiesFile, File contexts, File modifier,
-			IEType type, boolean resolveCoordinations) throws IOException, SQLException {
+			IEType type, boolean resolveCoordinations) throws IOException {
 		this.entitiesFile = entitiesFile;
 		this.noEntitiesFile = noEntitiesFile;
 		this.type = type;
@@ -209,7 +209,7 @@ public class Extractor {
 				fetchSize = maxCount - readParagraphs;
 			}
 			log.info("read ClassifyUnits from DB " + offset + " - " + (offset + fetchSize));
-			classifyUnits = IE_DBConnector.readClassifyUnits(fetchSize, offset, inputConnection, jobs.type);
+			classifyUnits = (List<ClassifyUnit>) IE_DBConnector.readClassifyUnits(fetchSize, offset, inputConnection, jobs.type);
 			if (classifyUnits.isEmpty()) {
 				finished = true;
 			}
@@ -345,7 +345,7 @@ public class Extractor {
 				paragraphsPerRound = maxCount - readParagraphs;
 			}
 			log.info("read ClassifyUnit " + offset + " - " + (offset + paragraphsPerRound));
-			classifyUnits = IE_DBConnector.readClassifyUnits(paragraphsPerRound, offset, inputConnection, jobs.type);
+			classifyUnits = (List<ClassifyUnit>) IE_DBConnector.readClassifyUnits(paragraphsPerRound, offset, inputConnection, jobs.type);
 			if (classifyUnits.isEmpty()) {
 				break;
 			}

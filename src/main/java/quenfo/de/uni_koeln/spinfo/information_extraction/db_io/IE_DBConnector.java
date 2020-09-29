@@ -98,7 +98,7 @@ public class IE_DBConnector {
 	 * @return a list of read ClassifyUnits
 	 * @throws SQLException
 	 */
-	public static List<ClassifyUnit> readClassifyUnits(int count, int startPos, Connection connection, IEType type)
+	public static List<? extends ClassifyUnit> readClassifyUnits(int count, int startPos, Connection connection, IEType type)
 			throws SQLException {
 
 		connection.setAutoCommit(false);

@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+
 import is2.data.SentenceData09;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -22,14 +25,10 @@ import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
  *
  */
 
-//@NamedQuery(
-//		name = "getClassXExtractionUnits", 
-//		query = "SELECT e FROM ExtractionUnit e JOIN JASCClassifyUnit  c ON e.classifyUnitjpaID = c.jpaID WHERE c.actualClassID = :class"		
-//		)
-//
-//@Entity
+
+@DatabaseTable(tableName = "ExtractionUnits")
 @Data
-@EqualsAndHashCode(of = { "postingID", "classifyUnitID", "sentence" })
+@EqualsAndHashCode(of = { "postingID", "paragraph", "sentence" })
 @ToString(of = { "sentence" })
 public class ExtractionUnit implements Serializable {
 	
@@ -45,12 +44,7 @@ public class ExtractionUnit implements Serializable {
 	 */
 	private String postingID;
 	
-	/**
-	 * ID of the containing classifyUnit (paragraph)
-	 */
-	@Deprecated
-	private UUID classifyUnitID;
-	
+	@DatabaseField(canBeNull = false, foreign = true)
 	private ClassifyUnit paragraph;
 
 	/**
@@ -66,6 +60,7 @@ public class ExtractionUnit implements Serializable {
 	/**
 	 * content of this extractionUnit
 	 */
+	@DatabaseField
 	private String sentence;
 	
 	/**
@@ -120,13 +115,6 @@ public class ExtractionUnit implements Serializable {
 		return null;
 	}
 
-//	/**
-//	 * @return morphTags produced by the MateTool
-//	 */
-//	@Deprecated
-//	public String[] getMorphTags() {
-//		return sentenceData.pfeats;
-//	}
 
 	/**
 	 * creates the List of Token-objects for this ExtractionUnit Sets a Root-Token

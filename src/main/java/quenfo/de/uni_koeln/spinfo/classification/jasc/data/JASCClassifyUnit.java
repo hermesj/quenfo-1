@@ -14,6 +14,7 @@ import lombok.Setter;
 import lombok.ToString;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.helpers.SingleToMultiClassConverter;
+import quenfo.de.uni_koeln.spinfo.core.data.JobAd;
 
 /** 
  * A basic unit for all classify tasks.
@@ -26,9 +27,6 @@ import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.helpers.SingleToM
  *
  */
 
-//@Entity
-//@Inheritance(strategy = InheritanceType.JOINED)
-//@MappedSuperclass
 @DatabaseTable(tableName = "ClassifiedParagraphs")
 @Data
 @ToString(of = {}, callSuper = true)
@@ -40,10 +38,6 @@ public class JASCClassifyUnit extends ClassifyUnit {
 	private static int NUMBEROFMULTICLASSES;
 	private static SingleToMultiClassConverter CONVERTER;
 	
-//	@Deprecated
-//	@Setter(AccessLevel.NONE)
-//	@Getter(AccessLevel.NONE)
-//	private int actualClassID; 
 	
 	@DatabaseField(dataType=DataType.SERIALIZABLE)
 	@Setter(AccessLevel.NONE)
@@ -76,9 +70,14 @@ public class JASCClassifyUnit extends ClassifyUnit {
 
 	}
 
-	
+	@Deprecated
 	public JASCClassifyUnit(String content, String jahrgang, String postingID){
 		this(content, jahrgang, postingID, -1);
+	}
+	
+	
+	public JASCClassifyUnit(String content, JobAd jobad) {
+		this(content, jobad, -1);
 	}
 
 	/**
@@ -89,13 +88,23 @@ public class JASCClassifyUnit extends ClassifyUnit {
 	 * @param id
 	 * @param actualClassID
 	 */
+	@Deprecated
 	public JASCClassifyUnit(String content, String jahrgang, String postingID, int actualClassID) {
 		super(content, jahrgang, postingID);
 		setActualClassID(actualClassID);
 //		System.out.println(actualClassID);
 	}
+	
+	
+	public JASCClassifyUnit(String content, JobAd jobad, int actualClassID) {
+		super(content, jobad);
+		setActualClassID(actualClassID);
+	}
 
 	
+
+
+
 	public int transformToClassID() {
 		
 		if (classIDs == null)

@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import quenfo.de.uni_koeln.spinfo.core.data.JobAd;
 
 /**
  * 
@@ -18,7 +19,7 @@ import lombok.ToString;
  */
 
 @Data
-@EqualsAndHashCode(of = { "content", "jahrgang", "postingID" })
+@EqualsAndHashCode(of = { "content", "jobad" })
 @ToString(of = { "content" }) //TODO JB: toString classifyUnit
 public class ClassifyUnit {
 	
@@ -28,16 +29,24 @@ public class ClassifyUnit {
 	private Integer id;
 	
 	/**
+	 * jobad posting that contains this classify unit
+	 */
+	@DatabaseField(canBeNull = false, foreign = true, uniqueCombo = true)
+	private JobAd jobad;
+	
+	/**
 	 * publication year of jobad posting that contains this classify unit
 	 */
-	@DatabaseField(uniqueCombo = true, columnName = "JAHRGANG")
+	@Deprecated
+//	@DatabaseField(columnName = "JAHRGANG")
 	@Setter(AccessLevel.NONE)
 	private String jahrgang;
 	
 	/**
 	 * ID of jobad posting that contains this classify unit
 	 */
-	@DatabaseField(uniqueCombo = true, columnName = "POSTINGID")
+	@Deprecated
+//	@DatabaseField(columnName = "POSTINGID")
 	@Setter(AccessLevel.NONE)
 	private String postingID = "";
 	
@@ -93,6 +102,12 @@ public class ClassifyUnit {
 		this.content = content;
 		this.postingID = postingID;
 		this.jahrgang = jahrgang;
+	}
+
+
+	public ClassifyUnit(String content, JobAd jobad) {
+		this.content = content;
+		this.jobad = jobad;
 	}
 
 

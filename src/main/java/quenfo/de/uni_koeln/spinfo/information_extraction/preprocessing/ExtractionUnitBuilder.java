@@ -68,7 +68,7 @@ public class ExtractionUnitBuilder {
 	 * @return list of initialized extractionUnits
 	 * @throws IOException
 	 */
-	public static List<ExtractionUnit> initializeIEUnits(List<ClassifyUnit> classifyUnits, Tool lemmatizer,
+	public static List<ExtractionUnit> initializeIEUnits(List<? extends ClassifyUnit> classifyUnits, Tool lemmatizer,
 			Tool morphTagger, Tool tagger) throws IOException {
 		List<ExtractionUnit> extractionUnits = new ArrayList<ExtractionUnit>();
 		IETokenizer tokenizer = new IETokenizer();
@@ -83,10 +83,10 @@ public class ExtractionUnitBuilder {
 			lemmata = null;
 			posTags = null;
 			tokens = null;
-			if (((JASCClassifyUnit) cu).getSentences() == null) {
+			if (cu.getSentences() == null) {
 				sentences = tokenizer.splitIntoSentences(cu.getContent());
 			} else {
-				sentences = Arrays.asList(((JASCClassifyUnit) cu).getSentences().split("  \\|\\|  "));
+				sentences = Arrays.asList(cu.getSentences().split("  \\|\\|  "));
 			}
 			
 			

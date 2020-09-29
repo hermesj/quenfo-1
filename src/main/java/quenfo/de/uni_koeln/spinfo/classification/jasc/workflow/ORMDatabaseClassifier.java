@@ -49,6 +49,10 @@ public class ORMDatabaseClassifier {
 		this.connection = connection;
 
 		this.queryLimit = (long) queryLimit;
+		
+		// TODO falls queryLimit -1 ...
+		
+		
 		this.fetchSize = (long) fetchSize;
 		this.queryOffset = (long) offset;
 		this.trainingDataFileName = trainingDataFileName;
@@ -135,7 +139,6 @@ public class ORMDatabaseClassifier {
 				fetchSize = queryLimit - countJobAds;
 			log.info("classifying {} job ads, skipping first {} rows", fetchSize, queryOffset);
 
-			// ENHANCE order by jobad id
 			prepQuery = queryBuilder.offset(queryOffset).orderBy("id", true).limit(fetchSize)
 					.where().eq("language", "de")
 					.prepare();
@@ -147,7 +150,8 @@ public class ORMDatabaseClassifier {
 				try {
 					cuDao.create(paragraphs);
 				} catch (SQLException e) {
-					System.err.println("Abschnitt von Anzeige " + jobad.getPostingID() + " bereits in DB enthalten.");
+					e.printStackTrace();
+					log.error("Abschnitt von Anzeige " + jobad.getPostingID() + " bereits in DB enthalten.");
 				}
 			}	
 			
@@ -168,7 +172,7 @@ public class ORMDatabaseClassifier {
 		}
 		List<ClassifyUnit> classifyUnits = new ArrayList<ClassifyUnit>();
 		for (String string : paragraphs) {
-			classifyUnits.add(new JASCClassifyUnit(string, job.getJahrgang(), job.getPostingID()));
+			classifyUnits.add(new JASCClassifyUnit(string, job));
 		}
 		// prepare ClassifyUnits
 		classifyUnits = jobs.initializeClassifyUnits(classifyUnits);
