@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -15,6 +16,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
+import quenfo.de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 
 /**
  * @author geduldia
@@ -35,6 +37,16 @@ public class ExtractionUnit implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
+	@DatabaseField(generatedId = true)
+	private Integer id;
+	
+	
+	/**
+	 * position of this sentence in the paragraph
+	 */
+	@DatabaseField(uniqueCombo = true)
+	private int positionIndex;
+	
 	/**
 	 * first ID of the containing JobAd (Jahrgang)
 	 */
@@ -44,13 +56,15 @@ public class ExtractionUnit implements Serializable {
 	 */
 	private String postingID;
 	
-	@DatabaseField(canBeNull = false, foreign = true)
-	private ClassifyUnit paragraph;
+	// TODO datatype JASC oder ClassifyUnit?
+	@DatabaseField(canBeNull = false, foreign = true, uniqueCombo = true)
+	private JASCClassifyUnit paragraph;
 
-	/**
-	 * ID of the containing classifyUnit in SQLite table
-	 */
-	private int classifyUnitTableID;
+//	/**
+//	 * ID of the containing classifyUnit in SQLite table
+//	 */
+//	@Deprecated
+//	private int classifyUnitTableID;
 
 	/**
 	 * ID of this extractionUnit
@@ -60,13 +74,20 @@ public class ExtractionUnit implements Serializable {
 	/**
 	 * content of this extractionUnit
 	 */
-	@DatabaseField
+	@DatabaseField(uniqueCombo = true)
 	private String sentence;
 	
 	/**
 	 * Tokens in this sentence
 	 */
-	private List<TextToken> tokenObjects = new ArrayList<TextToken>();
+//	@Deprecated
+//	private List<TextToken> tokenArrayList = new ArrayList<TextToken>();
+	
+	/**
+	 * Tokens in this sentence
+	 */
+	@DatabaseField(dataType=DataType.SERIALIZABLE)
+	private TextToken[] tokenArray;
 
 
 	@Getter(AccessLevel.NONE)
@@ -79,9 +100,13 @@ public class ExtractionUnit implements Serializable {
 	private String[] posTags;
 
 	
-	private boolean lexicalDataStoredInDB;
+//	private boolean lexicalDataStoredInDB;
 
-	
+	public ExtractionUnit(int positionIndex) {
+		this();
+		this.positionIndex = positionIndex;
+		
+	}
 
 
 	public ExtractionUnit() {
@@ -129,21 +154,29 @@ public class ExtractionUnit implements Serializable {
 		this.lemmata = sentenceData.plemmas;
 		this.posTags = sentenceData.ppos;
 		
+		tokenArray = new TextToken[tokens.length + 1];
+		
 		for (int i = 0; i < tokens.length; i++) {
 			if (posTags == null) {
 				token = new TextToken(tokens[i], lemmata[i], null);
 			} else {
 				token = new TextToken(tokens[i], lemmata[i], posTags[i]);
 			}
-			this.tokenObjects.add(token);
+//			this.tokenArrayList.add(token);
+			this.tokenArray[i] = token;
 		}
 		token = new TextToken(null, "<end-LEMMA>", "<end-POS>");
 		
-		this.tokenObjects.add(token);
+//		this.tokenArrayList.add(token);
+		this.tokenArray[tokenArray.length-1] = token;
+		
+		
+		
 	}
 
 	public void deleteData() {
-		this.tokenObjects = null;
+//		this.tokenArrayList = null;
+		this.tokenArray = null;
 	}
 
 

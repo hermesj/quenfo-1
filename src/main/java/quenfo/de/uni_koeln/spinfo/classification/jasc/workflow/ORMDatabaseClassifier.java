@@ -5,10 +5,10 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,6 +31,7 @@ import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.helpers.SingleToM
 import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.workflow.ZoneJobs;
 import quenfo.de.uni_koeln.spinfo.core.data.JobAd;
 import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
+import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 
 public class ORMDatabaseClassifier {
 
@@ -48,11 +49,7 @@ public class ORMDatabaseClassifier {
 			String trainingDataFileName) throws IOException {
 		this.connection = connection;
 
-		this.queryLimit = (long) queryLimit;
-		
-		// TODO falls queryLimit -1 ...
-		
-		
+		this.queryLimit = (long) queryLimit;		
 		this.fetchSize = (long) fetchSize;
 		this.queryOffset = (long) offset;
 		this.trainingDataFileName = trainingDataFileName;
@@ -103,10 +100,6 @@ public class ORMDatabaseClassifier {
 		}
 		
 		return model;
-		
-		
-		//modelDao.create(model);
-//		classify(model, config);
 
 	}
 
@@ -114,43 +107,76 @@ public class ORMDatabaseClassifier {
 		log.info("...classifying...");
 
 		RegexClassifier regexClassifier = new RegexClassifier(PropertiesHandler.getRegex());
-		// get data from db
 
-		// instantiate the dao
+		// instantiate the DAOs
 		Dao<JobAd, String> jobAdDao = DaoManager.createDao(connection, JobAd.class);
-
 		Dao<JASCClassifyUnit, String> cuDao = DaoManager.createDao(connection, JASCClassifyUnit.class);
 		if (!cuDao.isTableExists())
 			TableUtils.createTable(cuDao);
 
-		QueryBuilder<JobAd, String> queryBuilder = jobAdDao.queryBuilder();
+		// instantiate query builders
+		QueryBuilder<JobAd, String> jobQueryBuilder = jobAdDao.queryBuilder();
+		QueryBuilder<JASCClassifyUnit, String> cuQueryBuilder = cuDao.queryBuilder();
 
-		PreparedQuery<JobAd> prepQuery;
+		// instantiate prepared queries
+		PreparedQuery<JobAd> jobPrepQuery;
+		PreparedQuery<JASCClassifyUnit> cuPrepQuery;
+		
 		List<JobAd> jobAds;
-		List<JASCClassifyUnit> paragraphs;
+		List<JASCClassifyUnit> classifyUnits;
+		
+		if (queryLimit < 0) {
+			QueryBuilder<JobAd, String> countQueryBuilder = jobAdDao.queryBuilder();
+			queryLimit = countQueryBuilder.countOf();
+			log.info("queryLimit nicht gesetzt. Neues queryLimit: " + queryLimit);
+		}
+		
 
-		int countJobAds = 0;
-
+		int jobCount = 0;
 		// solange noch nicht so viele Anzeigen wie in querylimit angegeben sind bearbeitet wurden...
-		while(countJobAds < queryLimit) {		
+		while(jobCount < queryLimit) {		
 			
 			// pruefen, ob fetchsize uber querylimit hinaus geht
-			if ((countJobAds + fetchSize) > queryLimit)
-				fetchSize = queryLimit - countJobAds;
-			log.info("classifying {} job ads, skipping first {} rows", fetchSize, queryOffset);
+			if ((jobCount + fetchSize) > queryLimit)
+				fetchSize = queryLimit - jobCount;
 
-			prepQuery = queryBuilder.offset(queryOffset).orderBy("id", true).limit(fetchSize)
+			jobPrepQuery = jobQueryBuilder.offset(queryOffset).orderBy("id", true).limit(fetchSize)
 					.where().eq("language", "de")
 					.prepare();
-			jobAds = jobAdDao.query(prepQuery);
+			jobAds = jobAdDao.query(jobPrepQuery);
+			
+//			for(JobAd job : jobAds) 
+//				log.info(job);
+			
+			jobCount += jobAds.size();
+			
+			// TODO bereits klassifizierte Anzeigen wieder aus der Liste entfernen
+			// ... postingID in classifyUnit Tabelle ... 
+			
+			// IDs der angefragten Anzeigen
+			List<Integer> jobIds = jobAds.parallelStream().map(JobAd::getId).collect(Collectors.toList());
+//			log.info("Folgende JobIDs sollen klassifiziert werden: " + jobIds);
+			cuPrepQuery = cuQueryBuilder.where().in("jobad_id", jobIds).prepare();
+			classifyUnits = cuDao.query(cuPrepQuery);
+//			log.info(classifyUnits.size() + " CUs bestehen bereits für job IDs");
+			
+//			for(JASCClassifyUnit cu : classifyUnits)
+//				log.info(cu.getJobad());
+			
+			
+			// bereits klassifizierte Anzeigen werden entfernt
+			List<JobAd> iniJobAds = classifyUnits.stream().map(JASCClassifyUnit::getJobad)
+					.collect(Collectors.toList());
+//			log.info(iniJobAds.size() + " jobads bereits verarbeitet");
+			jobAds.removeAll(iniJobAds);		
+			
+			log.info("processing row {} to {}, classifying {} job ads", queryOffset, (queryOffset + fetchSize), jobAds.size());
 
 			for (JobAd jobad : jobAds) {
-				countJobAds++;
-				paragraphs = classifyJobad(jobad, config, model, regexClassifier);
+				classifyUnits = classifyJobad(jobad, config, model, regexClassifier);
 				try {
-					cuDao.create(paragraphs);
+					cuDao.create(classifyUnits);
 				} catch (SQLException e) {
-					e.printStackTrace();
 					log.error("Abschnitt von Anzeige " + jobad.getPostingID() + " bereits in DB enthalten.");
 				}
 			}	
@@ -177,19 +203,9 @@ public class ORMDatabaseClassifier {
 		// prepare ClassifyUnits
 		classifyUnits = jobs.initializeClassifyUnits(classifyUnits);
 		classifyUnits = jobs.setFeatures(classifyUnits, config.getFeatureConfiguration(), false);
-		classifyUnits = jobs.setFeatureVectors(classifyUnits, config.getFeatureQuantifier(), model.getFUOrder());
-		
-//		double[] vec;
-//		for(ClassifyUnit cu : classifyUnits) {
-//			vec = cu.getFeatureVector();
-//			for(int i = 0; i < vec.length; i++)
-//				System.out.print(vec[0] + " ");
-//			System.out.println();
-//		}
-			
+		classifyUnits = jobs.setFeatureVectors(classifyUnits, config.getFeatureQuantifier(), model.getFUOrder());		
 
 		// 2. Classify
-//		RegexClassifier regexClassifier = new RegexClassifier(PropertiesHandler.getRegex());
 		Map<ClassifyUnit, boolean[]> preClassified = new HashMap<ClassifyUnit, boolean[]>();
 		for (ClassifyUnit cu : classifyUnits) {
 			boolean[] classes = regexClassifier.classify(cu, model);
@@ -206,11 +222,6 @@ public class ORMDatabaseClassifier {
 			JASCClassifyUnit jcu = ((JASCClassifyUnit) cu);
 			jcu.setClassIDs(classified.get(cu));
 			results.add(jcu);
-			
-//			log.info(jcu.transformToClassID());
-//			for (boolean b : jcu.getClassIDs())
-//				System.out.print(b + " ");
-//			System.out.println();
 		}
 
 		return results;

@@ -6,6 +6,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.j256.ormlite.field.DataType;
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -19,15 +23,25 @@ import lombok.Setter;
  *         competence) defined by an expression of one or more lemmata.
  *
  */
+@DatabaseTable(tableName = "Extractions")
 @Data
-@EqualsAndHashCode(of = {"startLemma", "singleWordEntity", "lemmata"})
+@EqualsAndHashCode(of = {"startLemma", "singleWordEntity", "lemmaArray"})
 public class InformationEntity {
+	
+	@DatabaseField(generatedId = true)
+	private Integer id;
+	
+	@DatabaseField(canBeNull = false, foreign = true, uniqueCombo = true)
+	@Setter(AccessLevel.NONE)
+	private ExtractionUnit parent;
 
 	//erstes Wort des Kompetenz-/Tool-Ausdrucks
+	@DatabaseField
 	@Setter(AccessLevel.NONE)
 	private String startLemma;
 	
 	//ist 'true' wenn der Ausdruck aus nur einem Wort (startLemma) besteht
+	@DatabaseField
 	@Setter(AccessLevel.NONE)
 	private boolean singleWordEntity;
 	
@@ -37,9 +51,21 @@ public class InformationEntity {
 //	private boolean fromMorphemCoordination;
 	
 	 //der vollständige Ausdruck als String-List (lemmata.get(0) = startLemma)
-	private List<String> lemmata;
+	@Deprecated
+	@Setter(AccessLevel.NONE)
+	private List<String> lemmaArrayList;
+	
+	@DatabaseField(dataType = DataType.SERIALIZABLE)
+	@Setter(AccessLevel.NONE)
+	private String[] lemmaArray;
+	
+	@DatabaseField(uniqueCombo = true)
+	@Setter(AccessLevel.NONE)
+	@Getter(AccessLevel.NONE)
+	private String lemmaExpression;
 	
 	//Modifizierer (z.B. 'zwingend erforderlich')
+	@DatabaseField
 	private String modifier;
 	
 	//übergeordnetes Konzept der Kompetenz (des Tools)
@@ -54,45 +80,94 @@ public class InformationEntity {
 	@Setter(AccessLevel.NONE)
 	private List<String> coordinations;
 	
-	//Tokens des Ausdrucks
-	@Getter(AccessLevel.NONE)
+//	//Tokens des Ausdrucks
+//	@Getter(AccessLevel.NONE)
+//	@Setter(AccessLevel.NONE)
+//	private List<TextToken> originalEntity;
+	
+	
+	
+	@DatabaseField
 	@Setter(AccessLevel.NONE)
-	private List<TextToken> originalEntity;
+	private IEType type;
 	
 
+	private static StringBuilder sb;
+	
+	public InformationEntity() {
+		
+	}
+	
+	/**
+	 * constructor for known information entities (without extractionUnit)
+	 * @param startLemma
+	 * @param isSingleWordEntity
+	 * @param type
+	 */
+	public InformationEntity(String startLemma, boolean isSingleWordEntity, IEType type) {
+		this.startLemma = startLemma;
+		this.singleWordEntity = isSingleWordEntity;
+		this.type = type;
+		if(isSingleWordEntity){			
+			this.lemmaArray = new String[1];
+			this.lemmaArray[0] = startLemma;
+			this.lemmaExpression = startLemma;
+		}
+
+	}
+	
+	/**
+	 * constructor for known information entities (without extractionUnit)
+	 * @param startLemma
+	 * @param isSingleWordEntity
+	 * @param type
+	 * @param label
+	 */
+	public InformationEntity(String startLemma, boolean isSingleWordEntity,
+			IEType type, String label) {
+		this(startLemma, isSingleWordEntity, -1, type, null);
+		this.labels = new HashSet<>();
+		labels.add(label);
+	}
+	
+	/**
+	 * constructor for known information entities (without extractionUnit)
+	 * @param startLemma
+	 * @param isSingleWordEntity
+	 * @param type
+	 * @param labels
+	 */
+	public InformationEntity(String startLemma, boolean isSingleWordEntity,
+			IEType type, Set<String> labels) {
+		this(startLemma, isSingleWordEntity, -1, type, null);
+		this.labels = labels;
+	}
+	
 	/**
 	 * @param startLemma 
 	 * 			first token of this IE
 	 * @param isSingleWordEntity
 	 */
-	public InformationEntity(String startLemma, boolean isSingleWordEntity) {
-		this.startLemma = startLemma;
-		this.singleWordEntity = isSingleWordEntity;
-		if(isSingleWordEntity){
-			lemmata = new ArrayList<>();
-			lemmata.add(startLemma);
-		}
-		this.firstIndex = -1;
+	public InformationEntity(String startLemma, boolean isSingleWordEntity, IEType type, ExtractionUnit parent) {
+		this(startLemma, isSingleWordEntity, -1, type, parent);
 	}
+	
+
 	
 	public InformationEntity(String startLemma, boolean isSingleWordEntity, 
-			int firstIndex) {
-		this(startLemma, isSingleWordEntity);
+			int firstIndex, IEType type, ExtractionUnit parent) {
+//		this.startLemma = startLemma;
+//		this.singleWordEntity = isSingleWordEntity;
+//		this.type = type;
+//		if(isSingleWordEntity){			
+//			lemmaArray = new String[1];
+//			lemmaArray[0] = startLemma;
+//		}
+		this(startLemma, isSingleWordEntity, type);
 		this.firstIndex = firstIndex;
+		this.parent = parent;
 	}
-	
-	public InformationEntity(String startLemma, boolean isSingleWordEntity,
-			String label) {
-		this(startLemma, isSingleWordEntity);
-		this.labels = new HashSet<>();
-		labels.add(label);
-	}
-	
-	public InformationEntity(String startLemma, boolean isSingleWordEntity,
-			Set<String> labels) {
-		this(startLemma, isSingleWordEntity);
-		this.labels = labels;
-	}
+
 	
 	
 	public void addLabel(String label) {
@@ -108,15 +183,50 @@ public class InformationEntity {
 	}
 	
 	/**
+	 * transforms util.arraylist to array and asigns array to field
+	 * @param lemmaArrayList
+	 */
+	public void setLemmaArrayList(List<String> lemmaArrayList) {
+		this.lemmaArray = new String[lemmaArrayList.size()];
+		lemmaArrayList.toArray(this.lemmaArray);
+		
+		InformationEntity.sb = new StringBuilder();
+		for (String l : lemmaArray)
+			sb.append(" " + l);
+		sb.deleteCharAt(0);
+		this.lemmaExpression = sb.toString();
+	}
+	
+	/**
+	 * get copy(!) of lemma array as util.arraylist
+	 * @return
+	 */
+	public List<String> getLemmaArrayList() {		
+		return new ArrayList<>(Arrays.asList(lemmaArray));
+	}
+	
+	
+	public void setLemmaArray(String[] lemmaArray) {
+		this.lemmaArray = lemmaArray;
+		
+		InformationEntity.sb = new StringBuilder();
+		for (String l : lemmaArray)
+			sb.append(" " + l);
+		sb.deleteCharAt(0);
+		this.lemmaExpression = sb.toString();
+	}
+	
+	/**
 	 * 
 	 * appends a new lemma to the list of lemmata
 	 * @param lemma
 	 */
+	@Deprecated
 	public void addLemma(String lemma) {
-		if (lemmata == null) {
-			lemmata = new ArrayList<String>();
+		if (lemmaArrayList == null) {
+			lemmaArrayList = new ArrayList<String>();
 		}
-		lemmata.add(lemma);
+		lemmaArrayList.add(lemma);
 	}
 	
 	/**
@@ -124,12 +234,13 @@ public class InformationEntity {
 	 */
 	@Override
 	public String toString(){
-		if(lemmata == null) return null;
-		StringBuffer sb = new StringBuffer();
-		for (String lemma : lemmata) {
-			sb.append(lemma+" ");
-		}
-		return sb.toString().trim();
+		if(lemmaExpression == null) return null;
+		return lemmaExpression;
+//		StringBuffer sb = new StringBuffer();
+//		for (String lemma : lemmaArray) {
+//			sb.append(lemma+" ");
+//		}
+//		return sb.toString().trim();
 	}
 
 

@@ -34,6 +34,7 @@ import org.languagetool.tagging.de.GermanTagger;
 
 import com.opencsv.CSVReader;
 
+import quenfo.de.uni_koeln.spinfo.information_extraction.data.IEType;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.InformationEntity;
 import quenfo.de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
 
@@ -112,7 +113,7 @@ public final class Util {
 	}
 
 	public static Map<String, Set<InformationEntity>> readRDF(File rdfFile,
-			Map<String, Set<InformationEntity>> entities) {
+			Map<String, Set<InformationEntity>> entities, IEType type) {
 
 		Model model = ModelFactory.createDefaultModel();
 		model = model.read(rdfFile.getAbsolutePath());
@@ -179,12 +180,14 @@ public final class Util {
 					Set<InformationEntity> iesForKeyword = entities.get(keyword);
 					if (iesForKeyword == null)
 						iesForKeyword = new HashSet<InformationEntity>();
-					InformationEntity ie = new InformationEntity(keyword, split.length == 1, cat);
+					InformationEntity ie = new InformationEntity(keyword, split.length == 1, type, cat);
 					if (!ie.isSingleWordEntity()) {
-						for (String string : split) {
-							ie.addLemma(Util.normalizeLemma(string));
-
+						for (int i = 0; i < split.length; i++) {
+//							ie.addLemma(Util.normalizeLemma(split[i]));
+							split[i] = Util.normalizeLemma(split[i]);
 						}
+						
+						ie.setLemmaArray(split);
 					}
 					if (iesForKeyword.contains(ie)) {
 						for (InformationEntity curr : iesForKeyword) {
@@ -204,7 +207,7 @@ public final class Util {
 	}
 
 	public static Map<String, Set<InformationEntity>> readTEI(File teiFile, String category,
-			Map<String, Set<InformationEntity>> entities) throws IOException, FileNotFoundException {
+			Map<String, Set<InformationEntity>> entities, IEType type) throws IOException, FileNotFoundException {
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(teiFile), "UTF8"));
 
@@ -245,12 +248,14 @@ public final class Util {
 				Set<InformationEntity> iesForKeyword = entities.get(keyword);
 				if (iesForKeyword == null)
 					iesForKeyword = new HashSet<InformationEntity>();
-				InformationEntity ie = new InformationEntity(keyword, split.length == 1, cat);
+				InformationEntity ie = new InformationEntity(keyword, split.length == 1, type, cat);
 				if (!ie.isSingleWordEntity()) {
-					for (String string : split) {
-						ie.addLemma(Util.normalizeLemma(string));
-
+					for (int i = 0; i < split.length; i++) {
+//						ie.addLemma(Util.normalizeLemma(split[i]));
+						split[i] = Util.normalizeLemma(split[i]);
 					}
+					
+					ie.setLemmaArray(split);
 				}
 				if (iesForKeyword.contains(ie)) {
 					for (InformationEntity curr : iesForKeyword) {
@@ -272,7 +277,7 @@ public final class Util {
 	}
 
 	public static Map<String, Set<InformationEntity>> readCSV(File entitiesFile,
-			Map<String, Set<InformationEntity>> entities) throws IOException {
+			Map<String, Set<InformationEntity>> entities, IEType type) throws IOException {
 		
 		IETokenizer tokenizer = new IETokenizer();
 		CSVReader reader = new CSVReader(new FileReader(entitiesFile));		
@@ -294,25 +299,27 @@ public final class Util {
 				
 				List<String> tokens = Arrays.asList(tokenizer.tokenizeSentence(skill));
 				
-				List<String> lemmas = new ArrayList<>();
-				for (String token : tokens) {
-					List<TaggedWord> readings = tagger.tag(token);
+				String[] lemmas = new String[tokens.size()];
+				for (int i = 0; i < tokens.size(); i++) {
+					List<TaggedWord> readings = tagger.tag(tokens.get(i));
 					if(readings.size() == 0)
-						lemmas.add(token.toLowerCase());
+						lemmas[i] = tokens.get(i).toLowerCase();
 					else
-						lemmas.add(readings.get(0).getLemma().toLowerCase());
+						lemmas[i] = readings.get(0).getLemma().toLowerCase();
 				}
 				
-				keyword = Util.normalizeLemma(lemmas.get(0));
+				keyword = Util.normalizeLemma(lemmas[0]);
 				Set<InformationEntity> iesForKeyword = entities.get(keyword);
 				if (iesForKeyword == null)
 					iesForKeyword = new HashSet<InformationEntity>();
-				InformationEntity ie = new InformationEntity(keyword, lemmas.size() == 1, uri);
+				InformationEntity ie = new InformationEntity(keyword, lemmas.length == 1, type, uri);
 				if (!ie.isSingleWordEntity()) {
-					for (String lemma : lemmas) {
-						ie.addLemma(Util.normalizeLemma(lemma));
-
+					for (int i = 0; i < lemmas.length; i++) {
+//						ie.addLemma(Util.normalizeLemma(split[i]));
+						lemmas[i] = Util.normalizeLemma(lemmas[i]);
 					}
+					
+					ie.setLemmaArray(lemmas);
 				}
 				if (iesForKeyword.contains(ie)) {
 					for (InformationEntity curr : iesForKeyword) {

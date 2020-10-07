@@ -24,15 +24,15 @@ public class MateTagger {
 			is2.tools.Tool morphTagger, is2.tools.Tool tagger) throws IOException {
 
 		IETokenizer tokenizer = new IETokenizer();
-		boolean lexicalDataIsStoredInDB;
+//		boolean lexicalDataIsStoredInDB;
 		SentenceData09 sd = null;
 
 		for (ExtractionUnit extractionUnit : extractionUnits) {
 
-			lexicalDataIsStoredInDB = true;
+//			lexicalDataIsStoredInDB = true;
 			sd = new SentenceData09();
 			if (extractionUnit.getTokens() == null) {
-				lexicalDataIsStoredInDB = false;
+//				lexicalDataIsStoredInDB = false;
 				sd.init(tokenizer.tokenizeSentence("<root> " + extractionUnit.getSentence()));
 			} else {
 
@@ -41,7 +41,7 @@ public class MateTagger {
 			if (lemmatizer != null) {
 				
 				if (extractionUnit.getLemmata() == null) {
-					lexicalDataIsStoredInDB = false;
+//					lexicalDataIsStoredInDB = false;
 					lemmatizer.apply(sd);
 				} else {
 					sd.setLemmas(extractionUnit.getLemmata());
@@ -52,7 +52,7 @@ public class MateTagger {
 			}
 			if (tagger != null) {
 				if (extractionUnit.getPosTags() == null) {
-					lexicalDataIsStoredInDB = false;
+//					lexicalDataIsStoredInDB = false;
 					tagger.apply(sd);
 				} else {
 					sd.setPPos(extractionUnit.getPosTags());
@@ -62,7 +62,7 @@ public class MateTagger {
 			}
 			
 			extractionUnit.setSentenceData(sd);
-			extractionUnit.setLexicalDataStoredInDB(lexicalDataIsStoredInDB);
+//			extractionUnit.setLexicalDataStoredInDB(lexicalDataIsStoredInDB);
 
 		}
 

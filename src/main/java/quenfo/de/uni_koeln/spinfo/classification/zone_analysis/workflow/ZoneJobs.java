@@ -1,9 +1,7 @@
 package quenfo.de.uni_koeln.spinfo.classification.zone_analysis.workflow;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;

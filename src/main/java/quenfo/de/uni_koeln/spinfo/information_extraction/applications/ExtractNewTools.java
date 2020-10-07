@@ -34,7 +34,7 @@ public class ExtractNewTools {
 	static String toolsIEOutputDB = null;
 
 	// txt-File mit allen bereits bekannten (validierten) Tools (die
-	// bekannten Tools helfen beim Auffinden neuer Kompetenzen)
+	// bekannten Tools helfen beim Auffinden neuer Tools)
 	static File tools = null;
 
 	// txt-File mit bekannten (typischen) Extraktionsfehlern (würden ansonsten
@@ -47,7 +47,7 @@ public class ExtractNewTools {
 	// falls nicht alle Paragraphen aus der Input-DB verwendet werden sollen:
 	// hier Anzahl der zu lesenden Paragraphen festlegen
 	// -1 = alle
-	static int maxCount = -1;
+	static int queryLimit = -1;
 
 	// falls nur eine bestimmte Anzahl gelesen werden soll, hier die startID
 	// angeben
@@ -86,8 +86,8 @@ public class ExtractNewTools {
 			System.out.println("please select a new startPosition and try again");
 			System.exit(0);
 		}
-		if (maxCount > tableSize - startPos) {
-			maxCount = tableSize - startPos;
+		if (queryLimit > tableSize - startPos) {
+			queryLimit = tableSize - startPos;
 		}
 
 		// Connect to the output-DB
@@ -107,10 +107,10 @@ public class ExtractNewTools {
 		// schnelleren Zugriff
 		IE_DBConnector.createIndex(inputConnection, "ClassifiedParagraphs", "ClassTWO, ClassTHREE");
 		Extractor extractor = new Extractor(outputConnection, tools, noTools, toolsPatterns, null, IEType.TOOL, false);
-		if (maxCount == -1) {
-			maxCount = tableSize;
+		if (queryLimit == -1) {
+			queryLimit = tableSize;
 		}
-		extractor.extract(startPos, maxCount, fetchSize, tableSize, inputConnection, outputConnection);
+		extractor.extract(startPos, queryLimit, fetchSize, tableSize, inputConnection, outputConnection);
 		long after = System.currentTimeMillis();
 		double time = (((double) after - before) / 1000) / 60;
 		if (time > 60.0) {
@@ -137,7 +137,7 @@ public class ExtractNewTools {
 
 		paraInputDB = quenfoData + "/sqlite/classification/" + PropertiesHandler.getStringProperty("general", "classifiedParagraphs");// + jahrgang + ".db";
 		
-		maxCount = PropertiesHandler.getIntProperty("ie", "queryLimit");
+		queryLimit = PropertiesHandler.getIntProperty("ie", "queryLimit");
 		startPos = PropertiesHandler.getIntProperty("ie", "startPos");
 		fetchSize = PropertiesHandler.getIntProperty("ie", "fetchSize");
 		expandCoordinates = PropertiesHandler.getBoolProperty("ie", "expandCoordinates");

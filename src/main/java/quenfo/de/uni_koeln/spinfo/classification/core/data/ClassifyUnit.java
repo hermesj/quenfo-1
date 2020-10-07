@@ -1,6 +1,8 @@
 package quenfo.de.uni_koeln.spinfo.classification.core.data;
 
 import java.util.List;
+import java.util.StringJoiner;
+
 import com.j256.ormlite.field.DatabaseField;
 import lombok.AccessLevel;
 import lombok.Data;
@@ -19,12 +21,12 @@ import quenfo.de.uni_koeln.spinfo.core.data.JobAd;
  */
 
 @Data
-@EqualsAndHashCode(of = { "content", "jobad" })
-@ToString(of = { "content" }) //TODO JB: toString classifyUnit
+@EqualsAndHashCode(of = { "id" })
+@ToString(of = { "id", "jobad" }) //TODO JB: toString classifyUnit
 public class ClassifyUnit {
 	
-	@DatabaseField(id = true)
-	@Getter(AccessLevel.NONE)
+	@DatabaseField(generatedId = true)
+//	@Getter(AccessLevel.NONE)
 	@Setter(AccessLevel.NONE)
 	private Integer id;
 	
@@ -109,6 +111,21 @@ public class ClassifyUnit {
 		this.content = content;
 		this.jobad = jobad;
 	}
+	
+//	@Override
+//	public String toString() {
+//		if (this.content != null && content.length() > 10 && this.jobad != null)
+//			return new StringJoiner("|", "[", "]")
+//					.add("substring=" + content.subSequence(0, 10))
+//					.add("jobad=" + jobad.toString())
+//					.toString();
+//		
+//		if (this.jobad != null)
+//			return new StringJoiner("|", "[", "[")
+//			.add("jobad=" + jobad.toString())
+//			.toString();
+//		
+//	}
 
 
 

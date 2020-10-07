@@ -89,7 +89,7 @@
 		<dependency>
 			<groupId>de.uni_koeln.spinfo</groupId>
 			<artifactId>CoordinateExpander</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 
 

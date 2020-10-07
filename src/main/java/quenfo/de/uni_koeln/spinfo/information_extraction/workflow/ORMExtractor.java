@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,13 +18,13 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
 import is2.lemmatizer.Lemmatizer;
 import is2.tag.Tagger;
 import is2.tools.Tool;
-import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import quenfo.de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.helpers.SingleToMultiClassConverter;
 import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
@@ -42,16 +43,8 @@ public class ORMExtractor {
 
 	ConnectionSource connection;
 
-	// beide Variablen werden nur gebraucht, wenn Validierungen (0 & 1) aus Tabelle
-	// gelesen werden
-//	private Set<String> knownEntities = new HashSet<String>();
-//	private Set<String> noEntities = new HashSet<String>();
 	private Map<String, String> possCompoundSplits = new HashMap<String, String>();
 	private File possCompoundsFile, splittedCompoundsFile;
-//	private File entitiesFile;
-//	private File noEntitiesFile;
-
-	ConnectionSource ormConnection;
 
 	/**
 	 * Constructor to extract new competences / tools
@@ -67,9 +60,7 @@ public class ORMExtractor {
 	 */
 	public ORMExtractor(ConnectionSource ormConnection, File entitiesFile, File noEntitiesFile, File contexts,
 			File modifier, IEType ieType, boolean resolveCoordinations) throws IOException {
-		// TODO Auto-generated constructor stub
-//		this.entitiesFile = entitiesFile;
-//		this.noEntitiesFile = noEntitiesFile;
+
 		this.type = ieType;
 		this.possCompoundsFile = new File(PropertiesHandler.getPossibleCompounds());
 		this.splittedCompoundsFile = new File(PropertiesHandler.getSplittedCompounds());
@@ -97,7 +88,7 @@ public class ORMExtractor {
 	}
 
 	public void extract(int queryOffset, int queryLimit, int fetchSize) throws SQLException, IOException {
-		// TODO Auto-generated method stub
+
 		Tool lemmatizer = new Lemmatizer(PropertiesHandler.getLemmatizerModel(), false);
 		Tool tagger = new Tagger(PropertiesHandler.getTaggerModel());
 
@@ -106,42 +97,119 @@ public class ORMExtractor {
 		if (!exuDao.isTableExists())
 			TableUtils.createTable(exuDao);
 
-		QueryBuilder<JASCClassifyUnit, String> queryBuilder = cuDao.queryBuilder();
+		Dao<InformationEntity, String> ieDao = DaoManager.createDao(connection, InformationEntity.class);
+		if (!ieDao.isTableExists())
+			TableUtils.createTable(ieDao);
+
+		QueryBuilder<JASCClassifyUnit, String> cuQueryBuilder = cuDao.queryBuilder();
+		QueryBuilder<ExtractionUnit, String> exuQueryBuilder = exuDao.queryBuilder();
 
 		List<JASCClassifyUnit> classifyUnits = null;
 		List<ExtractionUnit> extractionUnits = null;
+		List<ExtractionUnit> newInitEUs = null;
 		Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractions = null;
 		Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> allExtractions = new HashMap<ExtractionUnit, Map<InformationEntity, List<Pattern>>>();
 
-		PreparedQuery<JASCClassifyUnit> prepQuery;
+		PreparedQuery<JASCClassifyUnit> cuPrepQuery;
+		PreparedQuery<ExtractionUnit> exuPrepQuery;
+
+		Where<JASCClassifyUnit, String> whereClause;
+		switch (type) {
+		case COMPETENCE_IN_2:
+			whereClause = cuQueryBuilder.where().eq("ClassTWO", true);
+			break;
+		case COMPETENCE_IN_3:
+			whereClause = cuQueryBuilder.where().eq("ClassTHREE", true);
+			break;
+		case COMPETENCE_IN_23:
+			whereClause = cuQueryBuilder.where().eq("ClassTWO", true).or().eq("ClassTHREE", true);
+			break;
+		case TOOL:
+			whereClause = cuQueryBuilder.where().eq("ClassTWO", true).or().eq("ClassTHREE", true);
+			break;
+		default:
+			whereClause = cuQueryBuilder.where().eq("ClassTWO", true).or().eq("ClassTHREE", true);
+			break;
+		}
+		
+		
+		if (queryLimit < 0) {
+			QueryBuilder<JASCClassifyUnit, String> queryBuilder = cuDao.queryBuilder();
+			queryBuilder.setWhere(whereClause);
+			queryLimit = (int) queryBuilder.countOf();
+			log.info("queryLimit nicht gesetzt. Neues queryLimit: " + queryLimit);
+		}
 
 		int cuCount = 0;
-
 		while (cuCount < queryLimit) {
 
 			// pruefen, ob fetchsize uber querylimit hinaus geht
 			if ((cuCount + fetchSize) > queryLimit)
 				fetchSize = queryLimit - cuCount;
-			log.info("classifying {} job ads, skipping first {} rows", fetchSize, queryOffset);
+//			log.info("extracting from {} paragraphs, skipping first {} rows", fetchSize, queryOffset);
 
-			// TODO where class = 3 / 2
-			prepQuery = queryBuilder.offset((long) queryOffset).orderBy("id", true).limit((long) fetchSize).prepare();
-			classifyUnits = cuDao.query(prepQuery);
+			cuQueryBuilder = cuQueryBuilder.offset((long) queryOffset).orderBy("id", true).limit((long) fetchSize);
+			cuQueryBuilder.setWhere(whereClause);
+			cuPrepQuery = cuQueryBuilder.prepare();
 
+			// alle relevanten Paragraphen, die durchsucht werden sollen
+			classifyUnits = cuDao.query(cuPrepQuery);
+			
+			// falls Anfrage auf keine classify units zutrifft, wird abgebrochen
+			if (classifyUnits.size() < 1)
+				return;
+			
+			
+			
+			for(JASCClassifyUnit cu : classifyUnits)
+				cuDao.refresh(cu);
+			log.info(classifyUnits.size() + " classifyUnits abgefragt");
 			cuCount += classifyUnits.size();
 
-			// FIXME extract from classify unit
+			// extraction units aus bereits initalisierten classifyUnits anfragen
+			// Annahme: wenn es bereits extactionUnits mit paragraph_id = classifyUnit-id
+			// gibt, dann wurde der Paragraph schon vorverarbeitet
+			List<Integer> cuIds = classifyUnits.stream().map(JASCClassifyUnit::getId).collect(Collectors.toList());
+			exuPrepQuery = exuQueryBuilder.where().in("paragraph_id", cuIds).prepare();
+			extractionUnits = exuDao.query(exuPrepQuery);
+			
+			for (ExtractionUnit eu : extractionUnits)
+				exuDao.refresh(eu);
+			
+			
+//			for(ExtractionUnit eu : extractionUnits)
+//				log.info(eu.getParagraph());
+
+			// bereits vorverarbeitete classifyUnits werden aus allen angefragten gelöscht
+			Set<JASCClassifyUnit> iniParas = new HashSet<>(extractionUnits.stream().map(ExtractionUnit::getParagraph)
+					.collect(Collectors.toList()));
+//			log.info("to remove: ");
+//			for(JASCClassifyUnit cu : iniParas) {
+////				cuDao.refresh(cu);
+//				log.info(cu.toString());
+//			}
+//				
+//			log.info("to classify: " + classifyUnits);
+			classifyUnits.removeAll(iniParas);
+			
+			log.info("processing row {} to {}, extracting from {} classify units", queryOffset, (queryOffset + fetchSize), classifyUnits.size());
 
 			// Paragraphen in Sätze splitten und in ExtractionUnits überführen
-			log.info("initialize ExtractionUnits");
-			extractionUnits = ExtractionUnitBuilder.initializeIEUnits(classifyUnits, lemmatizer, null, tagger);
-			log.info("--> " + extractionUnits.size());
-			
-			//TEST
-			exuDao.create(extractionUnits);
-			//TESt
+			newInitEUs = ExtractionUnitBuilder.initializeIEUnits(classifyUnits, lemmatizer, null, tagger);
+
+			for (ExtractionUnit eu : newInitEUs) {
+				try {
+					exuDao.create(eu);
+				} catch (SQLException e) {
+					log.error(e.getMessage());
+				}
+			}
+
+			extractionUnits.addAll(newInitEUs);
+			log.info(extractionUnits.size() + " extraction Units (Sätze) initialisiert");
 
 			// Informationsextraktion
+			// TODO annotation für alle EUs oder nur neu initalisierte?
 			jobs.annotateTokens(extractionUnits);
 			log.info("extract " + type.name().toLowerCase());
 			extractions = jobs.extractEntities(extractionUnits, lemmatizer);
@@ -152,7 +220,14 @@ public class ORMExtractor {
 			extractions = removeKnownEntities(extractions);
 
 			for (Map.Entry<ExtractionUnit, Map<InformationEntity, List<Pattern>>> e : extractions.entrySet()) {
-				System.out.println(e.getValue().keySet());
+				for (Map.Entry<InformationEntity, List<Pattern>> ie : e.getValue().entrySet()) {
+					try {
+						ieDao.create(ie.getKey());
+					} catch (SQLException e1) {
+						log.debug(e1.getMessage());
+					}
+				}
+
 			}
 			allExtractions.putAll(extractions);
 

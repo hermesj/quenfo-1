@@ -80,6 +80,8 @@ public class ExtractNewCompetences {
 		} else {
 			inputConnection = IE_DBConnector.connect(paraInputDB);
 		}
+		
+		// TODO grund dafür, dass hier dbmode nicht ausgewählt wird?
 
 		// Prüfe ob maxCount und startPos gültige Werte haben
 		String query = "SELECT COUNT(*) FROM ClassifiedParagraphs;";

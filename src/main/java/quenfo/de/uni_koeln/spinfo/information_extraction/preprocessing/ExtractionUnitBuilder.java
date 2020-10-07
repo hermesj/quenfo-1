@@ -83,6 +83,8 @@ public class ExtractionUnitBuilder {
 			lemmata = null;
 			posTags = null;
 			tokens = null;
+			
+			// TODO an ORM anpassen
 			if (cu.getSentences() == null) {
 				sentences = tokenizer.splitIntoSentences(cu.getContent());
 			} else {
@@ -105,13 +107,13 @@ public class ExtractionUnitBuilder {
 				String sentence = sentences.get(i);
 				sentence = correctSentence(sentence);
 				if (sentence.length() > 1) {
-					extractionUnit = new ExtractionUnit();
+					extractionUnit = new ExtractionUnit(i);
 
 					extractionUnit.setSentence(sentence);
 					extractionUnit.setJahrgang(cu.getJahrgang());
 					extractionUnit.setPostingID(cu.getPostingID());
-					extractionUnit.setParagraph(cu);
-					extractionUnit.setClassifyUnitTableID(cu.getTableID());
+					extractionUnit.setParagraph((JASCClassifyUnit) cu);
+//					extractionUnit.setClassifyUnitTableID(cu.getTableID());
 				
 					if (lemmata != null) {
 						extractionUnit.setLemmata(lemmata.get(i).split(" \\| "));

@@ -9,26 +9,25 @@ import com.j256.ormlite.support.ConnectionSource;
 
 import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.IEType;
-import quenfo.de.uni_koeln.spinfo.information_extraction.utils.Util;
 import quenfo.de.uni_koeln.spinfo.information_extraction.workflow.ORMExtractor;
 
-public class ExtractNewCompetences {
-
-	static IEType ieType;
+public class ExtractNewTools {
+	
+	static IEType ieType = IEType.TOOL;
 
 	// Pfad zur ORM-Datenbank
 	static String dbFilePath;
 
-	// txt-File mit allen bereits bekannten (validierten) Kompetenzen (die
-	// bekannten Kompetenzn helfen beim Auffinden neuer Kompetenzen)
-	static File competences;
+	// txt-File mit allen bereits bekannten (validierten) Tools (die
+	// bekannten Tools helfen beim Auffinden neuer Tools)
+	static File tools;
 
 	// txt-File mit bekannten (typischen) Extraktionsfehlern (würden ansonsten
 	// immer wieder vorgeschlagen werden)
-	static File noCompetences;
+	static File noTools;
 
 	// txt-File mit den Extraktionspatterns
-	static File compPatterns;
+	static File toolsPatterns;
 
 	// txt-File mit bekannten modifiern ("vorausgesetzt" etc.)
 	static File modifier;
@@ -49,9 +48,6 @@ public class ExtractNewCompetences {
 
 	public static void main(String[] args) throws IOException, SQLException {
 
-//			System.out.println(Util.normalizeLemma("konfliktfähigkeit"));
-//			System.exit(0);
-
 		if (args.length > 0) {
 			String configPath = args[1];
 			loadProperties(configPath);
@@ -66,20 +62,20 @@ public class ExtractNewCompetences {
 
 		long before = System.currentTimeMillis();
 
-		ORMExtractor extractor = new ORMExtractor(jobadConnection, competences, noCompetences, compPatterns, modifier,
+		ORMExtractor extractor = new ORMExtractor(jobadConnection, tools, noTools, toolsPatterns, modifier,
 				ieType, expandCoordinates);
 		extractor.extract(startPos, queryLimit, fetchSize);
 
 		long after = System.currentTimeMillis();
 		Double time = (((double) after - before) / 1000) / 60;
 		if (time > 60.0) {
-			System.out.println("\nfinished Competence-Extraction in " + (time / 60) + " hours");
+			System.out.println("\nfinished Tools-Extraction in " + (time / 60) + " hours");
 		} else {
-			System.out.println("\nFinished Competence-Extraction in " + time + " minutes");
+			System.out.println("\nFinished Tools-Extraction in " + time + " minutes");
 		}
 
 	}
-
+	
 	private static void loadProperties(String folderPath) throws IOException {
 
 		File configFolder = new File(folderPath);
@@ -89,26 +85,27 @@ public class ExtractNewCompetences {
 					+ "\nPlease change configuration and start again.");
 			System.exit(0);
 		}
-
-		// initialize and load all properties files
+		
+		//initialize and load all properties files
 		String quenfoData = configFolder.getParent();
 		PropertiesHandler.initialize(configFolder);
 
-		ieType = PropertiesHandler.getSearchType("ie");
-
 		dbFilePath = quenfoData + "/sqlite/orm/" + PropertiesHandler.getStringProperty("general", "orm_database");
-
+//		paraInputDB = quenfoData + "/sqlite/classification/" + PropertiesHandler.getStringProperty("general", "classifiedParagraphs");// + jahrgang + ".db";
+		
 		queryLimit = PropertiesHandler.getIntProperty("ie", "queryLimit");
 		startPos = PropertiesHandler.getIntProperty("ie", "startPos");
 		fetchSize = PropertiesHandler.getIntProperty("ie", "fetchSize");
 		expandCoordinates = PropertiesHandler.getBoolProperty("ie", "expandCoordinates");
+		
+		String toolsFolder = quenfoData + "/resources/information_extraction/tools/";
+		
+		tools = new File(toolsFolder + PropertiesHandler.getStringProperty("ie", "tools"));
+		noTools = new File(toolsFolder + PropertiesHandler.getStringProperty("ie", "noTools"));
+		toolsPatterns = new File(toolsFolder + PropertiesHandler.getStringProperty("ie", "toolsPatterns"));
 
-		String competencesFolder = quenfoData + "/resources/information_extraction/competences/";
-		competences = new File(competencesFolder + PropertiesHandler.getStringProperty("ie", "competences"));
-		noCompetences = new File(competencesFolder + PropertiesHandler.getStringProperty("ie", "noCompetences"));
-		modifier = new File(competencesFolder + PropertiesHandler.getStringProperty("ie", "modifier"));
-		compPatterns = new File(competencesFolder + PropertiesHandler.getStringProperty("ie", "compPatterns"));
-
+//		toolsIEOutputFolder = quenfoData + "/sqlite/information_extraction/tools/";
+//		toolsIEOutputDB = PropertiesHandler.getStringProperty("ie", "toolsIEOutputDB");
 	}
 
 }

@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -421,73 +420,6 @@ public class IE_DBConnector {
 	 */
 	public static Set<String> readEntities(Connection connection, IEType type) throws SQLException {
 		return readAnnotatedEntities(connection, -1, type);
-	}
-
-	/**
-	 * adds lexical data (sentences, lemmata, posTags) to the ClassifyUnits for
-	 * later reuse
-	 * 
-	 * @param connection
-	 * @param extractionUnits
-	 * @throws SQLException
-	 */
-	@Deprecated
-	public static void upateClassifyUnits(Connection connection, List<ExtractionUnit> extractionUnits)
-			throws SQLException {
-		connection.setAutoCommit(false);
-		String sql = "UPDATE ClassifiedParagraphs SET ExtractionUnits = ?, Lemmata = ?, POSTags = ? WHERE PARAGRAPHID = ?";
-		PreparedStatement stmt = connection.prepareStatement(sql);
-		Map<Integer, StringBuffer> sentences = new HashMap<Integer, StringBuffer>();
-		Map<Integer, StringBuffer> lemmata = new HashMap<Integer, StringBuffer>();
-		Map<Integer, StringBuffer> posTags = new HashMap<Integer, StringBuffer>();
-		for (ExtractionUnit e : extractionUnits) {
-			if (e.isLexicalDataStoredInDB())
-				continue;
-			int cuParaID = e.getClassifyUnitTableID();
-			StringBuffer sb = sentences.get(cuParaID);
-			if (sb == null)
-				sb = new StringBuffer();
-			else
-				sb.append("  ||  ");
-			for (String token : e.getTokens()) {
-				sb.append(token + " | ");
-			}
-			sb.delete(sb.length() - 3, sb.length());
-			// sb.append(e.getSentence());
-			sentences.put(cuParaID, sb);
-
-			sb = lemmata.get(cuParaID);
-			if (sb == null)
-				sb = new StringBuffer();
-			else
-				sb.append("  ||  ");
-			for (String lemma : e.getLemmata()) {
-				sb.append(lemma + " | ");
-			}
-			sb.delete(sb.length() - 3, sb.length());
-			lemmata.put(cuParaID, sb);
-
-			sb = posTags.get(cuParaID);
-			if (sb == null)
-				sb = new StringBuffer();
-			else
-				sb.append("  ||  ");
-			for (String pos : e.getPosTags()) {
-				sb.append(pos + " | ");
-			}
-			sb.delete(sb.length() - 3, sb.length());
-			posTags.put(cuParaID, sb);
-		}
-		for (Integer id : sentences.keySet()) {
-			stmt.setString(1, sentences.get(id).toString());
-			stmt.setString(2, lemmata.get(id).toString());
-			stmt.setString(3, posTags.get(id).toString());
-			stmt.setInt(4, id);
-			stmt.addBatch();
-		}
-		stmt.executeBatch();
-		stmt.close();
-		connection.commit();
 	}
 
 	/**

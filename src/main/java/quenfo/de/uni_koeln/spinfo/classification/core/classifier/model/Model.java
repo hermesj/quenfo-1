@@ -8,19 +8,13 @@ import java.util.List;
 
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.field.ForeignCollectionField;
-
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import quenfo.de.uni_koeln.spinfo.classification.core.classifier.AbstractClassifier;
 import quenfo.de.uni_koeln.spinfo.classification.core.data.FeatureUnitConfiguration;
-import quenfo.de.uni_koeln.spinfo.classification.core.feature_engineering.feature_weighting.AbsoluteFrequencyFeatureQuantifier;
 import quenfo.de.uni_koeln.spinfo.classification.core.feature_engineering.feature_weighting.AbstractFeatureQuantifier;
-import quenfo.de.uni_koeln.spinfo.classification.core.feature_engineering.feature_weighting.LogLikeliHoodFeatureQuantifier;
-import quenfo.de.uni_koeln.spinfo.classification.core.feature_engineering.feature_weighting.RelativeFrequencyFeatureQuantifier;
-import quenfo.de.uni_koeln.spinfo.classification.core.feature_engineering.feature_weighting.TFIDFFeatureQuantifier;
 
 /**
  * @author geduldia
