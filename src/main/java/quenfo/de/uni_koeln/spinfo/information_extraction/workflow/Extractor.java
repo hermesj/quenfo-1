@@ -26,7 +26,7 @@ import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.helpers.SingleToM
 import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.IEType;
-import quenfo.de.uni_koeln.spinfo.information_extraction.data.InformationEntity;
+import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractedEntity;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.Pattern;
 import quenfo.de.uni_koeln.spinfo.information_extraction.db_io.IE_DBConnector;
 import quenfo.de.uni_koeln.spinfo.information_extraction.preprocessing.ExtractionUnitBuilder;
@@ -168,7 +168,7 @@ public class Extractor {
 	 * @throws IOException
 	 * @throws SQLException
 	 */
-	public Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extract(int startPos, int maxCount, int fetchSize,
+	public Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> extract(int startPos, int maxCount, int fetchSize,
 			int tablesize, Connection inputConnection, Connection outputConnection) throws IOException, SQLException {
 
 		// Falls die lexikalischen Infos (lemmata, POS-Tags etc.) noch nicht in
@@ -187,8 +187,8 @@ public class Extractor {
 
 		List<ClassifyUnit> classifyUnits = null;
 		List<ExtractionUnit> extractionUnits = null;
-		Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractions = null;
-		Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> allExtractions = new HashMap<ExtractionUnit, Map<InformationEntity, List<Pattern>>>();
+		Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> extractions = null;
+		Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> allExtractions = new HashMap<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>>();
 
 		int readParagraphs = 0;
 		int offset = startPos;
@@ -283,8 +283,8 @@ public class Extractor {
 		return allExtractions;
 	}
 
-	private Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> matchBatch(List<ExtractionUnit> extractionUnits,
-			Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> stringMatches, Tool lemmatizer)
+	private Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> matchBatch(List<ExtractionUnit> extractionUnits,
+			Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> stringMatches, Tool lemmatizer)
 			throws SQLException, IOException {
 
 		stringMatches = jobs.extractByStringMatch(extractionUnits, lemmatizer);
@@ -328,7 +328,7 @@ public class Extractor {
 
 		List<ClassifyUnit> classifyUnits = null;
 		List<ExtractionUnit> extractionUnits = null;
-		Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> stringMatches = null;
+		Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> stringMatches = null;
 
 		int readParagraphs = 0;
 		int offset = startPos;
@@ -361,6 +361,10 @@ public class Extractor {
 			jobs.annotateTokens(extractionUnits);
 
 			stringMatches = matchBatch(extractionUnits, stringMatches, lemmatizer);
+			
+			for(Map.Entry<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> e :stringMatches.entrySet()) {
+				log.info("Patterns: " + e.getValue().values().toString());
+			}
 
 			// write results in DB
 			if (stringMatches.isEmpty()) {
@@ -391,15 +395,15 @@ public class Extractor {
 		lemmatizer = null;
 	}
 
-	private Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> removeKnownEntities(
-			Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> allExtractions) {
-		Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> toReturn = new HashMap<ExtractionUnit, Map<InformationEntity, List<Pattern>>>();
+	private Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> removeKnownEntities(
+			Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> allExtractions) {
+		Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> toReturn = new HashMap<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>>();
 		for (ExtractionUnit extractionUnit : allExtractions.keySet()) {
 
-			Map<InformationEntity, List<Pattern>> ies = allExtractions.get(extractionUnit);
-			Map<InformationEntity, List<Pattern>> filterdIes = new HashMap<InformationEntity, List<Pattern>>();
-			for (InformationEntity ie : ies.keySet()) {
-				Set<InformationEntity> knownIEs = jobs.entities.get(ie.getStartLemma());
+			Map<ExtractedEntity, List<Pattern>> ies = allExtractions.get(extractionUnit);
+			Map<ExtractedEntity, List<Pattern>> filterdIes = new HashMap<ExtractedEntity, List<Pattern>>();
+			for (ExtractedEntity ie : ies.keySet()) {
+				Set<ExtractedEntity> knownIEs = jobs.entities.get(ie.getStartLemma());
 				if (knownIEs == null || (!knownIEs.contains(ie))) {
 					filterdIes.put(ie, ies.get(ie));
 				}
@@ -492,11 +496,11 @@ public class Extractor {
 		out.close();
 	}
 
-	private void updateMatchCount(Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> stringMatches,
+	private void updateMatchCount(Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> stringMatches,
 			Map<String, Integer> counts) {
 		for (ExtractionUnit iePhrase : stringMatches.keySet()) {
 
-			for (InformationEntity e : stringMatches.get(iePhrase).keySet()) {
+			for (ExtractedEntity e : stringMatches.get(iePhrase).keySet()) {
 				String exp = e.toString();
 				Integer c = counts.get(exp);
 				if (c == null) {

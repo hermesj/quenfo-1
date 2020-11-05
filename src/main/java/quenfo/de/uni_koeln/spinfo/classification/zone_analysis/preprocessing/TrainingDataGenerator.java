@@ -10,7 +10,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import quenfo.de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
@@ -75,7 +74,7 @@ public class TrainingDataGenerator {
 			StringBuffer content = new StringBuffer();
 			int jahrgang = 0;
 			String postingID = "";
-			UUID paragraphID = null;
+//			UUID paragraphID = null;
 			int classID = 0;
 			while (line != null) {
 				String[] splits = line.split("\t");
@@ -95,7 +94,7 @@ public class TrainingDataGenerator {
 						classifiedData.add(utc);
 
 					}
-					paragraphID = UUID.fromString(splits[0]);
+//					paragraphID = UUID.fromString(splits[0]);
 					if(splits.length == 3){
 						String[] parentIDs = splits[1].split("-");
 						jahrgang = Integer.parseInt(parentIDs[0]);
@@ -285,7 +284,8 @@ public class TrainingDataGenerator {
 				for (ClassifyUnit unitToClassify : toWrite) {
 					out.print(unitToClassify.hashCode() + "\t");
 					if(unitToClassify instanceof JASCClassifyUnit){
-						out.print(((JASCClassifyUnit) unitToClassify).getJahrgang() +"-"+((JASCClassifyUnit) unitToClassify).getPostingID()+"\t");
+						out.print(((JASCClassifyUnit) unitToClassify).getJobad().getJahrgang() 
+								+"-"+((JASCClassifyUnit) unitToClassify).getJobad().getPostingID()+"\t");
 					}
 					out.print(( (JASCClassifyUnit) unitToClassify).transformToClassID()+"\n");
 					out.println(unitToClassify.getContent().trim().replaceAll("\t", " "));

@@ -165,7 +165,8 @@ public class MatchCompetences {
 		
 		ieType = PropertiesHandler.getSearchType("matching");
 
-		paraInputDB = quenfoData + "/sqlite/orm/" + PropertiesHandler.getStringProperty("general", "orm_database");// + jahrgang + ".db";
+//		paraInputDB = quenfoData + "/sqlite/orm/" + PropertiesHandler.getStringProperty("general", "orm_database");// + jahrgang + ".db";
+		paraInputDB = quenfoData + "/sqlite/classification_old/CorrectableParagraphs_textkernel_3007.db";
 		
 		maxCount = PropertiesHandler.getIntProperty("matching", "queryLimit");
 		startPos = PropertiesHandler.getIntProperty("matching", "startPos");

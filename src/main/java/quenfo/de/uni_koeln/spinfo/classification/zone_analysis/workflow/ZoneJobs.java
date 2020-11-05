@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-//import org.apache.log4j.Logger;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,7 +37,6 @@ import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
 
 public class ZoneJobs {
 
-//	private static Logger log = Logger.getLogger(ZoneJobs.class);
 	private Logger log = LogManager.getLogger();
 	@Deprecated
 	public ZoneJobs() throws IOException {
@@ -268,7 +266,6 @@ public class ZoneJobs {
 	public Map<ClassifyUnit, boolean[]> classify(List<ClassifyUnit> paragraphs, ExperimentConfiguration expConfig,
 			Model model) {
 		ZoneAbstractClassifier classifier = (ZoneAbstractClassifier) expConfig.getClassifier();
-
 		Map<ClassifyUnit, boolean[]> classified = new HashMap<ClassifyUnit, boolean[]>();
 		for (ClassifyUnit cu : paragraphs) {
 			boolean[] classes = ((ZoneAbstractClassifier) classifier).classify(cu, model);

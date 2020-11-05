@@ -2,7 +2,6 @@ package quenfo.de.uni_koeln.spinfo.information_extraction.preprocessing;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,41 +19,6 @@ import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
  *
  */
 public class ExtractionUnitBuilder {
-	
-	
-	
-//	public static List<ExtractionUnit> initializeFromDerby(List<ClassifyUnit> classifyUnits, Tool lemmatizer,
-//			Tool morphTagger, Tool tagger) throws IOException {
-//		
-//		List<ExtractionUnit> extractionUnits = new ArrayList<ExtractionUnit>();
-//		IETokenizer tokenizer = new IETokenizer();
-//		List<String> sentences;
-//		
-//		
-//		for (ClassifyUnit cu : classifyUnits) {
-//			sentences = tokenizer.splitIntoSentences(cu.getContent());
-////			long classifyUnitJpaID = ((JASCClassifyUnit) cu).getJpaID();
-//			long jobAdJpaID = ((JASCClassifyUnit) cu).getJobAdJpaID();
-//			int jahrgang = ((JASCClassifyUnit) cu).getJahrgang();
-//			
-////			System.out.println(classifyUnitJpaID + " " + jobAdJpaID);
-//			
-//			for (String sentence : sentences) {
-//				ExtractionUnit eu = new ExtractionUnit(sentence);
-////				eu.setClassifyUnitjpaID(classifyUnitJpaID);
-//				eu.setJobAdjpaID(jobAdJpaID);
-//				eu.setJobAdID(jahrgang);
-//				extractionUnits.add(eu);
-//			}
-//		}
-//
-//		MateTagger.setLexicalData(extractionUnits, lemmatizer, morphTagger, tagger);
-//		classifyUnits = null;
-//		return extractionUnits;
-//	}
-	
-	
-	
 
 	/**
 	 * 
@@ -73,35 +37,37 @@ public class ExtractionUnitBuilder {
 		List<ExtractionUnit> extractionUnits = new ArrayList<ExtractionUnit>();
 		IETokenizer tokenizer = new IETokenizer();
 		List<String> sentences;
-		List<String> lemmata;
-		List<String> posTags;
-		List<String> tokens;
+//		List<String> lemmata;
+//		List<String> posTags;
+//		List<String> tokens;
 		ExtractionUnit extractionUnit = null;
 		for (ClassifyUnit cu : classifyUnits) {
 			
 			sentences = null;
-			lemmata = null;
-			posTags = null;
-			tokens = null;
+//			lemmata = null;
+//			posTags = null;
+//			tokens = null;
 			
-			// TODO an ORM anpassen
-			if (cu.getSentences() == null) {
-				sentences = tokenizer.splitIntoSentences(cu.getContent());
-			} else {
-				sentences = Arrays.asList(cu.getSentences().split("  \\|\\|  "));
-			}
+			// TODO check: an ORM angepasst
+//			if (cu.getSentences() == null) {
+//				sentences = tokenizer.splitIntoSentences(cu.getContent());
+//			} else {
+//				sentences = Arrays.asList(cu.getSentences().split("  \\|\\|  "));
+//			}
+			
+			sentences = tokenizer.splitIntoSentences(cu.getContent());
 			
 			
-			if (cu.getLemmata() != null) {
-				lemmata = Arrays.asList(cu.getLemmata().split("  \\|\\|  "));
-			}
-			if (cu.getPosTags() != null) {
-				posTags = Arrays.asList(cu.getPosTags().split("  \\|\\|  "));
-			}
-			if (cu.getTokens() != null) {
-				tokens = Arrays.asList(cu.getTokens().split("  \\|\\|  "));
-			}
-			
+//			if (cu.getLemmata() != null) {
+//				lemmata = Arrays.asList(cu.getLemmata().split("  \\|\\|  "));
+//			}
+//			if (cu.getPosTags() != null) {
+//				posTags = Arrays.asList(cu.getPosTags().split("  \\|\\|  "));
+//			}
+//			if (cu.getTokens() != null) {
+//				tokens = Arrays.asList(cu.getTokens().split("  \\|\\|  "));
+//			}
+//			
 			
 			for (int i = 0; i < sentences.size(); i++) {
 				String sentence = sentences.get(i);
@@ -110,21 +76,21 @@ public class ExtractionUnitBuilder {
 					extractionUnit = new ExtractionUnit(i);
 
 					extractionUnit.setSentence(sentence);
-					extractionUnit.setJahrgang(cu.getJahrgang());
-					extractionUnit.setPostingID(cu.getPostingID());
+//					extractionUnit.setJahrgang(cu.getJahrgang());
+//					extractionUnit.setPostingID(cu.getPostingID());
 					extractionUnit.setParagraph((JASCClassifyUnit) cu);
 //					extractionUnit.setClassifyUnitTableID(cu.getTableID());
 				
-					if (lemmata != null) {
-						extractionUnit.setLemmata(lemmata.get(i).split(" \\| "));
-					}
-					if (posTags != null) {
-
-						extractionUnit.setPosTags(posTags.get(i).split(" \\| "));
-					}
-					if (tokens != null) {
-						extractionUnit.setTokens(tokens.get(i).split(" \\| "));
-					}
+//					if (lemmata != null) {
+//						extractionUnit.setLemmata(lemmata.get(i).split(" \\| "));
+//					}
+//					if (posTags != null) {
+//
+//						extractionUnit.setPosTags(posTags.get(i).split(" \\| "));
+//					}
+//					if (tokens != null) {
+//						extractionUnit.setTokens(tokens.get(i).split(" \\| "));
+//					}
 					extractionUnits.add(extractionUnit);
 				}
 			}

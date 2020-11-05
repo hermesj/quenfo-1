@@ -129,8 +129,7 @@ public class ORMDatabaseClassifier {
 			QueryBuilder<JobAd, String> countQueryBuilder = jobAdDao.queryBuilder();
 			queryLimit = countQueryBuilder.countOf();
 			log.info("queryLimit nicht gesetzt. Neues queryLimit: " + queryLimit);
-		}
-		
+		}	
 
 		int jobCount = 0;
 		// solange noch nicht so viele Anzeigen wie in querylimit angegeben sind bearbeitet wurden...
@@ -145,12 +144,8 @@ public class ORMDatabaseClassifier {
 					.prepare();
 			jobAds = jobAdDao.query(jobPrepQuery);
 			
-//			for(JobAd job : jobAds) 
-//				log.info(job);
-			
 			jobCount += jobAds.size();
-			
-			// TODO bereits klassifizierte Anzeigen wieder aus der Liste entfernen
+
 			// ... postingID in classifyUnit Tabelle ... 
 			
 			// IDs der angefragten Anzeigen
@@ -158,10 +153,6 @@ public class ORMDatabaseClassifier {
 //			log.info("Folgende JobIDs sollen klassifiziert werden: " + jobIds);
 			cuPrepQuery = cuQueryBuilder.where().in("jobad_id", jobIds).prepare();
 			classifyUnits = cuDao.query(cuPrepQuery);
-//			log.info(classifyUnits.size() + " CUs bestehen bereits für job IDs");
-			
-//			for(JASCClassifyUnit cu : classifyUnits)
-//				log.info(cu.getJobad());
 			
 			
 			// bereits klassifizierte Anzeigen werden entfernt
@@ -172,8 +163,9 @@ public class ORMDatabaseClassifier {
 			
 			log.info("processing row {} to {}, classifying {} job ads", queryOffset, (queryOffset + fetchSize), jobAds.size());
 
-			for (JobAd jobad : jobAds) {
+			for (JobAd jobad : jobAds) {				
 				classifyUnits = classifyJobad(jobad, config, model, regexClassifier);
+
 				try {
 					cuDao.create(classifyUnits);
 				} catch (SQLException e) {
@@ -192,6 +184,7 @@ public class ORMDatabaseClassifier {
 		// 1. Split into paragraphs and create a ClassifyUnit per paragraph
 		Set<String> paragraphs = ClassifyUnitSplitter.splitIntoParagraphs(job.getContent());
 
+//		log.info(paragraphs.size() + " paragraphs");
 		// if treat enc
 		if (config.getFeatureConfiguration().isTreatEncoding()) {
 			paragraphs = EncodingProblemTreatment.normalizeEncoding(paragraphs);
@@ -200,6 +193,7 @@ public class ORMDatabaseClassifier {
 		for (String string : paragraphs) {
 			classifyUnits.add(new JASCClassifyUnit(string, job));
 		}
+//		log.info(classifyUnits.size() + " classifyUnits ...");
 		// prepare ClassifyUnits
 		classifyUnits = jobs.initializeClassifyUnits(classifyUnits);
 		classifyUnits = jobs.setFeatures(classifyUnits, config.getFeatureConfiguration(), false);
@@ -213,10 +207,10 @@ public class ORMDatabaseClassifier {
 		}
 
 		Map<ClassifyUnit, boolean[]> classified = jobs.classify(classifyUnits, config, model);
-
+//		log.info(classified.size() + " classified ...");
 		classified = jobs.mergeResults(classified, preClassified);
 		classified = jobs.translateClasses(classified);
-
+//		log.info(classified.size() + " classified ...");
 		List<JASCClassifyUnit> results = new ArrayList<>();
 		for (ClassifyUnit cu : classified.keySet()) {
 			JASCClassifyUnit jcu = ((JASCClassifyUnit) cu);

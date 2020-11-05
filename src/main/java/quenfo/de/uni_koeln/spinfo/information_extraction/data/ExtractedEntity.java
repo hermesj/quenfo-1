@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
@@ -26,7 +27,7 @@ import lombok.Setter;
 @DatabaseTable(tableName = "Extractions")
 @Data
 @EqualsAndHashCode(of = {"startLemma", "singleWordEntity", "lemmaArray"})
-public class InformationEntity {
+public class ExtractedEntity {
 	
 	@DatabaseField(generatedId = true)
 	private Integer id;
@@ -68,6 +69,11 @@ public class InformationEntity {
 	@DatabaseField
 	private String modifier;
 	
+	@DatabaseField
+	@Setter(AccessLevel.NONE)
+	@Getter(AccessLevel.NONE)
+	private String patternsString;
+	
 	//übergeordnetes Konzept der Kompetenz (des Tools)
 	@Setter(AccessLevel.NONE)
 	private Set<String> labels;
@@ -91,10 +97,10 @@ public class InformationEntity {
 	@Setter(AccessLevel.NONE)
 	private IEType type;
 	
-
-	private static StringBuilder sb;
+	private static StringJoiner sj;
+//	private static StringBuilder sb;
 	
-	public InformationEntity() {
+	public ExtractedEntity() {
 		
 	}
 	
@@ -104,7 +110,7 @@ public class InformationEntity {
 	 * @param isSingleWordEntity
 	 * @param type
 	 */
-	public InformationEntity(String startLemma, boolean isSingleWordEntity, IEType type) {
+	public ExtractedEntity(String startLemma, boolean isSingleWordEntity, IEType type) {
 		this.startLemma = startLemma;
 		this.singleWordEntity = isSingleWordEntity;
 		this.type = type;
@@ -123,7 +129,7 @@ public class InformationEntity {
 	 * @param type
 	 * @param label
 	 */
-	public InformationEntity(String startLemma, boolean isSingleWordEntity,
+	public ExtractedEntity(String startLemma, boolean isSingleWordEntity,
 			IEType type, String label) {
 		this(startLemma, isSingleWordEntity, -1, type, null);
 		this.labels = new HashSet<>();
@@ -137,7 +143,7 @@ public class InformationEntity {
 	 * @param type
 	 * @param labels
 	 */
-	public InformationEntity(String startLemma, boolean isSingleWordEntity,
+	public ExtractedEntity(String startLemma, boolean isSingleWordEntity,
 			IEType type, Set<String> labels) {
 		this(startLemma, isSingleWordEntity, -1, type, null);
 		this.labels = labels;
@@ -148,13 +154,13 @@ public class InformationEntity {
 	 * 			first token of this IE
 	 * @param isSingleWordEntity
 	 */
-	public InformationEntity(String startLemma, boolean isSingleWordEntity, IEType type, ExtractionUnit parent) {
+	public ExtractedEntity(String startLemma, boolean isSingleWordEntity, IEType type, ExtractionUnit parent) {
 		this(startLemma, isSingleWordEntity, -1, type, parent);
 	}
 	
 
 	
-	public InformationEntity(String startLemma, boolean isSingleWordEntity, 
+	public ExtractedEntity(String startLemma, boolean isSingleWordEntity, 
 			int firstIndex, IEType type, ExtractionUnit parent) {
 //		this.startLemma = startLemma;
 //		this.singleWordEntity = isSingleWordEntity;
@@ -190,11 +196,12 @@ public class InformationEntity {
 		this.lemmaArray = new String[lemmaArrayList.size()];
 		lemmaArrayList.toArray(this.lemmaArray);
 		
-		InformationEntity.sb = new StringBuilder();
+//		InformationEntity.sb = new StringBuilder();
+		ExtractedEntity.sj = new StringJoiner(" ");
 		for (String l : lemmaArray)
-			sb.append(" " + l);
-		sb.deleteCharAt(0);
-		this.lemmaExpression = sb.toString();
+			sj.add(l);
+//		sb.deleteCharAt(0);
+		this.lemmaExpression = sj.toString();
 	}
 	
 	/**
@@ -209,11 +216,10 @@ public class InformationEntity {
 	public void setLemmaArray(String[] lemmaArray) {
 		this.lemmaArray = lemmaArray;
 		
-		InformationEntity.sb = new StringBuilder();
+		ExtractedEntity.sj = new StringJoiner(" ");
 		for (String l : lemmaArray)
-			sb.append(" " + l);
-		sb.deleteCharAt(0);
-		this.lemmaExpression = sb.toString();
+			sj.add(l);
+		this.lemmaExpression = sj.toString();
 	}
 	
 	/**
@@ -234,13 +240,14 @@ public class InformationEntity {
 	 */
 	@Override
 	public String toString(){
-		if(lemmaExpression == null) return null;
 		return lemmaExpression;
-//		StringBuffer sb = new StringBuffer();
-//		for (String lemma : lemmaArray) {
-//			sb.append(lemma+" ");
-//		}
-//		return sb.toString().trim();
+	}
+
+	public void setPatternString(List<Pattern> patterns) {
+		ExtractedEntity.sj = new StringJoiner("|", "[", "]");
+		for (Pattern p : patterns)
+			sj.add(p.getDescription());
+		this.patternsString = sj.toString();
 	}
 
 

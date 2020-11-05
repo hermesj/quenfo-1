@@ -30,7 +30,7 @@ import quenfo.de.uni_koeln.spinfo.classification.zone_analysis.helpers.SingleToM
 import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.IEType;
-import quenfo.de.uni_koeln.spinfo.information_extraction.data.InformationEntity;
+import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractedEntity;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.Pattern;
 import quenfo.de.uni_koeln.spinfo.information_extraction.preprocessing.ExtractionUnitBuilder;
 
@@ -72,6 +72,20 @@ public class ORMExtractor {
 		initialize();
 	}
 
+	/**
+	 * Constructor to match known competences / tools
+	 * @param jobadConnection
+	 * @param notCatComps
+	 * @param modifier
+	 * @param ieType
+	 * @param expandCoordinates
+	 * @throws IOException 
+	 */
+	public ORMExtractor(ConnectionSource ormConnection, File entitiesFile, File modifier, IEType ieType,
+			boolean resolveCoordinations) throws IOException {
+		this(ormConnection, entitiesFile, null, null, modifier, ieType, resolveCoordinations);
+	}
+
 	private void initialize() {
 		Map<Integer, List<Integer>> translations = new HashMap<Integer, List<Integer>>();
 		List<Integer> categories = new ArrayList<Integer>();
@@ -97,7 +111,7 @@ public class ORMExtractor {
 		if (!exuDao.isTableExists())
 			TableUtils.createTable(exuDao);
 
-		Dao<InformationEntity, String> ieDao = DaoManager.createDao(connection, InformationEntity.class);
+		Dao<ExtractedEntity, String> ieDao = DaoManager.createDao(connection, ExtractedEntity.class);
 		if (!ieDao.isTableExists())
 			TableUtils.createTable(ieDao);
 
@@ -107,8 +121,8 @@ public class ORMExtractor {
 		List<JASCClassifyUnit> classifyUnits = null;
 		List<ExtractionUnit> extractionUnits = null;
 		List<ExtractionUnit> newInitEUs = null;
-		Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractions = null;
-		Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> allExtractions = new HashMap<ExtractionUnit, Map<InformationEntity, List<Pattern>>>();
+		Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> extractions = null;
+		Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> allExtractions = new HashMap<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>>();
 
 		PreparedQuery<JASCClassifyUnit> cuPrepQuery;
 		PreparedQuery<ExtractionUnit> exuPrepQuery;
@@ -131,6 +145,11 @@ public class ORMExtractor {
 			whereClause = cuQueryBuilder.where().eq("ClassTWO", true).or().eq("ClassTHREE", true);
 			break;
 		}
+		
+		/**
+		 * 
+		 * TODO (!!) queryLimit, offset etc. auf classifyUnits oder jobAds bezogen??
+		 */
 		
 		
 		if (queryLimit < 0) {
@@ -156,10 +175,11 @@ public class ORMExtractor {
 			classifyUnits = cuDao.query(cuPrepQuery);
 			
 			// falls Anfrage auf keine classify units zutrifft, wird abgebrochen
-			if (classifyUnits.size() < 1)
+			if (classifyUnits.size() < 1) {
+				log.info("no further relevant classify units found.");
 				return;
-			
-			
+			}
+				
 			
 			for(JASCClassifyUnit cu : classifyUnits)
 				cuDao.refresh(cu);
@@ -175,21 +195,11 @@ public class ORMExtractor {
 			
 			for (ExtractionUnit eu : extractionUnits)
 				exuDao.refresh(eu);
-			
-			
-//			for(ExtractionUnit eu : extractionUnits)
-//				log.info(eu.getParagraph());
 
 			// bereits vorverarbeitete classifyUnits werden aus allen angefragten gelöscht
 			Set<JASCClassifyUnit> iniParas = new HashSet<>(extractionUnits.stream().map(ExtractionUnit::getParagraph)
 					.collect(Collectors.toList()));
-//			log.info("to remove: ");
-//			for(JASCClassifyUnit cu : iniParas) {
-////				cuDao.refresh(cu);
-//				log.info(cu.toString());
-//			}
-//				
-//			log.info("to classify: " + classifyUnits);
+
 			classifyUnits.removeAll(iniParas);
 			
 			log.info("processing row {} to {}, extracting from {} classify units", queryOffset, (queryOffset + fetchSize), classifyUnits.size());
@@ -215,13 +225,16 @@ public class ORMExtractor {
 			extractions = jobs.extractEntities(extractionUnits, lemmatizer);
 
 			possCompoundSplits.putAll(jobs.getNewCompounds());
+			
+			// TODO Was ist mit doppelten Extraktion (gleiche IE aus unterschiedlichen Abschnitten)?
 
 			// Entfernen der bereits bekannten Entitäten
 			extractions = removeKnownEntities(extractions);
 
-			for (Map.Entry<ExtractionUnit, Map<InformationEntity, List<Pattern>>> e : extractions.entrySet()) {
-				for (Map.Entry<InformationEntity, List<Pattern>> ie : e.getValue().entrySet()) {
+			for (Map.Entry<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> e : extractions.entrySet()) {
+				for (Map.Entry<ExtractedEntity, List<Pattern>> ie : e.getValue().entrySet()) {
 					try {
+						ie.getKey().setPatternString(ie.getValue());
 						ieDao.create(ie.getKey());
 					} catch (SQLException e1) {
 						log.debug(e1.getMessage());
@@ -237,15 +250,15 @@ public class ORMExtractor {
 
 	}
 
-	private Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> removeKnownEntities(
-			Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> allExtractions) {
-		Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> toReturn = new HashMap<ExtractionUnit, Map<InformationEntity, List<Pattern>>>();
+	private Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> removeKnownEntities(
+			Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> allExtractions) {
+		Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> toReturn = new HashMap<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>>();
 		for (ExtractionUnit extractionUnit : allExtractions.keySet()) {
 
-			Map<InformationEntity, List<Pattern>> ies = allExtractions.get(extractionUnit);
-			Map<InformationEntity, List<Pattern>> filterdIes = new HashMap<InformationEntity, List<Pattern>>();
-			for (InformationEntity ie : ies.keySet()) {
-				Set<InformationEntity> knownIEs = jobs.entities.get(ie.getStartLemma());
+			Map<ExtractedEntity, List<Pattern>> ies = allExtractions.get(extractionUnit);
+			Map<ExtractedEntity, List<Pattern>> filterdIes = new HashMap<ExtractedEntity, List<Pattern>>();
+			for (ExtractedEntity ie : ies.keySet()) {
+				Set<ExtractedEntity> knownIEs = jobs.entities.get(ie.getStartLemma());
 				if (knownIEs == null || (!knownIEs.contains(ie))) {
 					filterdIes.put(ie, ies.get(ie));
 				}
@@ -255,6 +268,42 @@ public class ORMExtractor {
 			}
 		}
 		return toReturn;
+	}
+
+	public void stringMatch(int startPos, int queryLimit, int fetchSize) {
+		log.info("Tadaaa");
+		
+		Tool lemmatizer = new Lemmatizer(PropertiesHandler.getLemmatizerModel(), false);
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 	}
 
 }

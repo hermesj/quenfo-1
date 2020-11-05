@@ -16,7 +16,7 @@ import quenfo.de.uni_koeln.spinfo.classification.core.data.ClassifyUnit;
 import quenfo.de.uni_koeln.spinfo.classification.jasc.data.JASCClassifyUnit;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.IEType;
-import quenfo.de.uni_koeln.spinfo.information_extraction.data.InformationEntity;
+import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractedEntity;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.Pattern;
 
 /**
@@ -143,7 +143,7 @@ public class IE_DBConnector {
 			try {
 				String sentences = result.getString("ExtractionUnits");
 				if (sentences != null && !(sentences.equals(""))) {
-					classifyUnit.setSentences((sentences.replace(" | ", " ").replace("<root> ", "")));
+//					classifyUnit.setSentences((sentences.replace(" | ", " ").replace("<root> ", "")));
 					classifyUnit.setTokens(sentences);
 				}
 			} catch (SQLException e) {
@@ -186,7 +186,7 @@ public class IE_DBConnector {
 	 * @throws SQLException
 	 */
 	public static void writeCompetenceExtractions(
-			Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractions, Connection connection,
+			Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> extractions, Connection connection,
 			boolean correctable) throws SQLException {
 		Set<String> types = new HashSet<String>();
 		connection.setAutoCommit(false);
@@ -203,7 +203,7 @@ public class IE_DBConnector {
 					"INSERT INTO Competences (Jahrgang, POSTINGID, ParaID, SentenceID, Lemmata, Sentence, Label, Comp,  Importance) VALUES(?,?,?,?,?,?,?,?,?)");
 		}
 		for (ExtractionUnit extractionUnit : extractions.keySet()) {
-			Map<InformationEntity, List<Pattern>> ies = extractions.get(extractionUnit);
+			Map<ExtractedEntity, List<Pattern>> ies = extractions.get(extractionUnit);
 			String jahrgang = extractionUnit.getJahrgang();
 //			System.out.println("EU: " + jahrgang);
 			String postingID = extractionUnit.getPostingID();
@@ -224,7 +224,7 @@ public class IE_DBConnector {
 				}
 			}
 
-			for (InformationEntity ie : ies.keySet()) {
+			for (ExtractedEntity ie : ies.keySet()) {
 
 				if (correctable) {
 					// write only unique types
@@ -291,7 +291,7 @@ public class IE_DBConnector {
 	 * @param correctable
 	 * @throws SQLException
 	 */
-	public static void writeToolExtractions(Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractions,
+	public static void writeToolExtractions(Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> extractions,
 			Connection connection, boolean correctable) throws SQLException {
 
 		connection.setAutoCommit(false);
@@ -305,7 +305,7 @@ public class IE_DBConnector {
 		}
 		Set<String> types = new HashSet<String>();
 		for (ExtractionUnit extractionUnit : extractions.keySet()) {
-			Map<InformationEntity, List<Pattern>> ies = extractions.get(extractionUnit);
+			Map<ExtractedEntity, List<Pattern>> ies = extractions.get(extractionUnit);
 			String jahrgang = extractionUnit.getJahrgang();
 			String zeilennr = extractionUnit.getPostingID();
 //			String paraID = extractionUnit.getClassifyUnitID().toString();
@@ -320,7 +320,7 @@ public class IE_DBConnector {
 				}
 			}
 
-			for (InformationEntity ie : ies.keySet()) {
+			for (ExtractedEntity ie : ies.keySet()) {
 
 				if (correctable) {
 					// write only unique types

@@ -45,6 +45,14 @@ public class Launcher {
 			log.info("--- Extracting tools starts ---");
 			ExtractNewTools.main(args);
 			break;
+		case "extractcompetencesorm":
+			log.info("--- Extracting competences (with orm mapping) starts");
+			quenfo.de.uni_koeln.spinfo.information_extraction.apps_orm.ExtractNewCompetences.main(args);
+			break;
+		case "extracttoolsorm":
+			log.info("--- Extracting tools (with orm mapping) starts");
+			quenfo.de.uni_koeln.spinfo.information_extraction.apps_orm.ExtractNewTools.main(args);
+			break;
 		case "matchcompetences":
 			log.info("--- Matching competences starts ---");
 			MatchCompetences.main(args);
@@ -60,7 +68,9 @@ public class Launcher {
 					+ "extractCompetences\n"
 					+ "extractTools\n"
 					+ "matchCompetences\n"
-					+ "matchTools");
+					+ "matchTools\n"
+					+ "extractCompetencesORM\n"
+					+ "extractToolsORM");
 			break;
 		}
 		

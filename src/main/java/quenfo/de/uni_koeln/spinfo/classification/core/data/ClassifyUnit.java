@@ -1,13 +1,11 @@
 package quenfo.de.uni_koeln.spinfo.classification.core.data;
 
 import java.util.List;
-import java.util.StringJoiner;
 
 import com.j256.ormlite.field.DatabaseField;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import quenfo.de.uni_koeln.spinfo.core.data.JobAd;
@@ -21,12 +19,11 @@ import quenfo.de.uni_koeln.spinfo.core.data.JobAd;
  */
 
 @Data
-@EqualsAndHashCode(of = { "id" })
+@EqualsAndHashCode(of = { "jobad", "content" })
 @ToString(of = { "id", "jobad" }) //TODO JB: toString classifyUnit
 public class ClassifyUnit {
 	
 	@DatabaseField(generatedId = true)
-//	@Getter(AccessLevel.NONE)
 	@Setter(AccessLevel.NONE)
 	private Integer id;
 	
@@ -35,22 +32,6 @@ public class ClassifyUnit {
 	 */
 	@DatabaseField(canBeNull = false, foreign = true, uniqueCombo = true)
 	private JobAd jobad;
-	
-	/**
-	 * publication year of jobad posting that contains this classify unit
-	 */
-	@Deprecated
-//	@DatabaseField(columnName = "JAHRGANG")
-	@Setter(AccessLevel.NONE)
-	private String jahrgang;
-	
-	/**
-	 * ID of jobad posting that contains this classify unit
-	 */
-	@Deprecated
-//	@DatabaseField(columnName = "POSTINGID")
-	@Setter(AccessLevel.NONE)
-	private String postingID = "";
 	
 	private int tableID = -1;
 
@@ -71,11 +52,27 @@ public class ClassifyUnit {
 	/**
 	 * String mit Sätzen (durch || getrennt)
 	 */
-	private String sentences;
+//	private String sentences;
 	
 	private String lemmata;
 	private String posTags;
 	private String tokens;
+	
+	/**
+	 * publication year of jobad posting that contains this classify unit
+	 */
+	@Deprecated
+	@Setter(AccessLevel.NONE)
+	private String jahrgang;
+	
+	/**
+	 * ID of jobad posting that contains this classify unit
+	 */
+	@Deprecated
+	@Setter(AccessLevel.NONE)
+	private String postingID = "";
+	
+
 
 	/**
 	 * default constructor for object relational mapping
