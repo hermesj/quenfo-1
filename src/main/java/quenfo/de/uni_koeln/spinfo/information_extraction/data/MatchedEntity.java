@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 
 @DatabaseTable(tableName = "Matches")
 @Data
-@EqualsAndHashCode
-public class MatchedEntity extends ExtractedEntity {
+@EqualsAndHashCode(of = {}, callSuper=true)
+public class MatchedEntity extends InformationEntity {
 
 }

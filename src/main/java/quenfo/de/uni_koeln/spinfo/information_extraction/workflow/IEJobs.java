@@ -43,7 +43,7 @@ import quenfo.de.uni_koeln.spinfo.information_extraction.utils.Util;
 public class IEJobs {
 	// Liste von Falsch-Extraktionen, die nicht wieder extrahiert werden sollen
 	// (sortiert nach dem Anfangswort)
-	public Map<String, Set<List<String>>> negExamples;
+	public Map<String, Set<String[]>> negExamples;
 	// Liste mit modifizierenden Ausdrücken (nur für den Kompetenz-Workflow)
 	private Map<String, Set<List<String>>> modifiers;
 	// Liste mit den bereits bekannten Kompetenzen/Tools (sortiert nach dem
@@ -141,9 +141,9 @@ public class IEJobs {
 		if (teiFile != null) {
 			readTEIFile(teiFile, category);
 		}
-		negExamples = new HashMap<String, Set<List<String>>>();
+		negExamples = new HashMap<String, Set<String[]>>();
 		if (negativeEntities != null) {
-			readWordList(negativeEntities, negExamples);
+			readWordListArray(negativeEntities, negExamples);
 		}
 		modifiers = new HashMap<String, Set<List<String>>>();
 		if (modifiersFile != null) {
@@ -225,9 +225,38 @@ public class IEJobs {
 		}
 
 	}
+	
+	private void readWordListArray(File inputFile, Map<String, Set<String[]>> map) throws IOException {
+		BufferedReader in = new BufferedReader(new FileReader(inputFile));
+		String line = in.readLine();
+		while (line != null) {
+			if (line.equals("")) {
+				line = in.readLine();
+				continue;
+			}
+			String keyword;
+			String[] split = line.split(" ");
+			try {
+				keyword = Util.normalizeLemma(split[0]);
+			} catch (ArrayIndexOutOfBoundsException e) {
+				line = in.readLine();
+				continue;
+			}
+			Set<String[]> expressionsForKeyword = map.get(keyword);
+			if (expressionsForKeyword == null) {
+				expressionsForKeyword = new HashSet<String[]>();
+			}
+
+			expressionsForKeyword.add(split);
+			map.put(keyword, expressionsForKeyword);
+			line = in.readLine();
+		}
+		in.close();
+	}
 
 	// Liest die Begriffe (Modifizierer oder Falsch-Extraktionen) aus dem
 	// input-File und ergänzt sie in der map
+	@Deprecated
 	private void readWordList(File inputFile, Map<String, Set<List<String>>> map) throws IOException {
 		BufferedReader in = new BufferedReader(new FileReader(inputFile));
 		String line = in.readLine();
@@ -359,19 +388,19 @@ public class IEJobs {
 					// currentToken könnte das erste Token einer Kompetenz/Tool
 					// sein
 					boolean matches = false;
-					for (int c = 1; c < ie.getLemmaArrayList().size(); c++) {
+					for (int c = 1; c < ie.getLemmaArray().length; c++) {
 						if (tokens.length <= t + c) {
 							matches = false;
 							break;
 						}
-						matches = ie.getLemmaArrayList().get(c).equals(Util.normalizeLemma(tokens[t + c].getLemma()));
+						matches = ie.getLemmaArray()[c].equals(Util.normalizeLemma(tokens[t + c].getLemma()));
 						if (!matches) {
 							break;
 						}
 					}
 					if (matches) {
 						currentToken.setIEToken(true);
-						((TextToken) currentToken).setTokensToCompleteInformationEntity(ie.getLemmaArrayList().size() - 1);
+						((TextToken) currentToken).setTokensToCompleteInformationEntity(ie.getLemmaArray().length - 1);
 					}
 				}
 			}
@@ -388,9 +417,9 @@ public class IEJobs {
 			String lemma = Util.normalizeLemma(currentToken.getLemma());
 			if (negExamples.keySet().contains(lemma)) {
 				boolean match = false;
-				for (List<String> expression : negExamples.get(lemma)) {
-					for (int s = 0; s < expression.size(); s++) {
-						String string = expression.get(s);
+				for (String[] expression : negExamples.get(lemma)) {
+					for (int s = 0; s < expression.length; s++) {
+						String string = expression[s];
 						try {
 							match = string.equals(tokens[t + s].getLemma());
 						} catch (ArrayIndexOutOfBoundsException e) {
@@ -583,7 +612,7 @@ public class IEJobs {
 							// check if full entity is listed in negExamples
 							boolean isNoEntity = false;
 							if (negExamples.containsKey(e.getStartLemma())) {
-								if (negExamples.get(e.getStartLemma()).contains(e.getLemmaArrayList())) {
+								if (negExamples.get(e.getStartLemma()).contains(e.getLemmaArray())) {
 									isNoEntity = true;
 								}
 							}
@@ -594,7 +623,7 @@ public class IEJobs {
 							if (type != IEType.TOOL) {
 								removeModifier(e);
 							}
-							if (e.getLemmaArrayList().size() < 1) {
+							if (e.getLemmaArray().length < 1) {
 								e = null;
 								continue;
 							}
@@ -662,10 +691,7 @@ public class IEJobs {
 				}
 			}
 		}
-//		for (String s : toDelete) {
-//			lemmata.remove(s);
-//		}
-//		log.info(lemmata.toString() + "\n" + toDelete.toString());
+
 		lemmata.removeAll(toDelete);
 		e.setLemmaArrayList(lemmata);
 	}
@@ -762,12 +788,12 @@ public class IEJobs {
 						List<String> posList = new ArrayList<String>();
 
 						boolean matches = false;
-						for (int c = 0; c < ie.getLemmaArrayList().size(); c++) {
+						for (int c = 0; c < ie.getLemmaArray().length; c++) {
 							if (tokens.length <= t + c) {
 								matches = false;
 								break;
 							}
-							matches = ie.getLemmaArrayList().get(c)
+							matches = ie.getLemmaArray()[c]
 									.equals(Util.normalizeLemma(tokens[t + c + skip].getLemma()));
 							if (!matches) {
 								break;
@@ -779,12 +805,12 @@ public class IEJobs {
 						}
 						if (matches) {
 							token.setIEToken(true);
-							((TextToken) token).setTokensToCompleteInformationEntity(ie.getLemmaArrayList().size() - 1);
+							((TextToken) token).setTokensToCompleteInformationEntity(ie.getLemmaArray().length - 1);
 //							System.out.println(token);
 //							System.out.println(extractionUnit.getSentence());
 //							System.out.println(ie.getLemmata());
 							ExtractedEntity newIE = new ExtractedEntity(ie.getStartLemma(), false, type, extractionUnit);
-							newIE.setLemmaArrayList(ie.getLemmaArrayList());
+							newIE.setLemmaArray(ie.getLemmaArray());
 							Map<ExtractedEntity, List<Pattern>> iesForUnit = extractions.get(extractionUnit);
 							if (iesForUnit == null)
 								iesForUnit = new HashMap<ExtractedEntity, List<Pattern>>();
@@ -906,13 +932,12 @@ public class IEJobs {
 			} catch (ArrayIndexOutOfBoundsException e) {
 				continue;
 			}
-			Set<List<String>> expressionsForKeyword = negExamples.get(keyword);
+			Set<String[]> expressionsForKeyword = negExamples.get(keyword);
 			if (expressionsForKeyword == null) {
-				expressionsForKeyword = new HashSet<List<String>>();
+				expressionsForKeyword = new HashSet<String[]>();
 			}
 
-			List<String> expression = Arrays.asList(split);
-			expressionsForKeyword.add(expression);
+			expressionsForKeyword.add(split);
 			negExamples.put(keyword, expressionsForKeyword);
 
 		}
