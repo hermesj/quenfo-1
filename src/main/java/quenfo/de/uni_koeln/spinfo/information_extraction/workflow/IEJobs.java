@@ -23,15 +23,17 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.common.io.Files;
 
+import de.uni_koeln.spinfo.data.Token;
 import de.uni_koeln.spinfo.workflow.CoordinateExpander;
 import is2.tools.Tool;
+import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractedEntity;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.IEType;
-import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractedEntity;
+import quenfo.de.uni_koeln.spinfo.information_extraction.data.InformationEntity;
+import quenfo.de.uni_koeln.spinfo.information_extraction.data.MatchedEntity;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.Pattern;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.PatternToken;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.TextToken;
-import de.uni_koeln.spinfo.data.Token;
 import quenfo.de.uni_koeln.spinfo.information_extraction.utils.Util;
 
 
@@ -48,7 +50,7 @@ public class IEJobs {
 	private Map<String, Set<List<String>>> modifiers;
 	// Liste mit den bereits bekannten Kompetenzen/Tools (sortiert nach dem
 	// Anfangswort)
-	public Map<String, Set<ExtractedEntity>> entities;
+	public Map<String, Set<InformationEntity>> entities;
 
 	// Liste mit den bereits bekannten Kompetenzen/Tools (key = Anfangswort)
 	// public Map<String, Set<InformationEntity>> catEntities;
@@ -134,7 +136,7 @@ public class IEJobs {
 
 
 //		this.knownEntities = 0;
-		entities = new HashMap<String, Set<ExtractedEntity>>();
+		entities = new HashMap<String, Set<InformationEntity>>();
 		if (knownEntities != null) {
 			readKnownEntitiesFromFile(knownEntities);
 		}
@@ -191,11 +193,11 @@ public class IEJobs {
 					line = in.readLine();
 					continue;
 				}
-				Set<ExtractedEntity> iesForKeyword = entities.get(keyword);
+				Set<InformationEntity> iesForKeyword = entities.get(keyword);
 				if (iesForKeyword == null)
-					iesForKeyword = new HashSet<ExtractedEntity>();
+					iesForKeyword = new HashSet<InformationEntity>();
 				// nicht kategorisierte IEs haben kein Label
-				ExtractedEntity ie = new ExtractedEntity(keyword, split.length == 1, type, "");
+				InformationEntity ie = new MatchedEntity(keyword, split.length == 1, type, "");
 				
 				if (!ie.isSingleWordEntity()) {
 					for (int i = 0; i < split.length; i++) {
@@ -379,7 +381,7 @@ public class IEJobs {
 			Token currentToken = tokens[t];
 			String lemma = Util.normalizeLemma(currentToken.getLemma());
 			if (entities.keySet().contains(lemma)) {
-				for (ExtractedEntity ie : entities.get(lemma)) {
+				for (InformationEntity ie : entities.get(lemma)) {
 					if (ie.isSingleWordEntity()) {
 						// currentToken ist eine bekannte Kompetenz/Tool
 						currentToken.setIEToken(true);
@@ -485,11 +487,11 @@ public class IEJobs {
 	 * @param lemmatizer
 	 * @return
 	 */
-	public Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> extractEntities(
+	public Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractEntities(
 			List<ExtractionUnit> extractionUnits, Tool lemmatizer) {
 		
 		// ENHANCE return datentyp verbessern
-		Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> toReturn = new HashMap<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>>();
+		Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> toReturn = new HashMap<>();
 
 		TextToken[] ieTokens;
 		Token token;
@@ -627,9 +629,9 @@ public class IEJobs {
 								e = null;
 								continue;
 							}
-							Map<ExtractedEntity, List<Pattern>> map = toReturn.get(extractionUnit);
+							Map<InformationEntity, List<Pattern>> map = toReturn.get(extractionUnit);
 							if (map == null)
-								map = new HashMap<ExtractedEntity, List<Pattern>>();
+								map = new HashMap<InformationEntity, List<Pattern>>();
 							List<Pattern> list = map.get(e);
 							if (list == null)
 								list = new ArrayList<Pattern>();
@@ -700,23 +702,23 @@ public class IEJobs {
 	 * merge entities if one fully contains the other (except the larger one
 	 * contains 'und' or 'oder')
 	 * 
-	 * @param extractions map of extractionUnits and extracted entities
+	 * @param stringMatches map of extractionUnits and extracted entities
 	 * @return merged extractions
 	 */
-	public Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> mergeInformationEntities(
-			Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> extractions) {
-		for (ExtractionUnit ieunit : extractions.keySet()) {
-			Map<ExtractedEntity, List<Pattern>> merged = new HashMap<ExtractedEntity, List<Pattern>>();
-			List<ExtractedEntity> iesForUnit = new ArrayList<>(extractions.get(ieunit).keySet());
-			ExtractedEntity containingIE = null;
+	public Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> mergeInformationEntities(
+			Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> stringMatches) {
+		for (ExtractionUnit ieunit : stringMatches.keySet()) {
+			Map<InformationEntity, List<Pattern>> merged = new HashMap<>();
+			List<InformationEntity> iesForUnit = new ArrayList<>(stringMatches.get(ieunit).keySet());
+			InformationEntity containingIE = null;
 			for (int i = 0; i < iesForUnit.size(); i++) {
-				ExtractedEntity currentIE = iesForUnit.get(i);
+				InformationEntity currentIE = iesForUnit.get(i);
 				// boolean isPartOfOtherIE = false;
 				int subList = -1;
 				for (int j = 0; j < iesForUnit.size(); j++) {
 					if (j == i)
 						continue;
-					ExtractedEntity otherIE = iesForUnit.get(j);
+					InformationEntity otherIE = iesForUnit.get(j);
 					// check if currentIE is sublist of otherIE
 					subList = Collections.indexOfSubList(otherIE.getLemmaArrayList(), currentIE.getLemmaArrayList());
 					// boolean isSubList = false;
@@ -731,18 +733,18 @@ public class IEJobs {
 					}
 				}
 				if (subList == -1) {// if (!isPartOfOtherIE) {
-					merged.put(currentIE, extractions.get(ieunit).get(currentIE));
+					merged.put(currentIE, stringMatches.get(ieunit).get(currentIE));
 				} else {
 					if (containingIE.getLemmaArrayList().contains("und") || containingIE.getLemmaArrayList().contains("oder")) {
 						if (!currentIE.getLemmaArrayList().contains("und") && !(currentIE.getLemmaArrayList().contains("oder"))) {
-							merged.put(currentIE, extractions.get(ieunit).get(currentIE));
+							merged.put(currentIE, stringMatches.get(ieunit).get(currentIE));
 						}
 					}
 				}
 			}
-			extractions.put(ieunit, merged);
+			stringMatches.put(ieunit, merged);
 		}
-		return extractions;
+		return stringMatches;
 	}
 
 	/**
@@ -754,9 +756,9 @@ public class IEJobs {
 	 * @param patternExtractions
 	 * @return
 	 */
-	public Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> extractByStringMatch(
+	public Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractByStringMatch(
 			List<ExtractionUnit> extractionUnits, Tool lemmatizer) {
-		Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> extractions = new HashMap<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>>();
+		Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractions = new HashMap<>();
 		List<Pattern> List = new ArrayList<Pattern>();
 		for (ExtractionUnit extractionUnit : extractionUnits) {
 
@@ -768,14 +770,15 @@ public class IEJobs {
 				Token token = tokens[t + skip];
 				String lemma = Util.normalizeLemma(token.getLemma());
 				if (entities.keySet().contains(lemma)) {
-					for (ExtractedEntity ie : entities.get(lemma)) {
+					for (InformationEntity ie : entities.get(lemma)) {
+						// match for single word expressions
 						if (ie.isSingleWordEntity()) {
 							token.setIEToken(true);
-							ie.getLabels();
-							ExtractedEntity newIE = new ExtractedEntity(ie.getStartLemma(), true, type, ie.getLabels());
-							Map<ExtractedEntity, List<Pattern>> iesForUnit = extractions.get(extractionUnit);
+							MatchedEntity newIE = new MatchedEntity(ie.getStartLemma(), true,
+									type, ((MatchedEntity)ie).getLabels(), extractionUnit);
+							Map<InformationEntity, List<Pattern>> iesForUnit = extractions.get(extractionUnit);
 							if (iesForUnit == null)
-								iesForUnit = new HashMap<ExtractedEntity, List<Pattern>>();
+								iesForUnit = new HashMap<>();
 							iesForUnit.put(newIE, List);
 							extractions.put(extractionUnit, iesForUnit);
 
@@ -787,6 +790,7 @@ public class IEJobs {
 						List<Token> completeEntity = new ArrayList<Token>();
 						List<String> posList = new ArrayList<String>();
 
+						// auf match mit multi word expression prüfen
 						boolean matches = false;
 						for (int c = 0; c < ie.getLemmaArray().length; c++) {
 							if (tokens.length <= t + c) {
@@ -806,16 +810,16 @@ public class IEJobs {
 						if (matches) {
 							token.setIEToken(true);
 							((TextToken) token).setTokensToCompleteInformationEntity(ie.getLemmaArray().length - 1);
-//							System.out.println(token);
-//							System.out.println(extractionUnit.getSentence());
-//							System.out.println(ie.getLemmata());
-							ExtractedEntity newIE = new ExtractedEntity(ie.getStartLemma(), false, type, extractionUnit);
+							MatchedEntity newIE = new MatchedEntity(ie.getStartLemma(), false,
+									type, ((MatchedEntity)ie).getLabels(), extractionUnit);
 							newIE.setLemmaArray(ie.getLemmaArray());
-							Map<ExtractedEntity, List<Pattern>> iesForUnit = extractions.get(extractionUnit);
+							Map<InformationEntity, List<Pattern>> iesForUnit = extractions.get(extractionUnit);
 							if (iesForUnit == null)
-								iesForUnit = new HashMap<ExtractedEntity, List<Pattern>>();
+								iesForUnit = new HashMap<>();
 							iesForUnit.put(newIE, List);
 							extractions.put(extractionUnit, iesForUnit);
+//							for (InformationEntity informationEntity : iesForUnit.keySet())
+//								log.info(informationEntity.getStartLemma());
 
 							// TODO match auf koordinierte Ausdrücke überprüfen
 							if (posList.contains("KON"))
@@ -837,10 +841,10 @@ public class IEJobs {
 	 * identifies modifiers in the given ExtractionUnits and adds them to all
 	 * information-entities in the ExtractionUnit
 	 * 
-	 * @param extractionUnits
+	 * @param stringMatches
 	 */
-	public void setModifiers(Map<ExtractionUnit, Map<ExtractedEntity, List<Pattern>>> extractionUnits) {
-		for (ExtractionUnit extractionUnit : extractionUnits.keySet()) {
+	public void setModifiers(Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> stringMatches) {
+		for (ExtractionUnit extractionUnit : stringMatches.keySet()) {
 			String longestMatchingModifer = null;
 			int modifierLength = 0;
 			TextToken[] tokens = extractionUnit.getTokenArray();
@@ -869,7 +873,7 @@ public class IEJobs {
 				}
 			}
 			if (longestMatchingModifer != null) {
-				for (ExtractedEntity ie : extractionUnits.get(extractionUnit).keySet()) {
+				for (InformationEntity ie : stringMatches.get(extractionUnit).keySet()) {
 					ie.setModifier(longestMatchingModifer);
 				}
 			}
@@ -895,9 +899,9 @@ public class IEJobs {
 			} catch (ArrayIndexOutOfBoundsException e) {
 				continue;
 			}
-			Set<ExtractedEntity> iesForKeyword = this.entities.get(keyword);
+			Set<InformationEntity> iesForKeyword = this.entities.get(keyword);
 			if (iesForKeyword == null)
-				iesForKeyword = new HashSet<ExtractedEntity>();
+				iesForKeyword = new HashSet<>();
 			ExtractedEntity ie = new ExtractedEntity(keyword, split.length == 1, type);
 			if (!ie.isSingleWordEntity()) {
 				for (int i = 0; i < split.length; i++) {

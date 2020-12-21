@@ -1,5 +1,7 @@
 package quenfo.de.uni_koeln.spinfo.information_extraction.preprocessing;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import quenfo.de.uni_koeln.spinfo.classification.jasc.preprocessing.ClassifyUnitSplitter;
+import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
 
 /**
  * @author geduldia
@@ -27,9 +30,19 @@ public class IETokenizer {
 
 	public IETokenizer() {
 		
-		setTokenizeModel(ClassLoader.getSystemResourceAsStream("nlp/openNLPmodels/de-token.bin"));
+		try {
+			setTokenizeModel(new FileInputStream(PropertiesHandler.getTokenizerModel()));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
 		// ENHANCE custom sentence model
-		setSentenceSplittingModel(ClassLoader.getSystemResourceAsStream("nlp/openNLPmodels/de-sent.bin"));
+		try {
+			setSentenceSplittingModel(new FileInputStream(PropertiesHandler.getSentenceTokenizerModel()));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
 	}
 	
 	/**

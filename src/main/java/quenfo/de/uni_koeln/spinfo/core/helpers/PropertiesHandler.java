@@ -26,6 +26,8 @@ public class PropertiesHandler {
 	
 	private static String lemmatizerModel = null;
 	private static String taggerModel  = null;
+	private static String sentTokenizerModel = null;
+	private static String tokenizerModel = null;
 	
 	
 	
@@ -41,6 +43,8 @@ public class PropertiesHandler {
 		
 		lemmatizerModel = quenfoData + "/resources/nlp/matetools/lemma-ger-3.6.model";
 		taggerModel = quenfoData + "/resources/nlp/matetools/tag-ger-3.6.model";
+		sentTokenizerModel = quenfoData + "/resources/nlp/openNLP/de-sent.bin";
+		tokenizerModel = quenfoData + "/resources/nlp/openNLP/de-token.bin";
 		
 		generalProps = loadPropertiesFile(configFolder.getAbsolutePath() + "/general.properties");
 		ieProps = loadPropertiesFile(configFolder.getAbsolutePath() + "/informationextraction.properties");
@@ -77,6 +81,13 @@ public class PropertiesHandler {
 		return taggerModel;
 	}
 	
+	public static String getSentenceTokenizerModel() {
+		return sentTokenizerModel;
+	}
+	
+	public static String getTokenizerModel() {
+		return tokenizerModel;
+	}
 	
 	public static String getStringProperty(String domain, String key) {
 		return getProperty(domain, key);

@@ -35,9 +35,7 @@ public class ExtractedEntity extends InformationEntity {
 	@Getter(AccessLevel.NONE)
 	private String patternsString;
 	
-	//übergeordnetes Konzept der Kompetenz (des Tools)
-	@Setter(AccessLevel.NONE)
-	private Set<String> labels;
+	
 	
 	private static StringJoiner sj;
 
@@ -61,33 +59,7 @@ public class ExtractedEntity extends InformationEntity {
 		super(startLemma, isSingleWordEntity, firstIndex, type, parent);
 	}
 	
-	/**
-	 * constructor for known information entities (without extractionUnit)
-	 * @param startLemma
-	 * @param isSingleWordEntity
-	 * @param type
-	 * @param label
-	 */
-	public ExtractedEntity(String startLemma, boolean isSingleWordEntity,
-			IEType type, String label) {
-		this(startLemma, isSingleWordEntity, -1, type, null);
-		this.labels = new HashSet<>();
-		labels.add(label);
-	}
-	
-	/**
-	 * constructor for known information entities (without extractionUnit)
-	 * @param startLemma
-	 * @param isSingleWordEntity
-	 * @param type
-	 * @param labels
-	 */
-	public ExtractedEntity(String startLemma, boolean isSingleWordEntity,
-			IEType type, Set<String> labels) {
-		this(startLemma, isSingleWordEntity, -1, type, null);
-		this.labels = labels;
-	}
-	
+
 	/**
 	 * @param startLemma 
 	 * 			first token of this IE
@@ -104,9 +76,7 @@ public class ExtractedEntity extends InformationEntity {
 
 	
 	
-	public void addLabel(String label) {
-		labels.add(label);
-	}
+
 
 
 	public void setPatternString(List<Pattern> patterns) {

@@ -35,7 +35,8 @@ import org.languagetool.tagging.de.GermanTagger;
 import com.opencsv.CSVReader;
 
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.IEType;
-import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractedEntity;
+import quenfo.de.uni_koeln.spinfo.information_extraction.data.InformationEntity;
+import quenfo.de.uni_koeln.spinfo.information_extraction.data.MatchedEntity;
 import quenfo.de.uni_koeln.spinfo.information_extraction.preprocessing.IETokenizer;
 
 /**
@@ -112,8 +113,8 @@ public final class Util {
 		return lemma;
 	}
 
-	public static Map<String, Set<ExtractedEntity>> readRDF(File rdfFile,
-			Map<String, Set<ExtractedEntity>> entities, IEType type) {
+	public static Map<String, Set<InformationEntity>> readRDF(File rdfFile,
+			Map<String, Set<InformationEntity>> entities, IEType type) {
 
 		Model model = ModelFactory.createDefaultModel();
 		model = model.read(rdfFile.getAbsolutePath());
@@ -177,10 +178,10 @@ public final class Util {
 					} catch (ArrayIndexOutOfBoundsException e) {
 						continue;
 					}
-					Set<ExtractedEntity> iesForKeyword = entities.get(keyword);
+					Set<InformationEntity> iesForKeyword = entities.get(keyword);
 					if (iesForKeyword == null)
-						iesForKeyword = new HashSet<ExtractedEntity>();
-					ExtractedEntity ie = new ExtractedEntity(keyword, split.length == 1, type, cat);
+						iesForKeyword = new HashSet<InformationEntity>();
+					InformationEntity ie = new MatchedEntity(keyword, split.length == 1, type, cat);
 					if (!ie.isSingleWordEntity()) {
 						for (int i = 0; i < split.length; i++) {
 //							ie.addLemma(Util.normalizeLemma(split[i]));
@@ -190,9 +191,9 @@ public final class Util {
 						ie.setLemmaArray(split);
 					}
 					if (iesForKeyword.contains(ie)) {
-						for (ExtractedEntity curr : iesForKeyword) {
+						for (InformationEntity curr : iesForKeyword) {
 							if (curr.equals(ie)) {
-								curr.addLabel(cat);
+								((MatchedEntity)curr).addLabel(cat);
 								iesForKeyword.add(curr);
 							}
 						}
@@ -206,8 +207,8 @@ public final class Util {
 		return entities;
 	}
 
-	public static Map<String, Set<ExtractedEntity>> readTEI(File teiFile, String category,
-			Map<String, Set<ExtractedEntity>> entities, IEType type) throws IOException, FileNotFoundException {
+	public static Map<String, Set<InformationEntity>> readTEI(File teiFile, String category,
+			Map<String, Set<InformationEntity>> entities, IEType type) throws IOException, FileNotFoundException {
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(teiFile), "UTF8"));
 
@@ -245,10 +246,10 @@ public final class Util {
 				} catch (ArrayIndexOutOfBoundsException e) {
 					continue;
 				}
-				Set<ExtractedEntity> iesForKeyword = entities.get(keyword);
+				Set<InformationEntity> iesForKeyword = entities.get(keyword);
 				if (iesForKeyword == null)
-					iesForKeyword = new HashSet<ExtractedEntity>();
-				ExtractedEntity ie = new ExtractedEntity(keyword, split.length == 1, type, cat);
+					iesForKeyword = new HashSet<InformationEntity>();
+				InformationEntity ie = new MatchedEntity(keyword, split.length == 1, type, cat);
 				if (!ie.isSingleWordEntity()) {
 					for (int i = 0; i < split.length; i++) {
 //						ie.addLemma(Util.normalizeLemma(split[i]));
@@ -258,9 +259,9 @@ public final class Util {
 					ie.setLemmaArray(split);
 				}
 				if (iesForKeyword.contains(ie)) {
-					for (ExtractedEntity curr : iesForKeyword) {
+					for (InformationEntity curr : iesForKeyword) {
 						if (curr.equals(ie)) {
-							curr.addLabel(cat);
+							((MatchedEntity)curr).addLabel(cat);
 							iesForKeyword.add(curr);
 						}
 					}
@@ -276,8 +277,8 @@ public final class Util {
 		return entities;
 	}
 
-	public static Map<String, Set<ExtractedEntity>> readCSV(File entitiesFile,
-			Map<String, Set<ExtractedEntity>> entities, IEType type) throws IOException {
+	public static Map<String, Set<InformationEntity>> readCSV(File entitiesFile,
+			Map<String, Set<InformationEntity>> entities, IEType type) throws IOException {
 		
 		IETokenizer tokenizer = new IETokenizer();
 		CSVReader reader = new CSVReader(new FileReader(entitiesFile));		
@@ -309,10 +310,10 @@ public final class Util {
 				}
 				
 				keyword = Util.normalizeLemma(lemmas[0]);
-				Set<ExtractedEntity> iesForKeyword = entities.get(keyword);
+				Set<InformationEntity> iesForKeyword = entities.get(keyword);
 				if (iesForKeyword == null)
-					iesForKeyword = new HashSet<ExtractedEntity>();
-				ExtractedEntity ie = new ExtractedEntity(keyword, lemmas.length == 1, type, uri);
+					iesForKeyword = new HashSet<InformationEntity>();
+				InformationEntity ie = new MatchedEntity(keyword, lemmas.length == 1, type, uri);
 				if (!ie.isSingleWordEntity()) {
 					for (int i = 0; i < lemmas.length; i++) {
 //						ie.addLemma(Util.normalizeLemma(split[i]));
@@ -322,9 +323,9 @@ public final class Util {
 					ie.setLemmaArray(lemmas);
 				}
 				if (iesForKeyword.contains(ie)) {
-					for (ExtractedEntity curr : iesForKeyword) {
+					for (InformationEntity curr : iesForKeyword) {
 						if (curr.equals(ie)) {
-							curr.addLabel(uri);
+							((MatchedEntity)curr).addLabel(uri);
 							iesForKeyword.add(curr);
 						}
 					}
