@@ -254,7 +254,6 @@ public class ORMExtractor {
 	}
 
 	public void stringMatch(int queryOffset, int queryLimit, int fetchSize) throws SQLException, IOException {
-
 		Tool lemmatizer = new Lemmatizer(PropertiesHandler.getLemmatizerModel(), false);
 
 		Dao<JASCClassifyUnit, String> cuDao = DaoManager.createDao(connection, JASCClassifyUnit.class);

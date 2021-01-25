@@ -3,11 +3,17 @@ package quenfo.de.uni_koeln.spinfo.information_extraction.apps_orm;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.table.TableUtils;
+
 import quenfo.de.uni_koeln.spinfo.classification.core.data.DBMode;
 import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
+import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractedEntity;
+import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.IEType;
+import quenfo.de.uni_koeln.spinfo.information_extraction.data.MatchedEntity;
 import quenfo.de.uni_koeln.spinfo.information_extraction.workflow.ORMExtractor;
 
 public class MatchCompetences {
@@ -68,6 +74,17 @@ public class MatchCompetences {
 				
 				if (dbMode.equals(DBMode.OVERWRITE)) {
 					// TODO Tabelle überschreiben
+					try {
+						TableUtils.clearTable(jobadConnection, ExtractionUnit.class);
+					} catch (SQLException e) {
+						System.err.println("Noch keine Daten (ExtractionUnits) zum Überschreiben vorhanden.");
+					}
+					
+					try {
+						TableUtils.clearTable(jobadConnection, MatchedEntity.class);
+					} catch (SQLException e) {
+						System.err.println("Noch keine Daten (Extractions) zum Überschreiben vorhanden.");
+					}
 				}
 
 				long before = System.currentTimeMillis();
@@ -116,19 +133,6 @@ public class MatchCompetences {
 
 		statisticsFile = new File(
 				competencesFolder + PropertiesHandler.getStringProperty("matching", "compMatchingStats"));
-
-
-		ieType = PropertiesHandler.getSearchType("ie");
-
-		dbFilePath = quenfoData + "/sqlite/orm/" + PropertiesHandler.getStringProperty("general", "orm_database");
-
-		queryLimit = PropertiesHandler.getIntProperty("ie", "queryLimit");
-		startPos = PropertiesHandler.getIntProperty("ie", "startPos");
-		fetchSize = PropertiesHandler.getIntProperty("ie", "fetchSize");
-		expandCoordinates = PropertiesHandler.getBoolProperty("ie", "expandCoordinates");
-
-
-
 	}
 
 }

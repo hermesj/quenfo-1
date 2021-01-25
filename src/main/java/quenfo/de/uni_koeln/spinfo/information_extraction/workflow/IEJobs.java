@@ -185,6 +185,7 @@ public class IEJobs {
 					line = in.readLine();
 					continue;
 				}
+				line = line.toLowerCase();
 				String[] split = line.split(" ");
 				String keyword;
 				try {

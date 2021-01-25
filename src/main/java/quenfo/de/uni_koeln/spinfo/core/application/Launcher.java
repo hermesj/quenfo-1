@@ -33,10 +33,6 @@ public class Launcher {
 			log.info("--- Classification starts ---");
 			ClassifyDatabase.main(args);
 			break;
-		case "classifyorm":
-			log.info("--- Classification with ORM starts ---");
-			ClassifyORMLite.main(args);
-			break;
 		case "extractcompetences":
 			log.info("--- Extracting competences starts ---");
 			ExtractNewCompetences.main(args);
@@ -44,6 +40,19 @@ public class Launcher {
 		case "extracttools":
 			log.info("--- Extracting tools starts ---");
 			ExtractNewTools.main(args);
+			break;
+		case "matchcompetences":
+			log.info("--- Matching competences starts ---");
+			MatchCompetences.main(args);
+			break;
+		case "matchtools":
+			log.info("--- Matching tools starts ---");
+			MatchTools.main(args);
+			break;
+		//---------- ORM -------------------
+		case "classifyorm":
+			log.info("--- Classification with ORM starts ---");
+			ClassifyORMLite.main(args);
 			break;
 		case "extractcompetencesorm":
 			log.info("--- Extracting competences (with orm mapping) starts");
@@ -53,13 +62,12 @@ public class Launcher {
 			log.info("--- Extracting tools (with orm mapping) starts");
 			quenfo.de.uni_koeln.spinfo.information_extraction.apps_orm.ExtractNewTools.main(args);
 			break;
-		case "matchcompetences":
-			log.info("--- Matching competences starts ---");
-			MatchCompetences.main(args);
+		case "matchcompetencesorm":
+			log.info("--- Matching competences (with orm mapping) starts");
+			quenfo.de.uni_koeln.spinfo.information_extraction.apps_orm.MatchCompetences.main(args);
 			break;
-		case "matchtools":
-			log.info("--- Matching tools starts ---");
-			MatchTools.main(args);
+		case "matchtoolsorm":
+			log.info("--- not implemented yet");
 			break;
 		default:
 			System.out.println(args[0] + " is not available. Please choose\n"
