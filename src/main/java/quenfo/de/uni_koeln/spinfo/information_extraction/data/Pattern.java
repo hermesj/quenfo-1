@@ -23,6 +23,7 @@ public class Pattern {
 	private List<Integer> extractionPointer = new ArrayList<Integer>();
 	private String description;
 	private int id;
+	private Double conf;
 	
 	/**
 	 * adds a new token to this Pattern
@@ -48,6 +49,25 @@ public class Pattern {
 		return tokens.get(index);
 	}
 
+	/**
+	 * @author Christine Schaefer
+	 * 
+	 * @param tp
+	 * @param fp
+	 */
+	public Double setConf(int tp, int fp) {
+		this.conf = ((double) tp / (tp + fp));
+		return conf;
+	}
+	
+	/**
+	 * @author Christine Schaefer
+	 * 
+	 * @return confidence of a pattern
+	 */
+	public Double getConf() {
+		return conf;
+	}
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -71,7 +91,7 @@ public class Pattern {
 		}
 		sb.deleteCharAt(sb.length()-1);
 		sb.append("\n");
-		sb.append("CONF:\t"+"0.0");
+		sb.append("CONF:\t" + conf +"\n\n");
 		return sb.toString();
 	}
 	

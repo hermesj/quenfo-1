@@ -51,7 +51,7 @@ public class InformationEntity { // TODO protected/abstract?
 
 	@DatabaseField(uniqueCombo = true)
 	@Setter(AccessLevel.NONE)
-	@Getter(AccessLevel.NONE)
+	//@Getter(AccessLevel.NONE)
 	private String lemmaExpression;
 
 	// Modifizierer (z.B. 'zwingend erforderlich')
@@ -65,6 +65,8 @@ public class InformationEntity { // TODO protected/abstract?
 	
 
 	private static StringJoiner sj;
+
+	private Double conf;
 
 	/**
 	 * default constructor for object relational mapping
@@ -149,6 +151,45 @@ public class InformationEntity { // TODO protected/abstract?
 		for (String l : lemmaArray)
 			sj.add(l);
 		this.lemmaExpression = sj.toString();
+	}
+
+	/**
+	 * 
+	 * @author Christine Schaefer
+	 * 
+	 * @return confidence of an extraction
+	 */
+	public Double getConf() {
+		return conf;
+	}
+
+	/**
+	 * 
+	 * @author Christine Schaefer
+	 * 
+	 * @param usedPattern
+	 */
+	public Double setConf(List<Pattern> usedPattern) {
+		this.conf = 0d;
+		double product = 0d;
+
+		List<Double> confValue = new ArrayList<Double>();
+
+		for (Pattern p : usedPattern) {
+			confValue.add(1 - p.getConf()); // (1 - Conf(P)) = Wahrscheinlichkeit für die Fehlerhaftigkeit
+		}
+
+		for (int i = 1; i <= confValue.size(); i++) {
+			// Wie berechne ich das Produkt aller Elemente der Liste confValue?
+			if (product == 0d) {
+				product = confValue.get(i - 1);
+			} else {
+				product = product * confValue.get(i - 1);
+			}
+		}
+		conf = 1 - product;
+		return conf;
+
 	}
 
 }

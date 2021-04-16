@@ -3,6 +3,8 @@ Main code of the BIBB project
 
 ## Dokumentation
 
+**Schäfer, Christine (2021)**. *Evaluation von Extraktionsmustern im Kontext von Text Mining auf Stellenanzeigen*. Bachelorarbeit.<br /><br /> 
+
 **Geduldig, Alena (2017)**. *Muster und Musterbildungsverfahren für domänenspezifische
 Informationsextraktion Ein Bootstrapping-Ansatz zur Extraktion von Kompetenzen aus Stellenanzeigen*. Masterarbeit. URL: <a href="http://www.spinfo.phil-fak.uni-koeln.de/sites/spinfo/arbeiten/Masterthesis_Alena.pdf">http://www.spinfo.phil-fak.uni-koeln.de/sites/spinfo/arbeiten/Masterthesis_Alena.pdf</a> <br /> <br />
 
@@ -35,7 +37,7 @@ Segmentierung von Stellenanzeigen in Abschnitte und Klassifikation der Abschnitt
 
 Konfigurations-Variablen ggf. anpassen <br /><br />
 
-## Information Extration 
+## Information Extraction 
 Extrahiert  Kompetenzen aus den Abschnitten, die zuvor der Klasse 'Bewerberprofil' zugeordnet wurden<br />
 Extrahiert Tools aus den Abschnitten, die zuvor der Klasse 'Jobbeschreibung' und/oder 'Bewerberprofil' zugeordnet wurden.<br />
 
