@@ -166,6 +166,6 @@
     <factorypathentry kind="VARJAR" id="M2_REPO/net/sourceforge/f2j/arpack_combined_all/0.1/arpack_combined_all-0.1.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/com/googlecode/netlib-java/netlib-java/1.1/netlib-java-1.1.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/com/github/fommil/netlib/core/1.1/core-1.1.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/projectlombok/lombok/1.18.8/lombok-1.18.8.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/projectlombok/lombok/1.18.20/lombok-1.18.20.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/net/sf/supercsv/super-csv/2.4.0/super-csv-2.4.0.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>
