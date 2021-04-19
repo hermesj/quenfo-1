@@ -16,12 +16,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.io.Files;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-//import org.apache.log4j.Logger;
-
-import com.google.common.io.Files;
 
 import de.uni_koeln.spinfo.data.Token;
 import de.uni_koeln.spinfo.workflow.CoordinateExpander;

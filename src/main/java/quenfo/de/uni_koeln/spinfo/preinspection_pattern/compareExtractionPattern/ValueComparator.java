@@ -1,5 +1,8 @@
 package quenfo.de.uni_koeln.spinfo.preinspection_pattern.compareExtractionPattern;
 
+import java.util.Comparator;
+import java.util.Map;
+
 /**
  * 
  * @author christine schaefer

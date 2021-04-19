@@ -1,5 +1,15 @@
 package quenfo.de.uni_koeln.spinfo.preinspection_pattern.compareExtractionPattern;
 
+import java.io.File;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import quenfo.de.uni_koeln.spinfo.preinspection_pattern.io.IO;
+
 public class ListenQuantity {
     /**
      * Lists the number of extractions of a pattern in a map and exports it to a

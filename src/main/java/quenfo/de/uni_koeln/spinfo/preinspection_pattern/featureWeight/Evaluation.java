@@ -1,5 +1,19 @@
 package quenfo.de.uni_koeln.spinfo.preinspection_pattern.featureWeight;
 
+import java.io.File;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import quenfo.de.uni_koeln.spinfo.preinspection_pattern.io.IO;
+
 public class Evaluation {
     
 	// Pfade zu Dateien mit validierten Extraktionen (Goldstandard)
