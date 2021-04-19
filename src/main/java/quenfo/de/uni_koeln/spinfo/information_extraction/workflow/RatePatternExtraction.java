@@ -30,14 +30,13 @@ public class RatePatternExtraction {
      * 
      */
     @SuppressWarnings("unlikely-arg-type")
-    public Map<String, Double> evaluatePattern(Map<String, Set<InformationEntity>> competences,
-            Map<String, Set<List<String>>> noCompetences,
+    public Map<String, Double> evaluatePattern(Set<String> competences, Set<String> noCompetences,
             Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractions) {
 
         Map<String, Double> confP = new HashMap<String, Double>();
         List<Pattern> usedPattern = new ArrayList<Pattern>();
 
-        List<InformationEntity> validatedCompetences = new ArrayList<InformationEntity>();
+        List<String> validatedCompetences = new ArrayList<String>();
         List<String> knownExtractionFails = new ArrayList<String>();
 
         for (ExtractionUnit extractionUnit : extractions.keySet()) {
@@ -52,21 +51,15 @@ public class RatePatternExtraction {
             }
         }
 
-        for (String s : competences.keySet()) {
-            Set<InformationEntity> knownExtractions = competences.get(s);
-            for (InformationEntity e : knownExtractions) {
-                if (!(validatedCompetences.contains(e))) {
-                    validatedCompetences.add(e);
-                }
+        for (String s : competences) {
+            if (!(validatedCompetences.contains(s))) {
+                validatedCompetences.add(s);
             }
         }
 
-        for (String s : noCompetences.keySet()) {
-            Set<List<String>> negExamples = noCompetences.get(s);
-            for (List<String> ls : negExamples) {
-                if (!(knownExtractionFails.contains(ls))) {
-                    knownExtractionFails.addAll(ls);
-                }
+        for (String s : noCompetences) {
+            if (!(knownExtractionFails.contains(s))) {
+                knownExtractionFails.add(s);
             }
         }
 

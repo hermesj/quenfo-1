@@ -194,8 +194,6 @@ public class Extractor {
 		Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> allExtractions = new HashMap<>();
 
 		RatePatternExtraction rater = new RatePatternExtraction();
-		Map<String, Set<InformationEntity>> knownCompetences = jobs.entities;
-		Map<String, Set<List<String>>> noCompetences = kobs.negExamples;
 
 		int readParagraphs = 0;
 		int offset = startPos;
@@ -252,7 +250,7 @@ public class Extractor {
 			extractions = removeKnownEntities(extractions);
 
 			//Aufruf der Confidenceberechnung und Selektion
-			rater.evaluatePattern(knownCompetences, noCompetences, extractions);
+			rater.evaluatePattern(knownEntities, noEntities, extractions);
 			rater.evaluateSeed(extractions);
 			extractions = rater.selectBestEntities(extractions);
 
