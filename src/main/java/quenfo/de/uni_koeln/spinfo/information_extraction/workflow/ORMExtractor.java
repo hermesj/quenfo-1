@@ -129,6 +129,8 @@ public class ORMExtractor {
 
 		PreparedQuery<JASCClassifyUnit> cuPrepQuery;
 		PreparedQuery<ExtractionUnit> exuPrepQuery;
+		
+		RatePatternExtraction rater = new RatePatternExtraction();
 
 		Where<JASCClassifyUnit, String> whereClause;
 		switch (type) {
@@ -233,6 +235,11 @@ public class ORMExtractor {
 
 			// Entfernen der bereits bekannten Entitäten
 			extractions = removeKnownEntities(extractions);
+			
+			//Aufruf der Confidenceberechnung und Selektion
+			rater.evaluatePattern(jobs.entities, jobs.negExamples, extractions);
+			rater.evaluateSeed(extractions);
+			extractions = rater.selectBestEntities(extractions);
 
 			for (Map.Entry<ExtractionUnit, Map<InformationEntity, List<Pattern>>> e : extractions.entrySet()) {
 				for (Map.Entry<InformationEntity, List<Pattern>> ie : e.getValue().entrySet()) {
