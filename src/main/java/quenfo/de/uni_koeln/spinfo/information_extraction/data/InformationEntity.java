@@ -157,16 +157,6 @@ public class InformationEntity { // TODO protected/abstract?
 	 * 
 	 * @author Christine Schaefer
 	 * 
-	 * @return confidence of an extraction
-	 */
-	public Double getConf() {
-		return conf;
-	}
-
-	/**
-	 * 
-	 * @author Christine Schaefer
-	 * 
 	 * @param usedPattern
 	 */
 	public Double setConf(List<Pattern> usedPattern) {
@@ -188,6 +178,7 @@ public class InformationEntity { // TODO protected/abstract?
 			}
 		}
 		conf = 1 - product;
+		//System.out.println(conf);
 		return conf;
 
 	}

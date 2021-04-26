@@ -30,10 +30,9 @@ public class RatePatternExtraction {
 	 * 
 	 */
 	@SuppressWarnings("unlikely-arg-type")
-	public Map<String, Double> evaluatePattern(Set<String> competences, Set<String> noCompetences,
+	public void evaluatePattern(Set<String> competences, Set<String> noCompetences,
 			Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractions) {
 
-		Map<String, Double> confP = new HashMap<String, Double>();
 		List<Pattern> usedPattern = new ArrayList<Pattern>();
 
 		List<String> validatedCompetences = new ArrayList<String>();
@@ -95,7 +94,6 @@ public class RatePatternExtraction {
 			// Hinzufügen des Musters mit ermittelten Confidence-Wert
 			// eigentlich ist hier die Map nicht mehr notwendig, da direkt der Conf-Wert des
 			// Patterns mit setConf gesetzt wird
-			confP.put(p.getDescription(), p.setConf(tp, fp));
 			p.setConf(tp, fp);
 
 			// TP und FP für neues Pattern wieder null setzen
@@ -103,14 +101,13 @@ public class RatePatternExtraction {
 			fp = 0;
 
 		}
-		return confP;
 	}
 
-	public Map<String, Double> evaluatePattern(Map<String, Set<InformationEntity>> competences,
+	@SuppressWarnings("unlikely-arg-type")
+	public void evaluatePattern(Map<String, Set<InformationEntity>> competences,
 			Map<String, Set<String[]>> noCompetences,
 			Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractions) {
 
-		Map<String, Double> confP = new HashMap<String, Double>();
 		List<Pattern> usedPattern = new ArrayList<Pattern>();
 
 		List<String> validatedCompetences = new ArrayList<String>();
@@ -127,6 +124,7 @@ public class RatePatternExtraction {
 				}
 			}
 		}
+		// System.out.println("Genutzte Muster: " + usedPattern.size());
 
 		for (String s : competences.keySet()) {
 			Set<InformationEntity> ies = competences.get(s);
@@ -138,6 +136,7 @@ public class RatePatternExtraction {
 			}
 
 		}
+		// System.out.println("Bekannte Entitäten: " + validatedCompetences.size());
 
 		for (String s : noCompetences.keySet()) {
 			Set<String[]> noComp = noCompetences.get(s);
@@ -150,6 +149,8 @@ public class RatePatternExtraction {
 
 			}
 		}
+		// System.out.println("Bekannte Extraktionsfehler: " +
+		// knownExtractionFails.size());
 
 		// Iteration über jedes genutzte Muster, das in der Extraktionsmap aufgelistet
 		// ist
@@ -179,19 +180,18 @@ public class RatePatternExtraction {
 					fp++;
 				}
 			}
+			// System.out.println("Extraktionen eines Musters: " +
+			// extractionsOfPattern.size());
 
 			// Hinzufügen des Musters mit ermittelten Confidence-Wert
-			// eigentlich ist hier die Map nicht mehr notwendig, da direkt der Conf-Wert des
-			// Patterns mit setConf gesetzt wird
-			confP.put(p.getDescription(), p.setConf(tp, fp));
 			p.setConf(tp, fp);
+			// System.out.println(p.getConf());
 
 			// TP und FP für neues Pattern wieder null setzen
 			tp = 0;
 			fp = 0;
 
 		}
-		return confP;
 	}
 
 	/**
@@ -201,11 +201,8 @@ public class RatePatternExtraction {
 	 * 
 	 * @return extraction confidence
 	 */
-	public Map<InformationEntity, Double> evaluateSeed(
-			Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> allextractions) {
+	public void evaluateSeed(Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> allextractions) {
 		// Conf(seed) = 1 - <Produkt>(1-Conf(P))
-
-		Map<InformationEntity, Double> confS = new HashMap<InformationEntity, Double>();
 
 		for (ExtractionUnit extractionUnit : allextractions.keySet()) {
 			Map<InformationEntity, List<Pattern>> extraction = allextractions.get(extractionUnit);
@@ -219,15 +216,14 @@ public class RatePatternExtraction {
 						usedPattern.add(p);
 				}
 
+				//System.out.println("Genutzte Muster: " + usedPattern.size());
 				ie.setConf(usedPattern);
-				confS.put(ie, ie.setConf(usedPattern));
 			}
 		}
-		return confS;
 	}
 
 	/**
-	 * Select extractions with confidence >= 0.9
+	 * Select extractions with confidence >= 0.6
 	 * 
 	 * @param allExtractions
 	 * @return selected extractions
@@ -239,7 +235,8 @@ public class RatePatternExtraction {
 			Map<InformationEntity, List<Pattern>> ies = allExtractions.get(extractionUnit);
 			Map<InformationEntity, List<Pattern>> filterdIes = new HashMap<InformationEntity, List<Pattern>>();
 			for (InformationEntity ie : ies.keySet()) {
-				if (ie.getConf() >= 0.1) {
+				if (ie.getConf() == 0.0 || ie.getConf() >= 0.6) {
+				//if(ie.getConf() >= 0.1) {
 					filterdIes.put(ie, ies.get(ie));
 				}
 			}

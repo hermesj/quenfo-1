@@ -229,6 +229,8 @@ public class ORMExtractor {
 			extractions = jobs.extractEntities(extractionUnits, lemmatizer);
 
 			possCompoundSplits.putAll(jobs.getNewCompounds());
+			
+			System.out.println("Extraktionen roh: " + extractions.size());
 
 			// TODO Was ist mit doppelten Extraktion (gleiche IE aus unterschiedlichen
 			// Abschnitten)?
@@ -236,10 +238,16 @@ public class ORMExtractor {
 			// Entfernen der bereits bekannten Entitäten
 			extractions = removeKnownEntities(extractions);
 			
+			System.out.println("Extraktionen ohne bekannten Entitäten: " + extractions.size());
+			
 			//Aufruf der Confidenceberechnung und Selektion
 			rater.evaluatePattern(jobs.entities, jobs.negExamples, extractions);
+			//System.out.println("Extraktionen aus bewerteten Mustern: " + extractions);
 			rater.evaluateSeed(extractions);
+			//System.out.println("Extraktionen aus bewerteten Extraktioen: " + extractions);
 			extractions = rater.selectBestEntities(extractions);
+			
+			// System.out.println("Extraktionen der Güte: " + extractions.size());
 
 			for (Map.Entry<ExtractionUnit, Map<InformationEntity, List<Pattern>>> e : extractions.entrySet()) {
 				for (Map.Entry<InformationEntity, List<Pattern>> ie : e.getValue().entrySet()) {
@@ -253,6 +261,8 @@ public class ORMExtractor {
 
 			}
 			allExtractions.putAll(extractions);
+			
+			System.out.println("Alle Extraktionen: " + allExtractions.size());
 
 			queryOffset += fetchSize;
 
