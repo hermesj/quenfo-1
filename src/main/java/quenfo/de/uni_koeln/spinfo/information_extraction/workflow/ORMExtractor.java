@@ -238,11 +238,12 @@ public class ORMExtractor {
 			// Entfernen der bereits bekannten Entitäten
 			extractions = removeKnownEntities(extractions);
 			
-			System.out.println("Extraktionen ohne bekannten Entitäten: " + extractions.size());
+			//System.out.println("Extraktionen ohne bekannten Entitäten: " + extractions);
 			
 			//Aufruf der Confidenceberechnung und Selektion
 			rater.evaluatePattern(jobs.entities, jobs.negExamples, extractions);
 			//System.out.println("Extraktionen aus bewerteten Mustern: " + extractions);
+			
 			rater.evaluateSeed(extractions);
 			//System.out.println("Extraktionen aus bewerteten Extraktioen: " + extractions);
 			extractions = rater.selectBestEntities(extractions);

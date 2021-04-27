@@ -162,6 +162,8 @@ public class InformationEntity { // TODO protected/abstract?
 	public Double setConf(List<Pattern> usedPattern) {
 		this.conf = 0d;
 		double product = 0d;
+		
+		//System.out.println(usedPattern);
 
 		List<Double> confValue = new ArrayList<Double>();
 
@@ -169,6 +171,7 @@ public class InformationEntity { // TODO protected/abstract?
 			confValue.add(1 - p.getConf()); // (1 - Conf(P)) = Wahrscheinlichkeit für die Fehlerhaftigkeit
 		}
 
+		//System.out.println(confValue);
 		for (int i = 1; i <= confValue.size(); i++) {
 			// Wie berechne ich das Produkt aller Elemente der Liste confValue?
 			if (product == 0d) {

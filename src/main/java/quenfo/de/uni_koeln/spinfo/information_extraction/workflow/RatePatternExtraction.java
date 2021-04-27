@@ -136,7 +136,7 @@ public class RatePatternExtraction {
 			}
 
 		}
-		// System.out.println("Bekannte Entitäten: " + validatedCompetences.size());
+		// System.out.println("Bekannte Entitäten: " + validatedCompetences);
 
 		for (String s : noCompetences.keySet()) {
 			Set<String[]> noComp = noCompetences.get(s);
@@ -149,8 +149,7 @@ public class RatePatternExtraction {
 
 			}
 		}
-		// System.out.println("Bekannte Extraktionsfehler: " +
-		// knownExtractionFails.size());
+		// System.out.println("Bekannte Extraktionsfehler: " + knownExtractionFails);
 
 		// Iteration über jedes genutzte Muster, das in der Extraktionsmap aufgelistet
 		// ist
@@ -170,10 +169,11 @@ public class RatePatternExtraction {
 					}
 				}
 			}
+			// System.out.println(extractionsOfPattern);
 
 			// Vergleich der Extraktionen mit den validierten Kompetenzen
 			for (InformationEntity ie : extractionsOfPattern) {
-				if (validatedCompetences.contains(ie)) {
+				if (validatedCompetences.contains(ie.getLemmaExpression())) {
 					tp++;
 				}
 				if (knownExtractionFails.contains(ie.getLemmaExpression())) {
@@ -216,7 +216,7 @@ public class RatePatternExtraction {
 						usedPattern.add(p);
 				}
 
-				//System.out.println("Genutzte Muster: " + usedPattern.size());
+				// System.out.println("Genutzte Muster: " + usedPattern.size());
 				ie.setConf(usedPattern);
 			}
 		}
@@ -235,8 +235,9 @@ public class RatePatternExtraction {
 			Map<InformationEntity, List<Pattern>> ies = allExtractions.get(extractionUnit);
 			Map<InformationEntity, List<Pattern>> filterdIes = new HashMap<InformationEntity, List<Pattern>>();
 			for (InformationEntity ie : ies.keySet()) {
-				if (ie.getConf() == 0.0 || ie.getConf() >= 0.6) {
-				//if(ie.getConf() >= 0.1) {
+				// if (ie.getConf() == 0.0 || ie.getConf() >= 0.6) {
+				System.out.println(ie.getLemmaExpression() + ie.getConf());
+				if (ie.getConf() >= 0.5) {
 					filterdIes.put(ie, ies.get(ie));
 				}
 			}

@@ -507,7 +507,7 @@ public class IEJobs {
 
 			for (Pattern pattern : patterns) {
 				//überprüfen, ob Muster einen bestimmten Conf-Wert hat
-				if(pattern.getConf() == null || pattern.getConf() >= 0.1){
+				if(pattern.getConf() == null || pattern.getConf() >= 0.5){
 					for (int t = 0; t <= ieTokens.length - pattern.getSize(); t++) {
 						match = false;
 						entityPointer = 0;
