@@ -193,8 +193,6 @@ public class Extractor {
 		Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractions = null;
 		Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> allExtractions = new HashMap<>();
 
-		RatePatternExtraction rater = new RatePatternExtraction();
-
 		int readParagraphs = 0;
 		int offset = startPos;
 		if (maxCount > -1 && fetchSize > maxCount) {
@@ -248,11 +246,6 @@ public class Extractor {
 
 			// Entfernen der bereits bekannten Entitäten
 			extractions = removeKnownEntities(extractions);
-
-			//Aufruf der Confidenceberechnung und Selektion
-			rater.evaluatePattern(knownEntities, noEntities, extractions);
-			rater.evaluateSeed(extractions);
-			extractions = rater.selectBestEntities(extractions);
 
 			allExtractions.putAll(extractions);
 

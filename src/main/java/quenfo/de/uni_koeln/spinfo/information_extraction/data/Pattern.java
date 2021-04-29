@@ -60,6 +60,7 @@ public class Pattern {
 	 * @param fp
 	 */
 	public Double setConf(int tp, int fp) {
+		//TODO Was passiert, wenn Pattern bereits einen Conf-Wert hat?
 		if (tp == 0 && fp == 0) {
 			this.conf = 0.0;
 		} else {

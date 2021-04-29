@@ -130,7 +130,7 @@ public class ORMExtractor {
 		PreparedQuery<JASCClassifyUnit> cuPrepQuery;
 		PreparedQuery<ExtractionUnit> exuPrepQuery;
 		
-		RatePatternExtraction rater = new RatePatternExtraction();
+		RatePatternExtraction rater = new RatePatternExtraction(jobs.entities, jobs.negExamples);
 
 		Where<JASCClassifyUnit, String> whereClause;
 		switch (type) {
@@ -230,26 +230,17 @@ public class ORMExtractor {
 
 			possCompoundSplits.putAll(jobs.getNewCompounds());
 			
-			System.out.println("Extraktionen roh: " + extractions.size());
-
 			// TODO Was ist mit doppelten Extraktion (gleiche IE aus unterschiedlichen
 			// Abschnitten)?
 
 			// Entfernen der bereits bekannten Entitäten
 			extractions = removeKnownEntities(extractions);
 			
-			//System.out.println("Extraktionen ohne bekannten Entitäten: " + extractions);
-			
 			//Aufruf der Confidenceberechnung und Selektion
-			rater.evaluatePattern(jobs.entities, jobs.negExamples, extractions);
-			//System.out.println("Extraktionen aus bewerteten Mustern: " + extractions);
-			
+			rater.evaluatePattern(extractions);
 			rater.evaluateSeed(extractions);
-			//System.out.println("Extraktionen aus bewerteten Extraktioen: " + extractions);
 			extractions = rater.selectBestEntities(extractions);
 			
-			// System.out.println("Extraktionen der Güte: " + extractions.size());
-
 			for (Map.Entry<ExtractionUnit, Map<InformationEntity, List<Pattern>>> e : extractions.entrySet()) {
 				for (Map.Entry<InformationEntity, List<Pattern>> ie : e.getValue().entrySet()) {
 					try {
@@ -263,11 +254,10 @@ public class ORMExtractor {
 			}
 			allExtractions.putAll(extractions);
 			
-			System.out.println("Alle Extraktionen: " + allExtractions.size());
-
 			queryOffset += fetchSize;
 
 		}
+		//rater.countPatternExtraction(allExtractions);
 
 	}
 

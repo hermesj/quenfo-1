@@ -1,10 +1,15 @@
 package quenfo.de.uni_koeln.spinfo.information_extraction.workflow;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.InformationEntity;
@@ -19,6 +24,19 @@ import quenfo.de.uni_koeln.spinfo.information_extraction.data.Pattern;
  */
 public class RatePatternExtraction {
 
+	private Map<String, Set<InformationEntity>> competences;
+	private Map<String, Set<String[]>> noCompetences;
+//	private String pathOutput = "\\output\\information_extraction\\patternQuantity.txt";
+
+	/**
+	 * Constructor to submit known competences and extraction fails
+	 */
+	public RatePatternExtraction(Map<String, Set<InformationEntity>> competences,
+			Map<String, Set<String[]>> noCompetences) {
+		this.competences = competences;
+		this.noCompetences = noCompetences;
+	}
+
 	/**
 	 * Computes the confidence of the used patterns: Conf(P) = P.pos / (P.pos +
 	 * P.neg)
@@ -29,9 +47,7 @@ public class RatePatternExtraction {
 	 * @return pattern-confidence
 	 * 
 	 */
-	@SuppressWarnings("unlikely-arg-type")
-	public void evaluatePattern(Set<String> competences, Set<String> noCompetences,
-			Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractions) {
+	public void evaluatePattern(Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractions) {
 
 		List<Pattern> usedPattern = new ArrayList<Pattern>();
 
@@ -49,82 +65,6 @@ public class RatePatternExtraction {
 				}
 			}
 		}
-
-		for (String s : competences) {
-			if (!(validatedCompetences.contains(s))) {
-				validatedCompetences.add(s);
-			}
-		}
-
-		for (String s : noCompetences) {
-			if (!(knownExtractionFails.contains(s))) {
-				knownExtractionFails.add(s);
-			}
-		}
-
-		// Iteration über jedes genutzte Muster, das in der Extraktionsmap aufgelistet
-		// ist
-		for (Pattern p : usedPattern) {
-
-			int tp = 0;
-			int fp = 0;
-
-			// Liste mit den Extraktionen des aktuellen Musters
-			List<InformationEntity> extractionsOfPattern = new ArrayList<InformationEntity>();
-
-			for (ExtractionUnit extractionUnit : extractions.keySet()) {
-				Map<InformationEntity, List<Pattern>> ieP = extractions.get(extractionUnit);
-				for (InformationEntity ie : ieP.keySet()) {
-					if (ieP.get(ie).contains(p)) {
-						extractionsOfPattern.add(ie);
-					}
-				}
-			}
-
-			// Vergleich der Extraktionen mit den validierten Kompetenzen
-			for (InformationEntity ie : extractionsOfPattern) {
-				if (validatedCompetences.contains(ie)) {
-					tp++;
-				}
-				if (knownExtractionFails.contains(ie.getLemmaExpression())) {
-					fp++;
-				}
-			}
-
-			// Hinzufügen des Musters mit ermittelten Confidence-Wert
-			// eigentlich ist hier die Map nicht mehr notwendig, da direkt der Conf-Wert des
-			// Patterns mit setConf gesetzt wird
-			p.setConf(tp, fp);
-
-			// TP und FP für neues Pattern wieder null setzen
-			tp = 0;
-			fp = 0;
-
-		}
-	}
-
-	@SuppressWarnings("unlikely-arg-type")
-	public void evaluatePattern(Map<String, Set<InformationEntity>> competences,
-			Map<String, Set<String[]>> noCompetences,
-			Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractions) {
-
-		List<Pattern> usedPattern = new ArrayList<Pattern>();
-
-		List<String> validatedCompetences = new ArrayList<String>();
-		List<String> knownExtractionFails = new ArrayList<String>();
-
-		for (ExtractionUnit extractionUnit : extractions.keySet()) {
-			Map<InformationEntity, List<Pattern>> ieP = extractions.get(extractionUnit);
-
-			for (InformationEntity ie : ieP.keySet()) {
-				List<Pattern> iePattern = ieP.get(ie);
-				for (Pattern pattern : iePattern) {
-					if (!usedPattern.contains(pattern))
-						usedPattern.add(pattern);
-				}
-			}
-		}
-		// System.out.println("Genutzte Muster: " + usedPattern.size());
 
 		for (String s : competences.keySet()) {
 			Set<InformationEntity> ies = competences.get(s);
@@ -136,7 +76,6 @@ public class RatePatternExtraction {
 			}
 
 		}
-		// System.out.println("Bekannte Entitäten: " + validatedCompetences);
 
 		for (String s : noCompetences.keySet()) {
 			Set<String[]> noComp = noCompetences.get(s);
@@ -149,7 +88,6 @@ public class RatePatternExtraction {
 
 			}
 		}
-		// System.out.println("Bekannte Extraktionsfehler: " + knownExtractionFails);
 
 		// Iteration über jedes genutzte Muster, das in der Extraktionsmap aufgelistet
 		// ist
@@ -169,7 +107,6 @@ public class RatePatternExtraction {
 					}
 				}
 			}
-			// System.out.println(extractionsOfPattern);
 
 			// Vergleich der Extraktionen mit den validierten Kompetenzen
 			for (InformationEntity ie : extractionsOfPattern) {
@@ -180,12 +117,9 @@ public class RatePatternExtraction {
 					fp++;
 				}
 			}
-			// System.out.println("Extraktionen eines Musters: " +
-			// extractionsOfPattern.size());
 
 			// Hinzufügen des Musters mit ermittelten Confidence-Wert
 			p.setConf(tp, fp);
-			// System.out.println(p.getConf());
 
 			// TP und FP für neues Pattern wieder null setzen
 			tp = 0;
@@ -216,14 +150,13 @@ public class RatePatternExtraction {
 						usedPattern.add(p);
 				}
 
-				// System.out.println("Genutzte Muster: " + usedPattern.size());
 				ie.setConf(usedPattern);
 			}
 		}
 	}
 
 	/**
-	 * Select extractions with confidence >= 0.6
+	 * Select extractions with confidence >= 0.5
 	 * 
 	 * @param allExtractions
 	 * @return selected extractions
@@ -236,7 +169,6 @@ public class RatePatternExtraction {
 			Map<InformationEntity, List<Pattern>> filterdIes = new HashMap<InformationEntity, List<Pattern>>();
 			for (InformationEntity ie : ies.keySet()) {
 				// if (ie.getConf() == 0.0 || ie.getConf() >= 0.6) {
-				System.out.println(ie.getLemmaExpression() + ie.getConf());
 				if (ie.getConf() >= 0.5) {
 					filterdIes.put(ie, ies.get(ie));
 				}
@@ -247,4 +179,32 @@ public class RatePatternExtraction {
 		}
 		return toReturn;
 	}
+
+//	public void countPatternExtraction(Map<ExtractionUnit, Map<InformationEntity, List<Pattern>>> extractions) throws IOException {
+//		Map<Pattern, Integer> patternQuantity = new HashMap<Pattern, Integer>();
+//
+//		for (ExtractionUnit eu : extractions.keySet()) {
+//			Map<InformationEntity, List<Pattern>> ies = extractions.get(eu);
+//			for (InformationEntity ie : ies.keySet()) {
+//				List<Pattern> pattern = ies.get(ie);
+//				for (Pattern p : pattern) {
+//					if (patternQuantity.containsKey(p)) {
+//						patternQuantity.put(p, patternQuantity.get(p) + 1);
+//					} else {
+//						patternQuantity.put(p, 1);
+//					}
+//				}
+//			}
+//		}
+//		FileWriter fstream = new FileWriter(pathOutput);
+//		BufferedWriter out = new BufferedWriter(fstream);
+//
+//		Iterator<Entry<Pattern, Integer>> it = patternQuantity.entrySet().iterator();
+//
+//		while (it.hasNext()) {
+//			Map.Entry<Pattern, Integer> pairs = it.next();
+//			out.write("Pattern:\n " + pairs.getKey() + "Anzahl an Extraktionen: " + pairs.getValue() + "\n");
+//		}
+//		out.close();
+//	}
 }
