@@ -11,9 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.stmt.PreparedQuery;
@@ -21,6 +18,9 @@ import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import is2.lemmatizer.Lemmatizer;
 import is2.tag.Tagger;
@@ -129,6 +129,8 @@ public class ORMExtractor {
 
 		PreparedQuery<JASCClassifyUnit> cuPrepQuery;
 		PreparedQuery<ExtractionUnit> exuPrepQuery;
+		
+		RatePatternExtraction rater = new RatePatternExtraction(jobs.entities, jobs.negExamples);
 
 		Where<JASCClassifyUnit, String> whereClause;
 		switch (type) {
@@ -227,13 +229,18 @@ public class ORMExtractor {
 			extractions = jobs.extractEntities(extractionUnits, lemmatizer);
 
 			possCompoundSplits.putAll(jobs.getNewCompounds());
-
+			
 			// TODO Was ist mit doppelten Extraktion (gleiche IE aus unterschiedlichen
 			// Abschnitten)?
 
 			// Entfernen der bereits bekannten Entitäten
 			extractions = removeKnownEntities(extractions);
-
+			
+			//Aufruf der Confidenceberechnung und Selektion
+			rater.evaluatePattern(extractions);
+			rater.evaluateSeed(extractions);
+			extractions = rater.selectBestEntities(extractions);
+			
 			for (Map.Entry<ExtractionUnit, Map<InformationEntity, List<Pattern>>> e : extractions.entrySet()) {
 				for (Map.Entry<InformationEntity, List<Pattern>> ie : e.getValue().entrySet()) {
 					try {
@@ -246,10 +253,11 @@ public class ORMExtractor {
 
 			}
 			allExtractions.putAll(extractions);
-
+			
 			queryOffset += fetchSize;
 
 		}
+		//rater.countPatternExtraction(allExtractions);
 
 	}
 
