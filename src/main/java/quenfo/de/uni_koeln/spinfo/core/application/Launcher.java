@@ -67,18 +67,21 @@ public class Launcher {
 			quenfo.de.uni_koeln.spinfo.information_extraction.apps_orm.MatchCompetences.main(args);
 			break;
 		case "matchtoolsorm":
-			log.info("--- not implemented yet");
+			log.info("--- Matching tools (with orm mapping) starts");
+			quenfo.de.uni_koeln.spinfo.information_extraction.apps_orm.MatchTools.main(args);
 			break;
 		default:
 			System.out.println(args[0] + " is not available. Please choose\n"
 					+ "classify\n"
-					+ "classifyORM\n"
 					+ "extractCompetences\n"
 					+ "extractTools\n"
 					+ "matchCompetences\n"
 					+ "matchTools\n"
+					+ "classifyORM\n"
 					+ "extractCompetencesORM\n"
-					+ "extractToolsORM");
+					+ "extractToolsORM\n"
+					+ "matchCompetencesORM\n"
+					+ "matchToolsORM\n");
 			break;
 		}
 		

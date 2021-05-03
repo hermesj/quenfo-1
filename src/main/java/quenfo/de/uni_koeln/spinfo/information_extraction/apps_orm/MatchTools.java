@@ -10,31 +10,20 @@ import com.j256.ormlite.table.TableUtils;
 
 import quenfo.de.uni_koeln.spinfo.classification.core.data.DBMode;
 import quenfo.de.uni_koeln.spinfo.core.helpers.PropertiesHandler;
-import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractedEntity;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.IEType;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.MatchedEntity;
 import quenfo.de.uni_koeln.spinfo.information_extraction.workflow.ORMExtractor;
 
-public class MatchCompetences {
-
-	static IEType ieType;
+public class MatchTools {
+	
+	static IEType ieType = IEType.TOOL;
 
 	// Pfad zur ORM-Datenbank
 	static String dbFilePath;
 
-	// txt-File mit den validierten Kompetenzen
-	static File notCatComps;
-
-	// tei-File mit kategorisierten Kompetenzen
-	static File catComps;
-
-	// Ebene, auf der die Kompetenz zugeordnet werden soll(div1, div2, div3, entry,
-	// form, orth)
-	static String category;
-
-	// txt-File mit allen 'Modifier'-Ausdrücken
-	static File modifier;
+	// txt-File mit allen bereits validierten Tools
+	static File tools;
 
 	// txt-File zur Speicherung der Match-Statistiken
 	static File statisticsFile;
@@ -88,7 +77,7 @@ public class MatchCompetences {
 
 				long before = System.currentTimeMillis();
 
-				ORMExtractor extractor = new ORMExtractor(jobadConnection, notCatComps, modifier,
+				ORMExtractor extractor = new ORMExtractor(jobadConnection, tools, null,
 						ieType, expandCoordinates);
 				extractor.stringMatch(startPos, queryLimit, fetchSize);
 
@@ -117,8 +106,6 @@ public class MatchCompetences {
 
 		// get values from properties files
 
-		ieType = PropertiesHandler.getSearchType("matching");
-
 		dbFilePath = quenfoData + "/sqlite/orm/" + PropertiesHandler.getStringProperty("general", "orm_database");
 		
 		queryLimit = PropertiesHandler.getIntProperty("matching", "queryLimit");
@@ -126,12 +113,10 @@ public class MatchCompetences {
 		fetchSize = PropertiesHandler.getIntProperty("matching", "fetchSize");
 		expandCoordinates = PropertiesHandler.getBoolProperty("matching", "expandCoordinates");
 
-		String competencesFolder = quenfoData + "/resources/information_extraction/competences/";
-		notCatComps = new File(competencesFolder + PropertiesHandler.getStringProperty("matching", "competences"));
-		modifier = new File(competencesFolder + PropertiesHandler.getStringProperty("matching", "modifier"));
-
+		String toolsFolder = quenfoData + "/resources/information_extraction/tools/";
+		tools = new File(toolsFolder + PropertiesHandler.getStringProperty("matching", "tools"));
 		statisticsFile = new File(
-				competencesFolder + PropertiesHandler.getStringProperty("matching", "compMatchingStats"));
+				toolsFolder + PropertiesHandler.getStringProperty("matching", "toolMatchingStats"));
 	}
 
 }
