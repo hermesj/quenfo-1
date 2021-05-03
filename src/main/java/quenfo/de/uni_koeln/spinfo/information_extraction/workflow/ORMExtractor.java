@@ -202,7 +202,7 @@ public class ORMExtractor {
 			// bereits vorverarbeitete classifyUnits werden aus allen angefragten gelöscht
 			Set<JASCClassifyUnit> iniParas = new HashSet<>(
 					extractionUnits.stream().map(ExtractionUnit::getParagraph).collect(Collectors.toList()));
-
+			// TODO JB: die Abfrage/Filterung von bereits verarbeiteten Paragraphen klappt noch nicht richtig
 			classifyUnits.removeAll(iniParas);
 
 			log.info("processing row {} to {}, extracting from {} classify units", queryOffset,
@@ -215,7 +215,8 @@ public class ORMExtractor {
 				try {
 					exuDao.create(eu);
 				} catch (SQLException e) {
-					log.error(e.getMessage());
+					//log.error(e.getMessage());
+					
 				}
 			}
 

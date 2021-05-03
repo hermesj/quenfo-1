@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractedEntity;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.ExtractionUnit;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.InformationEntity;
 import quenfo.de.uni_koeln.spinfo.information_extraction.data.Pattern;
@@ -150,7 +151,7 @@ public class RatePatternExtraction {
 						usedPattern.add(p);
 				}
 
-				ie.setConf(usedPattern);
+				((ExtractedEntity)ie).setConf(usedPattern);
 			}
 		}
 	}
@@ -169,7 +170,7 @@ public class RatePatternExtraction {
 			Map<InformationEntity, List<Pattern>> filterdIes = new HashMap<InformationEntity, List<Pattern>>();
 			for (InformationEntity ie : ies.keySet()) {
 				// if (ie.getConf() == 0.0 || ie.getConf() >= 0.6) {
-				if (ie.getConf() >= 0.5) {
+				if (((ExtractedEntity)ie).getConf() >= 0.5) {
 					filterdIes.put(ie, ies.get(ie));
 				}
 			}

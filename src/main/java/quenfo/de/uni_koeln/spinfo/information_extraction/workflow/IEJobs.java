@@ -173,7 +173,7 @@ public class IEJobs {
 		String extension = Files.getFileExtension(entitiesFile.getAbsolutePath());
 
 		if (extension.equals("txt")) {
-			log.info("Read Skills from txt-File: " + entitiesFile.getAbsolutePath());
+			log.info("Read known entities from txt-File: " + entitiesFile.getAbsolutePath());
 			BufferedReader in = new BufferedReader(new FileReader(entitiesFile));
 			String line = in.readLine();
 			while (line != null) {
@@ -214,10 +214,10 @@ public class IEJobs {
 			}
 			in.close();
 		} else if (extension.equals("ttl")) {
-			log.info("Read Skills from RDF Model: " + entitiesFile.getAbsolutePath());
+			log.info("Read known entities from RDF Model: " + entitiesFile.getAbsolutePath());
 			entities = Util.readRDF(entitiesFile, entities, type);
 		} else if (extension.equals("csv")) {
-			log.info("Read Skills from CSV: " + entitiesFile.getAbsolutePath());
+			log.info("Read known entities from CSV: " + entitiesFile.getAbsolutePath());
 			entities = Util.readCSV(entitiesFile, entities, type);
 		} else {
 			System.err.println("unbekanntes Dateiformat: " + entitiesFile.getAbsolutePath());

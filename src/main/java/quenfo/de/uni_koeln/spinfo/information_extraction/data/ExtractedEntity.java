@@ -35,9 +35,12 @@ public class ExtractedEntity extends InformationEntity {
 	@Getter(AccessLevel.NONE)
 	private String patternsString;
 	
-	
+	@DatabaseField
+	private Double conf;
 	
 	private static StringJoiner sj;
+	
+	
 
 	
 	public ExtractedEntity() {
@@ -73,7 +76,38 @@ public class ExtractedEntity extends InformationEntity {
 
 	
 
+	/**
+	 * 
+	 * @author Christine Schaefer
+	 * 
+	 * @param usedPattern
+	 */
+	public Double setConf(List<Pattern> usedPattern) {
+		this.conf = 0d;
+		double product = 0d;
+		
+		//System.out.println(usedPattern);
 
+		List<Double> confValue = new ArrayList<Double>();
+
+		for (Pattern p : usedPattern) {
+			confValue.add(1 - p.getConf()); // (1 - Conf(P)) = Wahrscheinlichkeit für die Fehlerhaftigkeit
+		}
+
+		//System.out.println(confValue);
+		for (int i = 1; i <= confValue.size(); i++) {
+			// Wie berechne ich das Produkt aller Elemente der Liste confValue?
+			if (product == 0d) {
+				product = confValue.get(i - 1);
+			} else {
+				product = product * confValue.get(i - 1);
+			}
+		}
+		conf = 1 - product;
+		//System.out.println(conf);
+		return conf;
+
+	}
 	
 	
 
