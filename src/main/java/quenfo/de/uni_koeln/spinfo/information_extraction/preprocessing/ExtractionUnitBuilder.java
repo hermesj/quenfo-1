@@ -101,20 +101,27 @@ public class ExtractionUnitBuilder {
 	}
 
 	private static String correctSentence(String sentence) {
+		/* normalisiert Leerzeichen vor und nach Punkt und Komma. Wenn vor einem Punkt oder Komma ein
+		* Leerzeichen steht, aber dahinter keins, wird hinter Punkt bzw. Komma zusätzlich ein Leerzeichen eingefügt.
+		* Beispiel: */
 		String regex = "\\s([\\,\\.])(\\w..)";
 		Pattern p = Pattern.compile(regex);
 		Matcher m = p.matcher(sentence);
 		while (m.find()) {
-			if (!m.group(2).toLowerCase().equals("net")) {
+			if (!m.group(2).toLowerCase().equals("net")) { // Außnahme: .NET (Microsoft-Framework)
 				sentence = sentence.replace(m.group(1), m.group(1) + " ");
 			}
 		}
+		/* Falls zwischen zwei Wörtern ein Komma bzw. Semikolon ohne Leerzeichen steht, wird nach Komma bzw. Semikolon
+		* ein Leerzeichen eingefügt
+		* Beispiel: Java,Python -> Java, Python */
 		regex = "[A-Za-z](\\,|\\;)[A-Za-z]";
 		p = Pattern.compile(regex);
 		m = p.matcher(sentence);
 		while (m.find()) {
 			sentence = sentence.replace(m.group(), m.group().substring(0, 2) + " " + m.group().substring(2));
 		}
+		/*  TODO Regex entziffern */
 		regex = "(\\s[\\*\\/])(\\w\\w)";
 		p = Pattern.compile(regex);
 		m = p.matcher(sentence);
@@ -128,18 +135,21 @@ public class ExtractionUnitBuilder {
 		// if (sentence.contains(" & ")) {
 		// sentence = sentence.replace(" & ", " und ");
 		// }
+		/* 'und'/'oder' mit Großbuchstaben werden mit Kleinbuchstaben normalisiert */
 		if (sentence.contains(" UND ")) {
 			sentence = sentence.replace(" UND ", " und ");
 		}
 		if (sentence.contains(" ODER ")) {
 			sentence = sentence.replace(" ODER ", " oder ");
 		}
+		/*  sämtliche Varianten von 'und/oder' 'und oder' 'und|oder' werden durch 'oder' ersetzt */
 		regex = " und[-|\\/| ][\\/| ]?[ ]?oder ";
 		p = Pattern.compile(regex);
 		m = p.matcher(sentence);
 		while (m.find()) {
 			sentence = sentence.replace(m.group(), " oder ");
 		}
+		/* und das gleiche noch mal für 'oder/und' ... */
 		regex = " oder[-|\\/| ][\\/| ]?[ ]?und ";
 		p = Pattern.compile(regex);
 		m = p.matcher(sentence);
