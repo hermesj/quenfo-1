@@ -19,7 +19,7 @@ import lombok.ToString;
 @ToString(of = { "lemmaExpression" })
 public abstract class InformationEntity { // TODO JB: abstract so ok?
 
-	@DatabaseField(generatedId = true)
+	@DatabaseField(generatedId = true, index = true)
 	private Integer id;
 
 	@DatabaseField(canBeNull = false, foreign = true, uniqueCombo = true)

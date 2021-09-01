@@ -3,6 +3,8 @@ package quenfo.de.uni_koeln.spinfo.classification.jasc.workflow;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -115,7 +117,8 @@ public class ORMDatabaseClassifier {
 			TableUtils.createTable(cuDao);
 
 		// instantiate query builders
-		QueryBuilder<JobAd, String> jobQueryBuilder = jobAdDao.queryBuilder();
+		// ORDER BY muss vor der Schleife gesetzt werden, sonst wird bei jeder Runde ein "id" im Ausdruck ergänzt
+		QueryBuilder<JobAd, String> jobQueryBuilder = jobAdDao.queryBuilder().orderBy("id", true);
 		QueryBuilder<JASCClassifyUnit, String> cuQueryBuilder = cuDao.queryBuilder();
 
 		// instantiate prepared queries
@@ -128,10 +131,14 @@ public class ORMDatabaseClassifier {
 		if (queryLimit < 0) {
 			QueryBuilder<JobAd, String> countQueryBuilder = jobAdDao.queryBuilder();
 			queryLimit = countQueryBuilder.countOf();
+			// TODO queryOffset abziehen prüfen
+			queryLimit = queryLimit - queryOffset;
 			log.info("queryLimit nicht gesetzt. Neues queryLimit: " + queryLimit);
 		}	
 
 		int jobCount = 0;
+		Instant startTime = Instant.now();
+		Instant nowTime;
 		// solange noch nicht so viele Anzeigen wie in querylimit angegeben sind bearbeitet wurden...
 		while(jobCount < queryLimit) {		
 			
@@ -139,7 +146,7 @@ public class ORMDatabaseClassifier {
 			if ((jobCount + fetchSize) > queryLimit)
 				fetchSize = queryLimit - jobCount;
 
-			jobPrepQuery = jobQueryBuilder.offset(queryOffset).orderBy("id", true).limit(fetchSize)
+			jobPrepQuery = jobQueryBuilder.offset(queryOffset).limit(fetchSize)
 					.where().eq("language", "de")
 					.prepare();
 			jobAds = jobAdDao.query(jobPrepQuery);
@@ -150,18 +157,26 @@ public class ORMDatabaseClassifier {
 			
 			// IDs der angefragten Anzeigen
 			List<Integer> jobIds = jobAds.parallelStream().map(JobAd::getId).collect(Collectors.toList());
-//			log.info("Folgende JobIDs sollen klassifiziert werden: " + jobIds);
 			cuPrepQuery = cuQueryBuilder.where().in("jobad_id", jobIds).prepare();
+			log.debug(cuPrepQuery.toString());
 			classifyUnits = cuDao.query(cuPrepQuery);
 			
 			
 			// bereits klassifizierte Anzeigen werden entfernt
 			List<JobAd> iniJobAds = classifyUnits.stream().map(JASCClassifyUnit::getJobad)
 					.collect(Collectors.toList());
-//			log.info(iniJobAds.size() + " jobads bereits verarbeitet");
 			jobAds.removeAll(iniJobAds);		
-			
-			log.info("processing row {} to {}, classifying {} job ads", queryOffset, (queryOffset + fetchSize), jobAds.size());
+
+			List<JASCClassifyUnit> resultClassifyUnits = new ArrayList<>();
+			// TODO remaining number of job ads + time elapsed
+
+			nowTime = Instant.now();
+			String elapsed = Duration.between(startTime, nowTime).toString();
+			double percentDone = (double) (jobCount - jobAds.size()) / queryLimit;
+			log.info("processing row {} to {}, {} job ads remaining " +
+							"({}% done, elapsed time: {})",
+					queryOffset, (queryOffset + fetchSize), (queryLimit-jobCount),
+					String.format("%,.3f", percentDone), elapsed);
 
 			for (JobAd jobad : jobAds) {				
 				classifyUnits = classifyJobad(jobad, config, model, regexClassifier);

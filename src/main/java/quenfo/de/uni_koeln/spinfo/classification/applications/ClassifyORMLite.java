@@ -71,8 +71,7 @@ public class ClassifyORMLite {
 	static DBMode dbMode;
 
 	public static void main(String[] args) throws SQLException, IOException, ClassNotFoundException {
-		
-		
+
 		if (args.length > 0) {
 			String configFolder = args[1];
 			try {
