@@ -1,5 +1,5 @@
 # quenfo
-Main code of the BIBB project 
+Main code of the BIBB project
 
 ## Dokumentation
 
@@ -153,15 +153,14 @@ Bsp: getProperty(“general”, “orm_database”)
 ➔ orm_database: Name der gesuchten Variabel innerhalb der Datei
 ➔ Rückgabewert: String mit Wert der Variable
 
-- getModelDao(): AbstractClassifier: Bekommt die Verbindung zur models.dbDatenbank als Parameter übergeben, stellt eine Verbindung zur models-db her und 
-sucht ein persistentes Modell für die entsprechende Klasse. 
-➔ Die Methode wird in der entsprechenden Klassifizierer-Klasse implementiert, 
-z.B. in der Klasse ZoneKNNClassifier.
+- getModelDao(): AbstractClassifier: Bekommt die Verbindung zur models.db-Datenbank als Parameter übergeben, stellt eine Verbindung zur models-db her und sucht ein persistentes Modell für die entsprechende Klasse.
+	➔ Die Methode wird in der entsprechenden Klassifizierer-Klasse implementiert, z.B. in der Klasse ZoneKNNClassifier.
 
-	➢ createDao(): DaoManager: Überprüft, ob für angegebene Klasse bereits ein DaoObjekt existiert und wenn dem nicht so, wird für die Klasse eins erstellt.
+	➢ createDao(): DaoManager: Überprüft, ob für angegebene Klasse bereits ein Dao-Objekt existiert und wenn dem nicht so, wird für die Klasse eins erstellt.
 
 - getPersistedModels(): AbstractClassifier: Übergabe des Hashcodes von bereits persistenten Modellen als Parameter. Der HashCode wird aus der ExperimentConfiguration abgeleitet und setzt sich aus den HashCodes der FeatureUnitConfiguration, des verwendeten Quantifizierers und Klassifizierers sowie der verwendeten Trainingsdaten zusammen (hashCode(): ExperimentConfiguration).
-➔ Die Methode wird in der entsprechenden Klassifizierer-Klasse implementiert, z.B. in der Klasse ZoneKNNClassifier. Dabei wird überprüft, ob in der Datenbank models.db bereits ein Eintrag mit dem angegebenen HashCode vorhanden ist. Über die Klasse Dao kann eine Anfrage an die Datenbank gestellt werden.
+
+	➔ Die Methode wird in der entsprechenden Klassifizierer-Klasse implementiert, z.B. in der Klasse ZoneKNNClassifier. Dabei wird überprüft, ob in der Datenbank models.db bereits ein Eintrag mit dem angegebenen HashCode vorhanden ist. Über die Klasse Dao kann eine Anfrage an die Datenbank gestellt werden.
 
 - getFQ(): Model: Gibt eine Instanz des genutzten FeatureQuantifier zurück.
 
@@ -206,6 +205,7 @@ z.B. in der Klasse ZoneKNNClassifier.
 - ➢ removeAll(): List: Entfernt aus einer Liste alle als Parameter übergebenen Inhalte. Wird hier eingesetzt, um die Liste der zu klassifizierenden Stellenanzeigen um die zu verkleinern, die bereits klassifiziert wurden.
 
 - ➢ classifyJobAd(): ORMDatabaseClassifier: Methode zur Klassifikation der Stellenanzeigen. Diese werden sowohl über einen Regex-Klassifikators als auch den über die ExperimentConfiguration übergebenen Klassifikator klassifiziert. Die Stellenanzeigen werden zuerst in Paragrafen zerlegt. Paragrafen werden dann als potenzielle ClassifyUnits abgespeichert und vorverarbeitet (Initialisierung, Setzen der FeatureUnits und Feature-Vektoren). Daraufhin werden sie zuerst durch den Regex-Klassifizierer verarbeitet und als nächstes durch den übergebenen. Die Ergebnisse beider werden zusammengeführt und als klassifizierte Paragrafen zurückgegeben.
+
 	 ❖ splitIntoParagraphs(): ClassifyUnitSplitter: Bekommt als Parameter einen String übergeben, der den Inhalt der Stellenanzeige enthält. Dieser wird an Leerzeichen unterteilt, dann werden alphanumerische Zeichen entfernt und Listenelemente und Zeilen, die nicht mit einem Punkt enden und mit einem Großbuchstaben beginnen, zusammengeführt. Stellenbezeichnungen werden ausgelassen.
 
 	 -  ● splitAtEmptyLines(): ClassifyUnitSplitter: Zerlegt übergebenen String zuerst an Leerzeichen (splitAtNewLine(): ClassifyUnitSplitter) und speichert Einzelteile des Strings in einer Liste. Die enthaltenen Strings werden daraufhin überprüft, ob sie leer sind oder nicht. Wenn nicht, werden sie mit einem Leerzeichen versehen. Die Liste wird zurückgegeben.
@@ -215,19 +215,25 @@ z.B. in der Klasse ZoneKNNClassifier.
 	 -  ● mergeWhatBelongsTogether(): ClassifyUnitSplitter: Überprüft übergebene String-Liste, ob die enthaltenen Strings bestimmte Kriterien erfüllen: beginnen mit einem Großbuchstaben (startsWithUpperCase(): ClassifyUnitSplitter), enden mit einem Punkt (endsWithDot(): ClassifyUnitSplitter) oder sehen aus wie eine Stellenbezeichnung (looksLikeJobTitle(): ClassifyUnitSplitter). Anhand dieser Kriterien werden dann Strings entweder zusammengefügt oder nicht.
 
  ❖ normalizeEncoding(): EncodingProblemTreatment: s.o.
+
  ❖ initialiazieClassifyUnits(): ZoneJobs: s.o.
+
  ❖ setFeatures(): ZoneJobs: s.o.
+
  ❖ setFeatureVectores(): ZoneJobs: s.o.
+
  ❖ classify(): RegexClassifier: Überprüft den Inhalt der ClassifyUnits, ob er einen regulären Ausdruck enthält. Die Gesamtanzahl der Treffer der Regexes wird in einer lokalen Variabel gesichert. Zurückgegeben wird ein Boolean-Array mit jeweiligen Klassenzugehörigkeiten.
+
 ❖ classify(): ZoneJobs: Klassifiziert die Paragrafen nach übergebenen Klassifizierer. Hier noch keine Implementation des Klassifikationsworkflows, da dieser spezifisch für den verwendeten Klassifizierer ist. Hier genutzt: ZoneKNNClassifier. Zurückgegeben wird eine Map mit ClassifyUnits (= key) und zugehörigen Klassen-IDs in einem Boolen-Array (= value).
-	1.  ● classify(): ZoneKNNClassifier: Nutzt knn zur Klassifizierung der Paragrafen. Hierbei wird die Distanz zwischen dem Feature-Vektor der ClassifyUnit und dem der Trainingsdateien gemessen. 
-	4. ● getDistance(): DistanceCalculator: Berechnet die Distanz zweier Feature-Vektoren über das übergebene Distanzmaß (hier: Cosinus. getCosinusDistance(): DistanceCalculator). 
+	 - ● classify(): ZoneKNNClassifier: Nutzt knn zur Klassifizierung der Paragrafen. Hierbei wird die Distanz zwischen dem Feature-Vektor der ClassifyUnit und dem der Trainingsdateien gemessen. 
+	 - ● getDistance(): DistanceCalculator: Berechnet die Distanz zweier Feature-Vektoren über das übergebene Distanzmaß (hier: Cosinus. getCosinusDistance(): DistanceCalculator). 
 
  ❖ mergeResults(): ZoneJobs: Fügt zwei ClassifyUnit-Maps mit ihren Klassen-IDs zusammen. Dabei wird der Wert einer Klassen-ID auf true gesetzt, wenn dieser innerhalb einer der beiden Maps für eine ClassifyUnit true ist.
+ 
 ❖ translateClasses(): ZoneJobs: Die Klassen-IDs einer ClassifyUnit werden aufgesplittet, d.h. vor Einsatz der Methoden können ClassifyUnits nur eine Klassen-ID haben (dabei ist die Klasse 5 oder 6 eine Kombination aus beiden Klassen). Nach Einsatz der Methode sind Multiclasses sichtbar durch mehrere true-Werte im Boolean-Array der ClassifyUnit.
 
 #### Sonstige Hinweise
-Die Klasse** AbstractFeatureQuantifier** und **AbstractClassifier** werden durch verschiedene Klassen erweitert und ermöglichen so eine unterschiedliche Feature-Gewichtung und Klassifikation. Bei der Initialisierung dieser in den Main-Methoden der einzelnen Anwendungen können die verwendeten Klassen durch andere ausgetauscht werden.
+Die Klasse **AbstractFeatureQuantifier** und **AbstractClassifier** werden durch verschiedene Klassen erweitert und ermöglichen so eine unterschiedliche Feature-Gewichtung und Klassifikation. Bei der Initialisierung dieser in den Main-Methoden der einzelnen Anwendungen können die verwendeten Klassen durch andere ausgetauscht werden.
 
 Für den AbstractFeatureQuantifier wären diese:
 
@@ -294,7 +300,7 @@ https://ormlite.com/javadoc/ormlite-core/com/j256/ormlite/stmt/Where.html
 - ExtractionUnitBuilder: Klasse zur Zerlegung der klassifizierten Paragrafen in einzelne Sätze.
 - IETokenizer: Tokenizer-Klasse, der NLP-Modelle nutzt und somit Texte in Sätze und Sätze in Tokens zerlegen kann. Nutzt hierfür die in den Ressourcen hinterlegten Modelle.
 - SentenceDetectorME: Durch MEM werden Satzgrenzen erkannt und Text in Sätze zerlegt.
-https://opennlp.apache.org/docs/1.7.1/apidocs/opennlptools/opennlp/tools/sentdetect/SentenceDetectorME.html
+https://opennlp.apache.org/docs/1.7.1/apidocs/opennlp-tools/opennlp/tools/sentdetect/SentenceDetectorME.html
 - MateTagger: Annotiert ExtractionUnits mit lexikalischen Informationen. Nutzt hierfür Mate-Tools.
 https://code.google.com/archive/p/mate-tools/wikis/ParserAndModels.wiki
 - ClassifyUnitSplitter: s.o.
@@ -308,27 +314,40 @@ https://code.google.com/archive/p/mate-tools/wikis/ParserAndModels.wiki
 - getSplittedCompounds(): PropertiesHandler: Wird bei der Initialisierung des ORMExtractors aufgerufen und gibt mögliche String-Trennungen zurück, die über den PropertiesHandler aus einer übergebenen Datei genommen wird.
 - initialize(): ORMExtractor: Initialisiert Variablen der Klassen-IDs für die klassifizierten Paragrafen (categories = SingleClass, translations = MuliClass).
 - extract(): ORMExtractor: Übergeordnete Methode zur Informationsextraktion. Unterteilt sich in verschiedene Aufgaben, die durch weitere externe Methoden ausgeführt werden. Extraktion läuft so lange wie querylimit angesetzt ist. Die entsprechende Anzahl an ClassifyUnits wird aus der Datenbank-Tabelle extrahiert. Dabei werden ClassifyUnits, die bereits vorverarbeitet wurden und dementsprechende ExtractionUnits zugeordnet werden können, nicht betrachtet. Neue ExtractionUnits werden entsprechend annotiert und für die musterbasierte Informationsextraktion genutzt.
-➢ getLemmatizerModel(): PropertiesHandler: Ermöglicht die Verwendung eines übergebenen Lemmatisierer-Modells, das als NLP-Komponente in den Ressourcen-Dateien hinterlegt ist.
-➢ getTaggerMode(): PropertiesHandler: Ermöglicht die Verwendung eines übergebenen Tagger-Modells, das als NLP-Komponente in den Ressourcen-Dateien hinterlegt ist.
-➢ createDao(): DaoManager: s.o.
-➢ initializeIEUnits(): ExtractionUnitBuilder: Zerlegt übergebene ClassifyUnits in einzelne Sätze (ExtractionUnits), überarbeitet diese und setzt lexikalische Informationen.
+
+	 ➢ getLemmatizerModel(): PropertiesHandler: Ermöglicht die Verwendung eines übergebenen Lemmatisierer-Modells, das als NLP-Komponente in den Ressourcen-Dateien hinterlegt ist.
+
+	 ➢ getTaggerMode(): PropertiesHandler: Ermöglicht die Verwendung eines übergebenen Tagger-Modells, das als NLP-Komponente in den Ressourcen-Dateien hinterlegt ist.
+
+	 ➢ createDao(): DaoManager: s.o.
+
+	 ➢ initializeIEUnits(): ExtractionUnitBuilder: Zerlegt übergebene ClassifyUnits in einzelne Sätze (ExtractionUnits), überarbeitet diese und setzt lexikalische Informationen.
 
 	- ❖ splitIntoSentences(): IETokenizer: Bekommt den Inhalt eines Paragrafen als Parameter übergeben und erkennt mittels SentenceDetector vorhandene Satzgrenzen. Sätze werden an diesen Stellen getrennt und in einer Liste zurückgegeben.
 	 - ● sentDetect(): SentenceDetectorME: Sucht im übergebenen String nach Satzgrenzen und gibt einzelne Sätze zurück.
 	 - ● splitListItems(): IETokenizer: Zerlegt übergebenen String zuerst an Leerzeichen (splitAtNewLine(): ClassifyUnitSplitter) und entfernt alle Non-Wörter (containsOnlyNonWordChars(): ClassifyUnitSplitter).
 	- ❖ correctSentence(): ExtractionUnitBuilder: Überprüft übergebenen Satz mit verschiedenen Regexes und korrigiert ihn.
 	- ❖ setLexicalData(): MateTagger: Annotiert übergebenen Satz mit Lemmata, PoS-Tags und Morph-Tags. Verwendet angegebenen Modelle.
-➢ create(): Dao: s.o.
-➢ annotateTokens(): IEJobs: Annotiert Tokens einer ExtractionUnit mit Informationen über bekannte Entitäten, Extraktionsfehler oder Modifizierer. Es werden jeweils die Lemmata betrachtet (normalizeLemma(): Utils).
+
+ ➢ create(): Dao: s.o.
+
+ ➢ annotateTokens(): IEJobs: Annotiert Tokens einer ExtractionUnit mit Informationen über bekannte Entitäten, Extraktionsfehler oder Modifizierer. Es werden jeweils die Lemmata betrachtet (normalizeLemma(): Utils).
+
 	- ❖ annotateEntities(): IEJobs: Überprüft, ob Token der ExtractionUnit bereits in der Liste mit bekannten Entitäten vorkommt. Wenn dem so ist, wird zutreffender Token entsprechend annotiert.
 	- ❖ annotateNegativeExamples(): IEJobs: Überprüft, ob Token der ExtractionUnit bereits in der Liste mit Extraktionsfehlern vorkommt. Wenn dem so ist, wird zutreffender Token entsprechend annotiert.
 	- ❖ annotateModifiers(): IEJobs: Überprüft, ob Token der ExtractionUnit bereits in der Liste mit Modifizierern vorkommt. Wenn dem so ist, wird zutreffender Token entsprechend annotiert.
-➢ extractEntities(): IEJobs: Bekommt als Parameter annotierte ExtractionUnits und Lemmatizer-Modell übergeben. Führt eine musterbasierte Suche durch. Die Muster werden über die Klasse Pattern zur Verfügung gestellt. Es werden nur die Muster genutzt, die entweder noch keinen Confidence-Wert zugeordnet bekommen haben oder die, die in einem vorherigen Durchlauf einen Wert über 0.5 erzielt haben. Vergleicht die Token eines Muster mit denen des Satz und überprüft Übereinstimmungen. Wenn ein Satz mit einem Muster übereinstimmt, gibt der ExtractionPointer die Stelle an, an der die Entität extrahiert werden soll. Morphemkoordinationen werden dabei berücksichtigt.
-➢ getNewCompounds(): IEJobs: Falls keine möglichen String-Verbindungen oder String-Trennungen bei der Initialisierung übergeben wurden, wird eine leere Map zurückgegeben. Ansonsten werden bereits vorhandene Compounds-Varianten zurückgegeben.
-➢ removeKnownEntities(): ORMExtractor: Entfernt bereits bekannte Entitäten aus der Liste mit neuen Extraktionen.
-➢ evaluatePattern(): RatePatternExtraction: Evaluiert die innerhalb eines Extraktionsdurchlaufs genutzten Muster und berechnet einen entsprechenden Confidence-Wert. Dieser orientiert sich daran, wie viele Extraktionen durch ein Muster gefunden wurden, die bereits als valide Entität in der Liste bekannter Entitäten vorhanden ist. Je mehr bekannte Entitäten ein Muster findet, desto besser wird es bewertet.
-➢ evaluateSeed(): RatePatternExtraction: Evaluiert die in einem Durchlauf gefundenen Extraktionen in Abhängigkeit der Confidence-Werte der Muster, die die jeweilige Extraktion gefunden hat. Je mehr Muster mit hohen Werten die Extraktionen gefunden haben, desto besser fällt die Bewertung dieser aus.
-➢ selectBestEntities(): RatePatternExtraction: Betrachtet die ermittelten Confidence-Werte der Extraktionen und filtert die heraus, die einen bestimmten Wert erreichen konnten. Diese werden zurückgegeben und für die weitere Informationsextraktion genutzt.
+
+ ➢ extractEntities(): IEJobs: Bekommt als Parameter annotierte ExtractionUnits und Lemmatizer-Modell übergeben. Führt eine musterbasierte Suche durch. Die Muster werden über die Klasse Pattern zur Verfügung gestellt. Es werden nur die Muster genutzt, die entweder noch keinen Confidence-Wert zugeordnet bekommen haben oder die, die in einem vorherigen Durchlauf einen Wert über 0.5 erzielt haben. Vergleicht die Token eines Muster mit denen des Satz und überprüft Übereinstimmungen. Wenn ein Satz mit einem Muster übereinstimmt, gibt der ExtractionPointer die Stelle an, an der die Entität extrahiert werden soll. Morphemkoordinationen werden dabei berücksichtigt.
+
+ ➢ getNewCompounds(): IEJobs: Falls keine möglichen String-Verbindungen oder String-Trennungen bei der Initialisierung übergeben wurden, wird eine leere Map zurückgegeben. Ansonsten werden bereits vorhandene Compounds-Varianten zurückgegeben.
+
+ ➢ removeKnownEntities(): ORMExtractor: Entfernt bereits bekannte Entitäten aus der Liste mit neuen Extraktionen.
+
+ ➢ evaluatePattern(): RatePatternExtraction: Evaluiert die innerhalb eines Extraktionsdurchlaufs genutzten Muster und berechnet einen entsprechenden Confidence-Wert. Dieser orientiert sich daran, wie viele Extraktionen durch ein Muster gefunden wurden, die bereits als valide Entität in der Liste bekannter Entitäten vorhanden ist. Je mehr bekannte Entitäten ein Muster findet, desto besser wird es bewertet.
+
+ ➢ evaluateSeed(): RatePatternExtraction: Evaluiert die in einem Durchlauf gefundenen Extraktionen in Abhängigkeit der Confidence-Werte der Muster, die die jeweilige Extraktion gefunden hat. Je mehr Muster mit hohen Werten die Extraktionen gefunden haben, desto besser fällt die Bewertung dieser aus.
+
+ ➢ selectBestEntities(): RatePatternExtraction: Betrachtet die ermittelten Confidence-Werte der Extraktionen und filtert die heraus, die einen bestimmten Wert erreichen konnten. Diese werden zurückgegeben und für die weitere Informationsextraktion genutzt.
 
 ### Matching
 
@@ -374,12 +393,14 @@ onfigurationsdateien kann die Dokumentation quenfo v.1.1.4 Konfiguration herange
 - loadProperties(): MatchTools/MatchCompetences: s.o. Diese Methode ist für jede ausführbare Anwendung implementiert und hat immer die gleiche Funktionalität. Es werden lediglich andere Parameter übergeben, die aus den verschiedenen Konfigurationsdateien genommen werden.
 
 - stringmatch(): ORMExtractor: Bekommt als Parameter die Startposition, die Anzahl der zu verarbeitenden Paragrafen und die Anzahl der parallelen Verarbeitung übergeben. Anhand dieser wird ein String-Matching durchgeführt, das bekannte Entitäten innerhalb der klassifizierten Paragrafen sucht. Verwendet dafür werden hauptsächlich Methoden der IEJobs. Das Matching läuft so lange wie das querylimit gesetzt ist. Die entsprechende Anzahl an ClassifyUnits wird aus der Datenbank-Tabelle extrahiert. ExtractionUnits werden entsprechend aus den ClassifyUnits extrahier, annotiert und für das weitere Matching genutzt.
-➢ getLemmatizerModel(): PropertiesHandler: s.o.
-➢ createDao(): DaoManager: s.o.
-➢ initalizeIEUnits(): ExtractionUnitBuilder: s.o.
-➢ create(): Dao: s.o.
-➢ annotateTokens(): IEJobs: s.o.
-➢ matchBatch(): ORMExtractor: Hauptanwendung des String-Matchings. Bekommt als Parameter die ExtractionUnits sowie das Lemmatizer-Modell übergeben und führt das Matching mit externen Methoden durch.
+
+	 ➢ getLemmatizerModel(): PropertiesHandler: s.o.
+	 ➢ createDao(): DaoManager: s.o.
+	 ➢ initalizeIEUnits(): ExtractionUnitBuilder: s.o.
+	 ➢ create(): Dao: s.o.
+	 ➢ annotateTokens(): IEJobs: s.o.
+	 ➢ matchBatch(): ORMExtractor: Hauptanwendung des String-Matchings. Bekommt als Parameter die ExtractionUnits sowie das Lemmatizer-Modell übergeben und führt das Matching mit externen Methoden durch.
+
 	- ❖ extractByStringMatch(): IEJobs: Token der ExtractionUnits werden normalisiert verarbeitet (normalizeLemma(): Utils). Diese werden mit bereits bekannten Entitäten verglichen. Wenn Token überstimmen, werden sie zurückgegeben.
 	- ❖ mergeInformationEntities(): IEJobs: Überprüft extrahierte Entitäten auf gemeinsames Vorkommen. Wenn zwei Entitäten zusammen vorkommen, werden diese zusammengefasst.
 	- ❖ setModifiers(): IEJobs: Wird nur beim Kompetenz-Matching ausgeführt. Die Modifizierer der ExtraktionUnits werden entsprechend annotiert.
