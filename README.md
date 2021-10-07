@@ -53,17 +53,17 @@ Sollten andere Daten (mit anderen Namen) verwendet werden, können diese in den 
 - PropertiesHandler: Stellt alle notwendigen Getter- und Setter-Methoden und weitere grundlegende Methoden für mögliche Konfigurationsparameter zur Verfügung und initialisiert die dazugehörigen Variablen mit den übergebenen Werten. In dieser Klasse wird nicht der Inhalt der jeweiligen Dateien initialisiert, sondern die Pfade zu den Dateien in Variablen gesetzt.
 
 - ConnectionSource:
-https://ormlite.com/javadoc/ormlitecore/com/j256/ormlite/support/ConnectionSource.html
+https://ormlite.com/javadoc/ormlite-core/com/j256/ormlite/support/ConnectionSource.html
 
 - JdbcConnectionSource:
-https://ormlite.com/javadoc/ormlitejdbc/com/j256/ormlite/jdbc/JdbcConnectionSource.html
+https://ormlite.com/javadoc/ormlite-jdbc/com/j256/ormlite/jdbc/JdbcConnectionSource.html
 
 - TableUtils:
 https://ormlite.com/javadoc/ormlite-core/com/j256/ormlite/table/TableUtils.html
 
 - FeatureUnitConfiguration: Initialisiert die Variablen für die Verarbeitung der Feature Units (FU = Tokens, Stems, NGramme usw. von ClassifyUnits). Gibt hierbei z.B. an, ob Stopwords entfernt oder Wörter normalisiert werden sollen. Stellt zudem alle notwendigen Getter- und Setter-Methoden und weitere grundlegende Methoden (z.B. toString(), hashCode(), etc.) zur Verfügung.
 
-- AbstractFeatureQuantifier: Abstrakte Klasse mit grundlegenden Funktionen zur FeatureGewichtung. Wird durch verschiedene Quantifier-Klassen erweitert.
+- AbstractFeatureQuantifier: Abstrakte Klasse mit grundlegenden Funktionen zur Feature-Gewichtung. Wird durch verschiedene Quantifier-Klassen erweitert.
 
 - LogLikeLiHoodFeatureQuantifier: Erweitert den AbstractFeatureQuantifier und erbt  somit die Merkmale der Klassen (alle Methoden und Variablen können verwendet werden). Bietet Methode zur Berechnung der Log LikeLiHood-Werte für die Feature Units an, für die dann jeweils Feature-Werte gesetzt werden.
 
@@ -118,13 +118,13 @@ https://docs.oracle.com/javase/7/docs/api/java/io/BufferedReader.html
 https://guava.dev/releases/18.0/api/docs/com/google/common/collect/Multiset.html
 
 - LogLikeLiHood:
-https://mahout.apache.org/docs/0.13.0/api/docs/mahoutmath/org/apache/mahout/math/stats/LogLikelihood.html
+https://mahout.apache.org/docs/0.13.0/api/docs/mahout-math/org/apache/mahout/math/stats/LogLikelihood.html
 
 - QueryBuilder:
 https://ormlite.com/javadoc/ormlite-core/com/j256/ormlite/stmt/QueryBuilder.html
 
 - PreparedQuery:
-https://ormlite.com/javadoc/ormlitecore/com/j256/ormlite/stmt/PreparedQuery.html
+https://ormlite.com/javadoc/ormlite-core/com/j256/ormlite/stmt/PreparedQuery.html
 
 - JobAd: Klasse zur Auszeichnung der Parameter einer Stellenanzeige. Beinhaltet  grundlegende Informationen für die entsprechenden Variablen, z.B. Getter und Setter. Klasse wird in der Datenbank mittels Dao persistiert (Datenbank-Tabelle JobAds).
 
@@ -148,12 +148,17 @@ https://ormlite.com/javadoc/ormlitecore/com/j256/ormlite/stmt/PreparedQuery.htm
  	➢ getIntArrayProperty(): PropertiesHandler: Bekommt zwei Buzzwords als Parameter übergeben. Diese werden in einem ersten Schritt der Methode getProperty() übergeben und es wird überprüft, ob der Rückgabewert leer ist. Wenn das nicht der Fall ist, wird der Inhalt in Fragmente zerlegt (Strings werden nach Kommata getrennt mit split()) und in Integer umgewandelt. Dabei werden leere Fragmente herausgefiltert (replaceAll()).
 
  	➢ getProperty(): PropertiesHandler: Nutzt Buzzwords zur Identifizierung der übergebenen Konfigurationsdatei (Parameter 1) und zur Filterung des Variablenwerts von Parameter 2.
-Bsp: getProperty(“general”, “orm_database”)
-➔ general: es wird die Konfigurationsdatei general.properties gesucht
-➔ orm_database: Name der gesuchten Variabel innerhalb der Datei
-➔ Rückgabewert: String mit Wert der Variable
+
+	Bsp: getProperty(“general”, “orm_database”)
+
+	 ➔ general: es wird die Konfigurationsdatei general.properties gesucht
+
+	 ➔ orm_database: Name der gesuchten Variabel innerhalb der Datei
+
+	 ➔ Rückgabewert: String mit Wert der Variable
 
 - getModelDao(): AbstractClassifier: Bekommt die Verbindung zur models.db-Datenbank als Parameter übergeben, stellt eine Verbindung zur models-db her und sucht ein persistentes Modell für die entsprechende Klasse.
+
 	➔ Die Methode wird in der entsprechenden Klassifizierer-Klasse implementiert, z.B. in der Klasse ZoneKNNClassifier.
 
 	➢ createDao(): DaoManager: Überprüft, ob für angegebene Klasse bereits ein Dao-Objekt existiert und wenn dem nicht so, wird für die Klasse eins erstellt.
@@ -225,8 +230,9 @@ Bsp: getProperty(“general”, “orm_database”)
  ❖ classify(): RegexClassifier: Überprüft den Inhalt der ClassifyUnits, ob er einen regulären Ausdruck enthält. Die Gesamtanzahl der Treffer der Regexes wird in einer lokalen Variabel gesichert. Zurückgegeben wird ein Boolean-Array mit jeweiligen Klassenzugehörigkeiten.
 
 ❖ classify(): ZoneJobs: Klassifiziert die Paragrafen nach übergebenen Klassifizierer. Hier noch keine Implementation des Klassifikationsworkflows, da dieser spezifisch für den verwendeten Klassifizierer ist. Hier genutzt: ZoneKNNClassifier. Zurückgegeben wird eine Map mit ClassifyUnits (= key) und zugehörigen Klassen-IDs in einem Boolen-Array (= value).
-	 - ● classify(): ZoneKNNClassifier: Nutzt knn zur Klassifizierung der Paragrafen. Hierbei wird die Distanz zwischen dem Feature-Vektor der ClassifyUnit und dem der Trainingsdateien gemessen. 
-	 - ● getDistance(): DistanceCalculator: Berechnet die Distanz zweier Feature-Vektoren über das übergebene Distanzmaß (hier: Cosinus. getCosinusDistance(): DistanceCalculator). 
+
+	 ● classify(): ZoneKNNClassifier: Nutzt knn zur Klassifizierung der Paragrafen. Hierbei wird die Distanz zwischen dem Feature-Vektor der ClassifyUnit und dem der Trainingsdateien gemessen.
+	 ● getDistance(): DistanceCalculator: Berechnet die Distanz zweier Feature-Vektoren über das übergebene Distanzmaß (hier: Cosinus. getCosinusDistance(): DistanceCalculator). 
 
  ❖ mergeResults(): ZoneJobs: Fügt zwei ClassifyUnit-Maps mit ihren Klassen-IDs zusammen. Dabei wird der Wert einer Klassen-ID auf true gesetzt, wenn dieser innerhalb einer der beiden Maps für eine ClassifyUnit true ist.
  
@@ -395,10 +401,15 @@ onfigurationsdateien kann die Dokumentation quenfo v.1.1.4 Konfiguration herange
 - stringmatch(): ORMExtractor: Bekommt als Parameter die Startposition, die Anzahl der zu verarbeitenden Paragrafen und die Anzahl der parallelen Verarbeitung übergeben. Anhand dieser wird ein String-Matching durchgeführt, das bekannte Entitäten innerhalb der klassifizierten Paragrafen sucht. Verwendet dafür werden hauptsächlich Methoden der IEJobs. Das Matching läuft so lange wie das querylimit gesetzt ist. Die entsprechende Anzahl an ClassifyUnits wird aus der Datenbank-Tabelle extrahiert. ExtractionUnits werden entsprechend aus den ClassifyUnits extrahier, annotiert und für das weitere Matching genutzt.
 
 	 ➢ getLemmatizerModel(): PropertiesHandler: s.o.
+
 	 ➢ createDao(): DaoManager: s.o.
+
 	 ➢ initalizeIEUnits(): ExtractionUnitBuilder: s.o.
+
 	 ➢ create(): Dao: s.o.
+
 	 ➢ annotateTokens(): IEJobs: s.o.
+
 	 ➢ matchBatch(): ORMExtractor: Hauptanwendung des String-Matchings. Bekommt als Parameter die ExtractionUnits sowie das Lemmatizer-Modell übergeben und führt das Matching mit externen Methoden durch.
 
 	- ❖ extractByStringMatch(): IEJobs: Token der ExtractionUnits werden normalisiert verarbeitet (normalizeLemma(): Utils). Diese werden mit bereits bekannten Entitäten verglichen. Wenn Token überstimmen, werden sie zurückgegeben.
