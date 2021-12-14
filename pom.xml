@@ -7,7 +7,7 @@
 
 	<groupId>de.uni_koeln.spinfo</groupId>
 	<artifactId>quenfo</artifactId>
-	<version>1.1.6</version>
+	<version>1.1.7</version>
 
 	<name>quenfo</name>
 
@@ -72,7 +72,7 @@
 		<sqlite.version>3.21.0.1</sqlite.version>
 		<weka.version>3.8.2</weka.version>
 		<jsoup.version>1.8.3</jsoup.version>
-		<log4j.version>2.13.3</log4j.version>
+		<log4j.version>2.15.0</log4j.version>
 		<slf4j.version>1.8.0-alpha2</slf4j.version>
 		<!-- <slf4j.version>1.7.5</slf4j.version> -->
 		<opencsv.version>4.0</opencsv.version>
@@ -88,7 +88,7 @@
 		<dependency>
 			<groupId>de.uni_koeln.spinfo</groupId>
 			<artifactId>CoordinateExpander</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
 		</dependency>
 
 

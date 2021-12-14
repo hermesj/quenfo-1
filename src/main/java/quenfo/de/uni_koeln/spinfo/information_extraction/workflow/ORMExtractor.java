@@ -211,11 +211,11 @@ public class ORMExtractor {
 
 			nowTime = Instant.now();
 			String elapsed = Duration.between(startTime, nowTime).toString();
-			double percentDone = (double) (cuCount - classifyUnits.size()) / queryLimit;
+			double percentDone = (double) (cuCount - classifyUnits.size()) / queryLimit * 100;
 			log.info("processing row {} to {}, {} classify units remaining " +
 							"({}% done, elapsed time: {})",
 					queryOffset, (queryOffset + fetchSize), (queryLimit-cuCount),
-					String.format("%,.3f", percentDone), elapsed);
+					String.format("%,.1f", percentDone), elapsed);
 			// TODO JB: für CUs prüfen, ob NLP-Daten schon vorliegen
 			// Paragraphen in Sätze splitten und in ExtractionUnits überführen
 			newInitEUs = ExtractionUnitBuilder.initializeIEUnits(classifyUnits, lemmatizer, null, tagger);
@@ -361,11 +361,11 @@ public class ORMExtractor {
 
 			nowTime = Instant.now();
 			String elapsed = Duration.between(startTime, nowTime).toString();
-			double percentDone = (double) (cuCount - classifyUnits.size()) / queryLimit;
+			double percentDone = (double) (cuCount - classifyUnits.size()) / queryLimit * 100;
 			log.info("processing row {} to {}, {} classify units remaining " +
 							"({}% done, elapsed time: {})",
 					queryOffset, (queryOffset + fetchSize), (queryLimit-cuCount),
-					String.format("%,.3f", percentDone), elapsed);
+					String.format("%,.1f", percentDone), elapsed);
 
 			// Paragraphen in Sätze splitten und in ExtractionUnits überführen
 			newInitEUs = ExtractionUnitBuilder.initializeIEUnits(classifyUnits, lemmatizer, null, null);

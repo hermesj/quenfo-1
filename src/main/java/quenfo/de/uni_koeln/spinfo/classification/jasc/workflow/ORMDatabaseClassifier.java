@@ -172,11 +172,11 @@ public class ORMDatabaseClassifier {
 
 			nowTime = Instant.now();
 			String elapsed = Duration.between(startTime, nowTime).toString();
-			double percentDone = (double) (jobCount - jobAds.size()) / queryLimit;
+			double percentDone = (double) (jobCount - jobAds.size()) / queryLimit * 100;
 			log.info("processing row {} to {}, {} job ads remaining " +
 							"({}% done, elapsed time: {})",
 					queryOffset, (queryOffset + fetchSize), (queryLimit-jobCount),
-					String.format("%,.3f", percentDone), elapsed);
+					String.format("%,.1f", percentDone), elapsed);
 
 			for (JobAd jobad : jobAds) {				
 				classifyUnits = classifyJobad(jobad, config, model, regexClassifier);
