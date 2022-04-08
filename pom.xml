@@ -17,7 +17,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.0</version>
+				<version>3.10.0</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -27,7 +27,7 @@
 
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>3.3.0</version>
 				<configuration>
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
@@ -61,7 +61,6 @@
 		<!-- Versions -->
 		<languagetool.version>5.1</languagetool.version>
 		<jwsplitter.version>4.4</jwsplitter.version>
-		<junit.version>4.13.1</junit.version>
 		<anna.version>3.5</anna.version>
 		<srl.version>4.31</srl.version>
 		<libsvm.version>3.17</libsvm.version>
@@ -85,6 +84,11 @@
 
 
 	<dependencies>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>5.8.2</version>
+		</dependency>
 		<dependency>
 			<groupId>de.uni_koeln.spinfo</groupId>
 			<artifactId>CoordinateExpander</artifactId>
@@ -229,13 +233,7 @@
 
 
 
-		<!-- Testing -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
+
 
 
 

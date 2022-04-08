@@ -33,7 +33,7 @@ public class ClassifyORMLite {
 	static String dbFilePath = null;
 
 	// Pfad zum Output-Ordner in dem die neue DB angelegt werden soll
-	static String outputFolder = null;
+	// static String outputFolder = null;
 
 	// Pfad zur Datei mit den Trainingsdaten
 	static String trainingdataFile = null;
@@ -49,9 +49,6 @@ public class ClassifyORMLite {
 	// Die SteAs werden (aus Speichergründen) nicht alle auf einmal ausgelesen,
 	// sondern Päckchenweise - hier angeben, wieviele jeweils in einem Schwung
 	// zusammen verarbeitet werden
-	// nach dem ersten Schwung erscheint in der Konsole ein Dialog, in dem man
-	// das Programm nochmal stoppen (s), die nächsten xx SteAs klassifizieren
-	// (c), oder ohne Unterbrechung zu Ende klassifizieren lassen kann (d)
 	static int fetchSize;
 
 	static boolean normalize = false;
@@ -110,7 +107,7 @@ public class ClassifyORMLite {
 		AbstractFeatureQuantifier fq = new LogLikeliHoodFeatureQuantifier();
 		AbstractClassifier classifier = new ZoneKNNClassifier(false, 5, Distance.COSINUS);
 		ExperimentConfiguration config = new ExperimentConfiguration(fuc, fq, classifier, new File(trainingdataFile),
-				outputFolder);
+				null);
 				
 		ORMDatabaseClassifier ormClassifier = new ORMDatabaseClassifier(jobadConnection, queryLimit, fetchSize,
 				startPos, trainingdataFile);
@@ -131,7 +128,7 @@ public class ClassifyORMLite {
 			fq = trainedModel.getFQ();
 			
 			config = new ExperimentConfiguration(fuc, fq, classifier, new File(trainingdataFile),
-					outputFolder);
+					null);
 			log.info("Persistertes Modell geladen.");
 		} catch (IndexOutOfBoundsException e) {
 			log.info("Kein trainiertes Modell mit gewünschter Konfiguration vorhanden. Modell wird trainiert ...");
@@ -168,7 +165,7 @@ public class ClassifyORMLite {
 		PropertiesHandler.initialize(configFolder);
 		
 		dbFilePath = quenfoData + "/sqlite/orm/" + PropertiesHandler.getStringProperty("general", "orm_database");
-		outputFolder = quenfoData + "/sqlite/classification/";
+		//outputFolder = quenfoData + "/sqlite/classification/";
 
 		
 		resourcesDB = "jdbc:sqlite:" + quenfoData + "/resources/models.db";

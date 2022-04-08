@@ -595,7 +595,7 @@ public class IEJobs {
 											}
 										}
 									}
-
+									// TODO prüfen, ob entityPointer hier benötigt wird? -> Evaluieren für gleiche Daten
 									ie = new ExtractedEntity(entities.get(0), false, entityPointer, type, extractionUnit);
 									ie.setLemmaArrayList(entities);
 

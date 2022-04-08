@@ -2,6 +2,7 @@
 ## Custom
 ####
 *.ucls
+src/test/resources/
 
 
 ##############################

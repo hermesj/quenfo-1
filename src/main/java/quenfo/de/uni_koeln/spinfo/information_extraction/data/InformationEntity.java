@@ -53,6 +53,8 @@ public abstract class InformationEntity { // TODO JB: abstract so ok?
 	//@Getter(AccessLevel.NONE)
 	private String lemmaExpression;
 
+	private String tokenExpression;
+
 	// Modifizierer (z.B. 'zwingend erforderlich')
 	@DatabaseField
 	private String modifier;

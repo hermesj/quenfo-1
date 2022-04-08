@@ -107,7 +107,6 @@ public class ORMDatabaseClassifier {
 
 	public void classify(Model model, ExperimentConfiguration config) throws IOException, SQLException {
 		log.info("...classifying...");
-
 		RegexClassifier regexClassifier = new RegexClassifier(PropertiesHandler.getRegex());
 
 		// instantiate the DAOs

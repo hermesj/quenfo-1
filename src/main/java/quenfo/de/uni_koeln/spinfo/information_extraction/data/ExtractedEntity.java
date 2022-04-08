@@ -40,9 +40,6 @@ public class ExtractedEntity extends InformationEntity {
 	
 	private static StringJoiner sj;
 	
-	
-
-	
 	public ExtractedEntity() {
 		
 	}
