@@ -15,8 +15,7 @@ import lombok.ToString;
 @ToString(of = {"id"})
 public class JobAd {
 
-	@DatabaseField(id = true)
-//	@Getter(AccessLevel.NONE)
+	@DatabaseField(id = true, index = true, indexName = "jobadindex")
 	@Setter(AccessLevel.NONE)
 	private Integer id;
 	

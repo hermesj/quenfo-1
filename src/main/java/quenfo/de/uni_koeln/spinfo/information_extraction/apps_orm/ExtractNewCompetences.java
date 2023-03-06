@@ -24,7 +24,7 @@ public class ExtractNewCompetences {
 	static String dbFilePath;
 
 	// txt-File mit allen bereits bekannten (validierten) Kompetenzen (die
-	// bekannten Kompetenzn helfen beim Auffinden neuer Kompetenzen)
+	// bekannten Kompetenzen helfen beim Auffinden neuer Kompetenzen)
 	static File competences;
 
 	// txt-File mit bekannten (typischen) Extraktionsfehlern (würden ansonsten

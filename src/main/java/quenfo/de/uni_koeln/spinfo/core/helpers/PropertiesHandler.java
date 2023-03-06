@@ -28,8 +28,24 @@ public class PropertiesHandler {
 	private static String taggerModel  = null;
 	private static String sentTokenizerModel = null;
 	private static String tokenizerModel = null;
-	
-	
+
+	/**
+	 * sets only resources (not configFiles, since they are set in test applications)
+	 * @param configFolder
+	 */
+	public static void initializeForTests(File configFolder) {
+		PropertiesHandler.quenfoData = configFolder.getParent();
+
+		splittedCompounds = quenfoData + "/resources/nlp/compounds/splittedCompounds.txt";
+		possibleCompounds = quenfoData + "/resources/nlp/compounds/possibleCompounds.txt";
+		regex = quenfoData + "/resources/classification/regex.txt";
+		stopwords = quenfoData + "/resources/classification/stopwords.txt";
+
+		lemmatizerModel = quenfoData + "/resources/nlp/matetools/lemma-ger-3.6.model";
+		taggerModel = quenfoData + "/resources/nlp/matetools/tag-ger-3.6.model";
+		sentTokenizerModel = quenfoData + "/resources/nlp/openNLP/de-sent.bin";
+		tokenizerModel = quenfoData + "/resources/nlp/openNLP/de-token.bin";
+	}
 	
 	
 	public static void initialize(File configFolder) throws IOException {

@@ -23,7 +23,7 @@ import quenfo.de.uni_koeln.spinfo.core.data.JobAd;
 @ToString(of = { "id", "jobad" }) //TODO JB: toString classifyUnit
 public class ClassifyUnit {
 	
-	@DatabaseField(generatedId = true)
+	@DatabaseField(generatedId = true, index = true, indexName = "cuindex")
 	@Setter(AccessLevel.NONE)
 	private Integer id;
 	

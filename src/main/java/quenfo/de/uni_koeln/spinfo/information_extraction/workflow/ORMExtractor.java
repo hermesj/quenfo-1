@@ -3,6 +3,8 @@ package quenfo.de.uni_koeln.spinfo.information_extraction.workflow;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -118,7 +120,7 @@ public class ORMExtractor {
 		if (!ieDao.isTableExists())
 			TableUtils.createTable(ieDao);
 
-		QueryBuilder<JASCClassifyUnit, String> cuQueryBuilder = cuDao.queryBuilder();
+		QueryBuilder<JASCClassifyUnit, String> cuQueryBuilder = cuDao.queryBuilder().orderBy("id", true);
 		QueryBuilder<ExtractionUnit, String> exuQueryBuilder = exuDao.queryBuilder();
 
 		List<JASCClassifyUnit> classifyUnits = null;
@@ -153,7 +155,10 @@ public class ORMExtractor {
 
 		/**
 		 * 
-		 * TODO (!!) queryLimit, offset etc. auf classifyUnits oder jobAds bezogen??
+		 * TODO (JB)(!!) queryLimit, offset etc. auf classifyUnits oder jobAds bezogen??
+		 * JB: aktuell beziehen sich beide Werte auf die Anzahl der zu verarbeitenden
+		 * ClassifyUnits. Falls es auf jobads bezogen werden soll, muss hier ein Select auf
+		 * jobads mit offset&limit und ein join über classifyUnit.jobadid durchgeführt werden
 		 */
 
 		if (queryLimit < 0) {
@@ -162,16 +167,16 @@ public class ORMExtractor {
 			queryLimit = (int) queryBuilder.countOf();
 			log.info("queryLimit nicht gesetzt. Neues queryLimit: " + queryLimit);
 		}
-
+		Instant startTime = Instant.now();
+		Instant nowTime;
 		int cuCount = 0;
 		while (cuCount < queryLimit) {
 
 			// pruefen, ob fetchsize uber querylimit hinaus geht
 			if ((cuCount + fetchSize) > queryLimit)
 				fetchSize = queryLimit - cuCount;
-//			log.info("extracting from {} paragraphs, skipping first {} rows", fetchSize, queryOffset);
 
-			cuQueryBuilder = cuQueryBuilder.offset((long) queryOffset).orderBy("id", true).limit((long) fetchSize);
+			cuQueryBuilder = cuQueryBuilder.offset((long) queryOffset).limit((long) fetchSize);
 			cuQueryBuilder.setWhere(whereClause);
 			cuPrepQuery = cuQueryBuilder.prepare();
 
@@ -186,7 +191,6 @@ public class ORMExtractor {
 
 			for (JASCClassifyUnit cu : classifyUnits)
 				cuDao.refresh(cu);
-			log.info(classifyUnits.size() + " classifyUnits abgefragt");
 			cuCount += classifyUnits.size();
 
 			// extraction units aus bereits initalisierten classifyUnits anfragen
@@ -205,9 +209,14 @@ public class ORMExtractor {
 			// TODO JB: die Abfrage/Filterung von bereits verarbeiteten Paragraphen klappt noch nicht richtig
 			classifyUnits.removeAll(iniParas);
 
-			log.info("processing row {} to {}, extracting from {} classify units", queryOffset,
-					(queryOffset + fetchSize), classifyUnits.size());
-
+			nowTime = Instant.now();
+			String elapsed = Duration.between(startTime, nowTime).toString();
+			double percentDone = (double) (cuCount - classifyUnits.size()) / queryLimit * 100;
+			log.info("processing row {} to {}, {} classify units remaining " +
+							"({}% done, elapsed time: {})",
+					queryOffset, (queryOffset + fetchSize), (queryLimit-cuCount),
+					String.format("%,.1f", percentDone), elapsed);
+			// TODO JB: für CUs prüfen, ob NLP-Daten schon vorliegen
 			// Paragraphen in Sätze splitten und in ExtractionUnits überführen
 			newInitEUs = ExtractionUnitBuilder.initializeIEUnits(classifyUnits, lemmatizer, null, tagger);
 
@@ -226,7 +235,6 @@ public class ORMExtractor {
 			// Informationsextraktion
 			// TODO annotation für alle EUs oder nur neu initalisierte?
 			jobs.annotateTokens(extractionUnits);
-			log.info("extract " + type.name().toLowerCase());
 			extractions = jobs.extractEntities(extractionUnits, lemmatizer);
 
 			possCompoundSplits.putAll(jobs.getNewCompounds());
@@ -274,7 +282,8 @@ public class ORMExtractor {
 		if (!ieDao.isTableExists())
 			TableUtils.createTable(ieDao);
 
-		QueryBuilder<JASCClassifyUnit, String> cuQueryBuilder = cuDao.queryBuilder();
+		// ORDER BY muss vor der Schleife gesetzt werden, sonst wird bei jeder Runde ein "id" im Ausdruck ergänzt
+		QueryBuilder<JASCClassifyUnit, String> cuQueryBuilder = cuDao.queryBuilder().orderBy("id", true);
 		QueryBuilder<ExtractionUnit, String> exuQueryBuilder = exuDao.queryBuilder();
 
 		List<JASCClassifyUnit> classifyUnits = null;
@@ -308,18 +317,22 @@ public class ORMExtractor {
 			QueryBuilder<JASCClassifyUnit, String> queryBuilder = cuDao.queryBuilder();
 			queryBuilder.setWhere(whereClause);
 			queryLimit = (int) queryBuilder.countOf();
+			// TODO queryOffset abziehen prüfen
+			queryLimit = queryLimit - queryOffset;
 			log.info("queryLimit nicht gesetzt. Neues queryLimit: " + queryLimit);
 		}
 
 		int cuCount = 0;
+		Instant startTime = Instant.now();
+		Instant nowTime;
 		while (cuCount < queryLimit) {
 
 			// pruefen, ob fetchsize uber querylimit hinaus geht
 			if ((cuCount + fetchSize) > queryLimit)
 				fetchSize = queryLimit - cuCount;
-//			log.info("extracting from {} paragraphs, skipping first {} rows", fetchSize, queryOffset);
 
-			cuQueryBuilder = cuQueryBuilder.offset((long) queryOffset).orderBy("id", true).limit((long) fetchSize);
+			cuQueryBuilder = cuQueryBuilder.offset((long) queryOffset)
+					.limit((long) fetchSize);
 			cuQueryBuilder.setWhere(whereClause);
 			cuPrepQuery = cuQueryBuilder.prepare();
 
@@ -334,7 +347,6 @@ public class ORMExtractor {
 
 			for (JASCClassifyUnit cu : classifyUnits)
 				cuDao.refresh(cu);
-			log.info(classifyUnits.size() + " classifyUnits abgefragt");
 			cuCount += classifyUnits.size();
 
 			// extraction units aus bereits initalisierten classifyUnits anfragen
@@ -347,14 +359,13 @@ public class ORMExtractor {
 			for (ExtractionUnit eu : extractionUnits)
 				exuDao.refresh(eu);
 
-			// bereits vorverarbeitete classifyUnits werden aus allen angefragten gelöscht
-//			Set<JASCClassifyUnit> iniParas = new HashSet<>(
-//					extractionUnits.stream().map(ExtractionUnit::getParagraph).collect(Collectors.toList()));
-//
-//			classifyUnits.removeAll(iniParas);
-
-			log.info("processing row {} to {}, extracting from {} classify units", queryOffset,
-					(queryOffset + fetchSize), classifyUnits.size());
+			nowTime = Instant.now();
+			String elapsed = Duration.between(startTime, nowTime).toString();
+			double percentDone = (double) (cuCount - classifyUnits.size()) / queryLimit * 100;
+			log.info("processing row {} to {}, {} classify units remaining " +
+							"({}% done, elapsed time: {})",
+					queryOffset, (queryOffset + fetchSize), (queryLimit-cuCount),
+					String.format("%,.1f", percentDone), elapsed);
 
 			// Paragraphen in Sätze splitten und in ExtractionUnits überführen
 			newInitEUs = ExtractionUnitBuilder.initializeIEUnits(classifyUnits, lemmatizer, null, null);
@@ -363,7 +374,6 @@ public class ORMExtractor {
 				try {
 					exuDao.create(eu);
 				} catch (SQLException e) {
-//					log.error(e.getMessage());
 				}
 			}
 
@@ -374,17 +384,11 @@ public class ORMExtractor {
 			jobs.annotateTokens(extractionUnits);
 
 			stringMatches = matchBatch(extractionUnits, /*stringMatches,*/ lemmatizer);
-//			for(Map.Entry<ExtractionUnit, Map<InformationEntity, List<Pattern>>> e : stringMatches.entrySet()) {
-//				for (InformationEntity ie : e.getValue().keySet()) {
-//					System.out.print(ie.getStartLemma() + " ");
-//				}
-//				System.out.println();
-//			}
-			// TODO persist matches
+
+			// persist matches
 			for (Map.Entry<ExtractionUnit, Map<InformationEntity, List<Pattern>>> e : stringMatches.entrySet()) {
 				for (Map.Entry<InformationEntity, List<Pattern>> ie : e.getValue().entrySet()) {
 					try {
-//						log.info(ie.getKey().getStartLemma());
 						ieDao.create(((MatchedEntity) ie.getKey()));
 					} catch (SQLException e1) {
 						log.debug(e1.getMessage());

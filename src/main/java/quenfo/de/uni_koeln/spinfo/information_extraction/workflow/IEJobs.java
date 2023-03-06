@@ -595,7 +595,7 @@ public class IEJobs {
 											}
 										}
 									}
-
+									// TODO prüfen, ob entityPointer hier benötigt wird? -> Evaluieren für gleiche Daten
 									ie = new ExtractedEntity(entities.get(0), false, entityPointer, type, extractionUnit);
 									ie.setLemmaArrayList(entities);
 
@@ -821,12 +821,10 @@ public class IEJobs {
 								iesForUnit = new HashMap<>();
 							iesForUnit.put(newIE, List);
 							extractions.put(extractionUnit, iesForUnit);
-							// for (InformationEntity informationEntity : iesForUnit.keySet())
-							// log.info(informationEntity.getStartLemma());
 
 							// TODO match auf koordinierte Ausdrücke überprüfen
 							if (posList.contains("KON"))
-								System.out.println(extractionUnit.getSentence() + "\n" + newIE + "\n");
+								log.debug(extractionUnit.getSentence() + "\n" + newIE + "\n");
 						}
 					}
 				}
